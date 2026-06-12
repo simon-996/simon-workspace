@@ -1,10 +1,10 @@
-# Simon Workplace Project Scaffold Implementation Plan
+# Simon Workspace Project Scaffold Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Create a monorepo scaffold for the Simon Workplace API, web app, Docker deployment, and Jenkins pipeline.
+**Goal:** Create a monorepo scaffold for the Simon Workspace API, web app, Docker deployment, and Jenkins pipeline.
 
-**Architecture:** The repository is a single Git monorepo with separate `simon-workplace-api` and `simon-workplace-web` applications plus shared deployment files at the root. Jenkins builds both apps and produces Docker images that can be orchestrated by Docker Compose.
+**Architecture:** The repository is a single Git monorepo with separate `simon-workspace-api` and `simon-workspace-web` applications plus shared deployment files at the root. Jenkins builds both apps and produces Docker images that can be orchestrated by Docker Compose.
 
 **Tech Stack:** Spring Boot 3, Maven, Java 17, Vue 3, Vite, TypeScript, Pinia, Vue Router, Naive UI, Tailwind CSS, Docker, Jenkins.
 
@@ -16,13 +16,13 @@
 - Create: `.gitignore`
 - Create: `README.md`
 - Create: `docs/superpowers/plans/2026-06-12-project-scaffold.md`
-- Existing: `simon-workplace-doc.md`
+- Existing: `simon-workspace-doc.md`
 
 - [ ] **Step 1: Initialize Git repository**
 
 Run: `git init`
 
-Expected: a new repository is created in `D:\CodeFile\simon\simon-workplace`.
+Expected: a new repository is created in `D:\CodeFile\simon\simon-workspace`.
 
 - [ ] **Step 2: Add root documentation and ignore rules**
 
@@ -30,21 +30,21 @@ Create `.gitignore` with Java, Node, IDE, runtime, and local deployment exclusio
 
 - [ ] **Step 3: Commit baseline**
 
-Run: `git add .gitignore README.md simon-workplace-doc.md docs/superpowers/plans/2026-06-12-project-scaffold.md && git commit -m "chore: initialize monorepo documentation"`
+Run: `git add .gitignore README.md simon-workspace-doc.md docs/superpowers/plans/2026-06-12-project-scaffold.md && git commit -m "chore: initialize monorepo documentation"`
 
 Expected: one baseline commit containing documentation and repository hygiene.
 
 ### Task 2: API Scaffold
 
 **Files:**
-- Create: `simon-workplace-api/pom.xml`
-- Create: `simon-workplace-api/src/main/java/com/simon/workplace/SimonWorkplaceApiApplication.java`
-- Create: `simon-workplace-api/src/main/java/com/simon/workplace/common/ApiResponse.java`
-- Create: `simon-workplace-api/src/main/java/com/simon/workplace/health/HealthController.java`
-- Create: `simon-workplace-api/src/main/resources/application.yml`
-- Create: `simon-workplace-api/src/test/java/com/simon/workplace/SimonWorkplaceApiApplicationTests.java`
-- Create: `simon-workplace-api/Dockerfile`
-- Create: `simon-workplace-api/README.md`
+- Create: `simon-workspace-api/pom.xml`
+- Create: `simon-workspace-api/src/main/java/com/simon/workspace/SimonWorkspaceApiApplication.java`
+- Create: `simon-workspace-api/src/main/java/com/simon/workspace/common/ApiResponse.java`
+- Create: `simon-workspace-api/src/main/java/com/simon/workspace/health/HealthController.java`
+- Create: `simon-workspace-api/src/main/resources/application.yml`
+- Create: `simon-workspace-api/src/test/java/com/simon/workspace/SimonWorkspaceApiApplicationTests.java`
+- Create: `simon-workspace-api/Dockerfile`
+- Create: `simon-workspace-api/README.md`
 
 - [ ] **Step 1: Add Maven Spring Boot skeleton**
 
@@ -52,30 +52,30 @@ Create the files above with a minimal API application, a health endpoint, and te
 
 - [ ] **Step 2: Verify API build**
 
-Run: `mvn -f simon-workplace-api/pom.xml test`
+Run: `mvn -f simon-workspace-api/pom.xml test`
 
 Expected: Maven exits with code 0.
 
 - [ ] **Step 3: Commit API scaffold**
 
-Run: `git add simon-workplace-api && git commit -m "feat(api): scaffold Spring Boot service"`
+Run: `git add simon-workspace-api && git commit -m "feat(api): scaffold Spring Boot service"`
 
 Expected: one commit containing the backend scaffold.
 
 ### Task 3: Web Scaffold
 
 **Files:**
-- Create: `simon-workplace-web/package.json`
-- Create: `simon-workplace-web/src/**`
-- Create: `simon-workplace-web/index.html`
-- Create: `simon-workplace-web/vite.config.ts`
-- Create: `simon-workplace-web/Dockerfile`
-- Create: `simon-workplace-web/nginx.conf`
-- Create: `simon-workplace-web/README.md`
+- Create: `simon-workspace-web/package.json`
+- Create: `simon-workspace-web/src/**`
+- Create: `simon-workspace-web/index.html`
+- Create: `simon-workspace-web/vite.config.ts`
+- Create: `simon-workspace-web/Dockerfile`
+- Create: `simon-workspace-web/nginx.conf`
+- Create: `simon-workspace-web/README.md`
 
 - [ ] **Step 1: Generate Vue 3 TypeScript app**
 
-Use Vite to generate the Vue TypeScript project into `simon-workplace-web`.
+Use Vite to generate the Vue TypeScript project into `simon-workspace-web`.
 
 - [ ] **Step 2: Add project libraries**
 
@@ -87,13 +87,13 @@ Create a minimal public home/workspace shell with routing and Naive UI provider.
 
 - [ ] **Step 4: Verify web build**
 
-Run: `npm run build --prefix simon-workplace-web`
+Run: `npm run build --prefix simon-workspace-web`
 
-Expected: Vite exits with code 0 and writes `simon-workplace-web/dist`.
+Expected: Vite exits with code 0 and writes `simon-workspace-web/dist`.
 
 - [ ] **Step 5: Commit web scaffold**
 
-Run: `git add simon-workplace-web && git commit -m "feat(web): scaffold Vue workplace frontend"`
+Run: `git add simon-workspace-web && git commit -m "feat(web): scaffold Vue workspace frontend"`
 
 Expected: one commit containing the frontend scaffold.
 
@@ -127,13 +127,13 @@ Expected: one commit containing deployment and CI/CD files.
 
 - [ ] **Step 1: Run API verification**
 
-Run: `mvn -f simon-workplace-api/pom.xml test`
+Run: `mvn -f simon-workspace-api/pom.xml test`
 
 Expected: Maven exits with code 0.
 
 - [ ] **Step 2: Run web verification**
 
-Run: `npm run build --prefix simon-workplace-web`
+Run: `npm run build --prefix simon-workspace-web`
 
 Expected: Vite exits with code 0.
 

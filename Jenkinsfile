@@ -2,8 +2,8 @@ pipeline {
   agent any
 
   environment {
-    API_IMAGE = 'simon-workplace-api'
-    WEB_IMAGE = 'simon-workplace-web'
+    API_IMAGE = 'simon-workspace-api'
+    WEB_IMAGE = 'simon-workspace-web'
     IMAGE_TAG = "${env.BUILD_NUMBER}"
   }
 
@@ -16,21 +16,21 @@ pipeline {
 
     stage('API Test and Package') {
       steps {
-        sh 'mvn -f simon-workplace-api/pom.xml -B test package'
+        sh 'mvn -f simon-workspace-api/pom.xml -B test package'
       }
     }
 
     stage('Web Install and Build') {
       steps {
-        sh 'npm ci --prefix simon-workplace-web'
-        sh 'npm run build --prefix simon-workplace-web'
+        sh 'npm ci --prefix simon-workspace-web'
+        sh 'npm run build --prefix simon-workspace-web'
       }
     }
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t ${API_IMAGE}:${IMAGE_TAG} -t ${API_IMAGE}:latest simon-workplace-api'
-        sh 'docker build -t ${WEB_IMAGE}:${IMAGE_TAG} -t ${WEB_IMAGE}:latest simon-workplace-web'
+        sh 'docker build -t ${API_IMAGE}:${IMAGE_TAG} -t ${API_IMAGE}:latest simon-workspace-api'
+        sh 'docker build -t ${WEB_IMAGE}:${IMAGE_TAG} -t ${WEB_IMAGE}:latest simon-workspace-web'
       }
     }
 
@@ -44,7 +44,7 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'simon-workplace-api/target/*.jar,simon-workplace-web/dist/**', allowEmptyArchive: true
+      archiveArtifacts artifacts: 'simon-workspace-api/target/*.jar,simon-workspace-web/dist/**', allowEmptyArchive: true
     }
   }
 }

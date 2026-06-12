@@ -1,27 +1,27 @@
-# Simon Workplace
+# Simon Workspace
 
-Simon Workplace is a personal website and AI teaching workspace monorepo.
+Simon Workspace is a personal website and AI teaching workspace monorepo.
 
 It contains:
 
-- `simon-workplace-api`: Spring Boot API service.
-- `simon-workplace-web`: Vue 3 frontend.
+- `simon-workspace-api`: Spring Boot API service.
+- `simon-workspace-web`: Vue 3 frontend.
 - `deploy`: Docker Compose, Nginx, database, and deployment configuration.
-- `simon-workplace-doc.md`: product and architecture planning document.
+- `simon-workspace-doc.md`: product and architecture planning document.
 
 ## Development
 
 Backend:
 
 ```bash
-mvn -f simon-workplace-api/pom.xml test
+mvn -f simon-workspace-api/pom.xml test
 ```
 
 Frontend:
 
 ```bash
-npm install --prefix simon-workplace-web
-npm run build --prefix simon-workplace-web
+npm install --prefix simon-workspace-web
+npm run build --prefix simon-workspace-web
 ```
 
 ## Deployment Direction

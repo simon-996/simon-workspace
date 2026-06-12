@@ -1,0 +1,18 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: simon-workspace-api
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  file-storage:
+    root: ${APP_FILE_STORAGE_ROOT:./data/files}
