@@ -17,6 +17,17 @@ Backend:
 mvn -f simon-workspace-api/pom.xml test
 ```
 
+The API uses Flyway for database migrations. When running the API outside tests, provide a MySQL database through these environment variables:
+
+```text
+MYSQL_HOST
+MYSQL_PORT
+MYSQL_DATABASE
+MYSQL_USERNAME
+MYSQL_PASSWORD
+FLYWAY_ENABLED
+```
+
 Frontend:
 
 ```bash
