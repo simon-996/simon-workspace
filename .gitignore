@@ -1,0 +1,42 @@
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# Java / Maven
+target/
+*.class
+.mvn/timing.properties
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+deploy/.env
+!deploy/.env.example
+
+# Runtime data
+data/
+uploads/
+generated/
+minio-data/
+mysql-data/
+redis-data/
+
+# Docker override files
+docker-compose.override.yml
