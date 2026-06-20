@@ -140,3 +140,66 @@ chore(deploy): Docker / Jenkins / Nginx 调整
 ```
 
 这些能力放在第一版稳定后再规划。
+
+## 进度维护方式
+
+本目录同时承担两类信息：
+
+```text
+阶段说明：每个阶段要解决什么问题、边界在哪里
+执行 Todo：每个阶段当前还有哪些具体任务没有完成
+```
+
+维护原则：
+
+```text
+不要另建一套重复路线图
+每个阶段文件末尾维护 Todo
+完成一项就把 - [ ] 改为 - [x]
+只把已经落地、验证或明确提交的内容标记为完成
+每次阶段收尾都同步更新阶段完成记录
+```
+
+推荐使用方式：
+
+```text
+开始一个阶段前：阅读对应阶段文档的目标、范围、Todo
+开发过程中：每完成一个小任务就勾选对应 Todo
+阶段收尾前：逐项检查验收 Todo
+阶段完成后：在阶段文件的进度记录里补充日期、命令和结果
+```
+
+## 当前进度快照
+
+最后核查时间：2026-06-20。
+
+| 阶段 | 当前判断 | 说明 |
+| --- | --- | --- |
+| 01 Foundation | 进行中 | 已有前后端脚手架、健康检查、基础响应、Flyway 初始迁移、Docker/Jenkins 初版；统一异常处理、真实迁移验证、Redis 配置、API 拦截器仍未完成 |
+| 02 Public Site | 早期进行中 | 已有首页和静态终端展示；博客、项目页、真实终端命令、公开内容接口仍未完成 |
+| 03 Workspace Core | 未开始 | 只有工作台占位页，没有登录、课程、班级、学期、模板、文件、历史等业务能力 |
+| 04 Document Generation | 未开始 | 尚未实现模板填充、生成任务、Word/Excel 导出 |
+| 05 AI Integration | 未开始 | 尚未接入 AI 服务、Prompt、JSON 校验和 AI 生成流程 |
+| 06 Polish and Deploy | 未开始 | 已有部署配置雏形，但未完成部署闭环、移动端优化、安全加固、日志监控 |
+
+## 已验证命令记录
+
+2026-06-20 已验证：
+
+```text
+mvn -f simon-workspace-api/pom.xml test
+结果：通过，2 个测试成功
+
+npm ci --prefix simon-workspace-web
+结果：通过，但 npm audit 报告 1 个 high severity vulnerability
+
+npm run build --prefix simon-workspace-web
+结果：通过，生成 dist 产物
+```
+
+2026-06-20 未验证：
+
+```text
+docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml config
+原因：当前环境未找到 docker 命令
+```

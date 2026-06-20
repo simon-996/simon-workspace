@@ -268,3 +268,155 @@ docs: update workspace core progress
 接口有基本权限保护
 测试和构建通过
 ```
+
+## 阶段执行 Todo
+
+当前状态：未开始，只有基础工作台占位页。最后核查时间：2026-06-20。
+
+### 认证与当前用户
+
+- [ ] 选择第一版认证方案：简单 Token、JWT 或 Sa-Token
+- [ ] 创建认证相关包结构
+- [ ] 创建登录请求 DTO
+- [ ] 创建登录响应 DTO
+- [ ] 创建当前用户响应 DTO
+- [ ] 实现 `POST /api/auth/login`
+- [ ] 实现 `POST /api/auth/logout`
+- [ ] 实现 `GET /api/auth/me`
+- [ ] 实现密码哈希验证
+- [ ] 实现登录失败记录
+- [ ] 实现登录成功后更新最后登录时间
+- [ ] 实现认证拦截器或过滤器
+- [ ] 明确公开接口和工作台接口的权限边界
+- [ ] 前端创建 `/login` 页面或登录弹窗
+- [ ] 前端保存 token
+- [ ] 前端刷新页面后恢复登录态或明确失效处理
+- [ ] 前端实现退出登录
+
+### 工作台布局
+
+- [x] 创建 `/workspace` 基础路由
+- [x] 创建基础工作台占位页
+- [ ] 创建工作台主布局组件
+- [ ] 创建左侧导航
+- [ ] 创建顶部用户信息区
+- [ ] 创建主内容区布局
+- [ ] 创建移动端底部 Tab 或折叠菜单
+- [ ] 创建通用页面标题组件
+- [ ] 创建通用空状态组件
+- [ ] 创建通用加载状态组件
+- [ ] 创建通用错误提示策略
+- [ ] 为未登录访问工作台增加跳转或提示
+
+### 课程管理
+
+- [ ] 创建 `course` 数据表迁移
+- [ ] 创建课程实体或记录模型
+- [ ] 创建课程请求/响应 DTO
+- [ ] 实现 `GET /api/courses`
+- [ ] 实现 `GET /api/courses/{id}`
+- [ ] 实现 `POST /api/courses`
+- [ ] 实现 `PUT /api/courses/{id}`
+- [ ] 实现 `DELETE /api/courses/{id}`
+- [ ] 增加课程名称、课程编码唯一性校验
+- [ ] 增加课程 CRUD 测试
+- [ ] 创建 `/workspace/courses` 路由
+- [ ] 实现课程列表
+- [ ] 实现课程搜索
+- [ ] 实现课程新增表单
+- [ ] 实现课程编辑表单
+- [ ] 实现课程删除确认
+
+### 班级管理
+
+- [ ] 创建 `class_info` 数据表迁移
+- [ ] 创建班级模型和 DTO
+- [ ] 实现 `GET /api/classes`
+- [ ] 实现 `POST /api/classes`
+- [ ] 实现 `PUT /api/classes/{id}`
+- [ ] 实现 `DELETE /api/classes/{id}`
+- [ ] 增加班级 CRUD 测试
+- [ ] 创建 `/workspace/classes` 路由
+- [ ] 实现班级列表、搜索、新增、编辑、删除
+
+### 学期管理
+
+- [ ] 创建 `semester` 数据表迁移
+- [ ] 创建 `semester_calendar` 数据表迁移
+- [ ] 创建学期模型和 DTO
+- [ ] 实现 `GET /api/semesters`
+- [ ] 实现 `GET /api/semesters/{id}`
+- [ ] 实现 `POST /api/semesters`
+- [ ] 实现 `PUT /api/semesters/{id}`
+- [ ] 实现 `POST /api/semesters/{id}/calendar/generate`
+- [ ] 实现 `GET /api/semesters/{id}/calendar`
+- [ ] 支持学期周历生成后人工微调
+- [ ] 增加学期和周历测试
+- [ ] 创建 `/workspace/semesters` 路由
+- [ ] 实现学期列表、表单和周历维护界面
+
+### 模板管理
+
+- [ ] 创建 `template_file` 数据表迁移
+- [ ] 创建 `template_field` 数据表迁移
+- [ ] 实现模板上传存储
+- [ ] 实现 `GET /api/templates`
+- [ ] 实现 `POST /api/templates/upload`
+- [ ] 实现 `GET /api/templates/{id}`
+- [ ] 实现 `PUT /api/templates/{id}`
+- [ ] 实现 `DELETE /api/templates/{id}`
+- [ ] 实现 `GET /api/templates/{id}/fields`
+- [ ] 实现 `PUT /api/templates/{id}/fields`
+- [ ] 第一版支持手动维护占位符字段
+- [ ] 增加模板字段保存测试
+- [ ] 创建 `/workspace/templates` 路由
+- [ ] 实现模板列表、上传、字段维护、删除
+
+### 文件中心
+
+- [ ] 创建 `file_resource` 数据表迁移
+- [ ] 实现本地文件存储服务
+- [ ] 实现文件元信息保存
+- [ ] 实现 `GET /api/files`
+- [ ] 实现 `GET /api/files/{id}`
+- [ ] 实现 `GET /api/files/{id}/download`
+- [ ] 实现 `DELETE /api/files/{id}`
+- [ ] 文件下载不暴露真实磁盘路径
+- [ ] 文件下载检查 owner 或权限
+- [ ] 增加文件权限测试
+- [ ] 创建 `/workspace/files` 路由
+- [ ] 实现文件列表、下载、删除
+
+### 生成记录
+
+- [ ] 创建 `generate_task` 数据表迁移
+- [ ] 实现 `GET /api/generation/tasks`
+- [ ] 实现 `GET /api/generation/tasks/{id}`
+- [ ] 增加生成记录查询测试
+- [ ] 创建 `/workspace/history` 路由
+- [ ] 实现生成记录列表
+- [ ] 实现生成记录详情入口
+
+## 阶段验收 Todo
+
+- [ ] 能登录
+- [ ] 能退出
+- [ ] 未登录访问工作台接口被拒绝
+- [ ] 能进入工作台
+- [ ] 能维护课程
+- [ ] 能维护班级
+- [ ] 能维护学期并生成周历
+- [ ] 能上传模板并维护字段
+- [ ] 能查看文件中心
+- [ ] 能查看生成记录
+- [ ] 刷新页面后登录态可恢复或合理失效
+- [ ] `mvn -f simon-workspace-api/pom.xml test` 通过
+- [ ] `npm run build --prefix simon-workspace-web` 通过
+
+## 进度记录
+
+```text
+2026-06-20:
+- 只有 /workspace 基础占位页
+- 尚未实现登录、业务表、业务接口和工作台管理页面
+```

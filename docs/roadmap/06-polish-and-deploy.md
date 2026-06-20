@@ -260,3 +260,131 @@ Docker Compose 服务稳定运行
 移动端具备基本可用体验
 测试、构建、部署验收通过
 ```
+
+## 阶段执行 Todo
+
+当前状态：未开始。已有 Docker/Jenkins 雏形，但未形成部署闭环。最后核查时间：2026-06-20。
+
+### 前端体验优化
+
+- [ ] 首页动效方案评审，确认只增强公开页、不干扰工作台
+- [ ] 使用 CSS transition 增强基础交互
+- [ ] 使用 GSAP 增强首页关键动效
+- [ ] 评估是否需要 ScrollTrigger
+- [ ] 移动端降低或禁用复杂动效
+- [ ] 检查动效不遮挡文字
+- [ ] 检查动效不影响首屏加载
+- [ ] 工作台保持克制、稳定、可扫描
+
+### 终端增强
+
+- [ ] 支持命令历史上下切换
+- [ ] 支持基础自动补全
+- [ ] 增加常用命令按钮
+- [ ] 根据登录状态展示不同 help
+- [ ] 根据当前页面推荐命令
+- [ ] 支持移动端全屏终端
+- [ ] 明确终端不是真实 Shell
+- [ ] 禁止任意脚本执行
+- [ ] 禁止通过终端绕过图形界面权限
+
+### 移动端工作台
+
+- [ ] 增加移动端底部 Tab
+- [ ] 优化常用功能卡片
+- [ ] 优化课程、班级、学期页面的移动端列表
+- [ ] 优化分步生成表单
+- [ ] 优化文件下载入口
+- [ ] 优化生成记录查看
+- [ ] 优化全屏终端
+- [ ] 确认移动端不强求复杂模板编辑
+- [ ] 375px 宽度核心流程无明显错位
+
+### 权限与安全加固
+
+- [ ] 所有工作台接口必须登录
+- [ ] 文件下载必须校验 owner 或权限
+- [ ] AI 任务只能由创建人查看
+- [ ] 管理接口需要管理员权限
+- [ ] 登录失败限制
+- [ ] AI 生成接口限流
+- [ ] 文件导出防重复提交
+- [ ] 下载频率限制
+- [ ] 任务状态缓存策略明确
+- [ ] Token、密码、AI API Key 不写入日志
+
+### 日志与排查
+
+- [ ] 记录登录日志
+- [ ] 记录生成任务日志
+- [ ] 记录 AI 调用日志
+- [ ] 记录文件下载日志
+- [ ] 记录异常日志
+- [ ] 日志包含可排查任务 ID 或 traceId
+- [ ] 日志不包含完整敏感配置
+- [ ] 增加常见故障排查文档
+
+### Docker 与 Compose
+
+- [x] 创建 API Dockerfile 初版
+- [x] 创建 Web Dockerfile 初版
+- [x] 创建 Docker Compose 初版
+- [ ] API Dockerfile 可构建
+- [ ] Web Dockerfile 可构建
+- [ ] API 镜像启动后健康检查可用
+- [ ] Web 镜像启动后首页可访问
+- [ ] `docker compose --env-file deploy/.env -f deploy/docker-compose.yml config` 通过
+- [ ] `docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build` 通过
+- [ ] Compose 中 MySQL 健康检查稳定
+- [ ] Compose 中 Redis 健康检查稳定
+- [ ] Compose 中 MinIO 可访问
+
+### Jenkins 部署闭环
+
+- [x] Jenkinsfile 包含 Checkout 阶段
+- [x] Jenkinsfile 包含 API Test and Package 阶段
+- [x] Jenkinsfile 包含 Web Install and Build 阶段
+- [x] Jenkinsfile 包含 Docker Build 阶段
+- [ ] Jenkinsfile 增加 Push Images 阶段
+- [ ] Jenkinsfile 增加 Deploy 阶段
+- [ ] Jenkinsfile 增加 Smoke Test 阶段
+- [ ] 部署阶段通过 SSH 或其他明确方式连接服务器
+- [ ] 部署阶段执行 docker compose up
+- [ ] 部署后检查 API health
+- [ ] 部署后检查 Web 首页
+- [ ] 失败时停止发布并保留日志
+
+### 备份与恢复
+
+- [ ] 编写 MySQL 备份步骤
+- [ ] 编写 MySQL 恢复步骤
+- [ ] 编写 MinIO 或本地文件备份步骤
+- [ ] 编写 MinIO 或本地文件恢复步骤
+- [ ] 说明 `deploy/.env` 保管方式
+- [ ] 说明服务器目录结构
+- [ ] 说明版本回滚步骤
+- [ ] 说明定期备份频率
+
+## 阶段验收 Todo
+
+- [ ] 首页动效流畅且不遮挡内容
+- [ ] 移动端核心流程可用
+- [ ] 终端增强功能可用
+- [ ] 登录和权限边界有效
+- [ ] 生成文件不能被未授权访问
+- [ ] Jenkins 能完成构建和部署
+- [ ] 部署后 API 健康检查通过
+- [ ] 部署后 Web 首页可访问
+- [ ] `mvn -f simon-workspace-api/pom.xml test` 通过
+- [ ] `npm run build --prefix simon-workspace-web` 通过
+- [ ] `docker compose --env-file deploy/.env -f deploy/docker-compose.yml config` 通过
+- [ ] `docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build` 通过
+
+## 进度记录
+
+```text
+2026-06-20:
+- 已有 Dockerfile、Docker Compose、Jenkinsfile 初版
+- Jenkins 部署阶段仍是 placeholder
+- 当前环境没有 docker 命令，尚未验证 Compose 和镜像构建
+```
