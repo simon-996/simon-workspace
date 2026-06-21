@@ -1,5 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /workspace
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+RUN npm config set registry ${NPM_REGISTRY}
 COPY package*.json ./
 RUN npm ci
 COPY . .
