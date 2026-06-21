@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { NButton, NIcon } from 'naive-ui'
 import {
   Book,
@@ -12,6 +13,11 @@ import {
   Template,
   Wand,
 } from '@vicons/tabler'
+
+import { useAuthStore } from '../stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const modules = [
   {
@@ -57,6 +63,11 @@ const activity = [
   { icon: Clock, title: 'Roadmap tracking', detail: 'Phase todo lists are synced' },
   { icon: Download, title: 'Next export target', detail: 'Word lesson plan flow' },
 ]
+
+async function logout() {
+  await auth.logout()
+  await router.replace('/login')
+}
 </script>
 
 <template>
@@ -80,7 +91,13 @@ const activity = [
           <h1>Teaching document cockpit</h1>
           <p>Courses, templates, generation tasks, and files stay visible without turning the workspace into a control room.</p>
         </div>
-        <n-button class="generate-button" type="primary"><n-icon :component="Wand" /> Generate Lesson</n-button>
+        <div class="user-panel">
+          <span>{{ auth.displayName }}</span>
+          <div>
+            <n-button class="logout-button" tertiary size="small" @click="logout">Logout</n-button>
+            <n-button class="generate-button" type="primary"><n-icon :component="Wand" /> Generate Lesson</n-button>
+          </div>
+        </div>
       </header>
 
       <div class="workspace-grid">
@@ -208,13 +225,39 @@ h1 {
   line-height: 1.55;
 }
 
-.generate-button {
+.user-panel {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.user-panel span {
+  color: #526273;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.user-panel div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 10px;
+}
+
+.generate-button,
+.logout-button {
   --n-border-radius: 6px !important;
-  height: 46px;
   font-family: "JetBrains Mono", Consolas, monospace;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.generate-button {
+  height: 46px;
 }
 
 .generate-button :deep(.n-button__content) {
@@ -342,6 +385,14 @@ h1 {
   .workspace-header {
     align-items: start;
     grid-template-columns: 1fr;
+  }
+
+  .user-panel {
+    justify-items: stretch;
+  }
+
+  .user-panel div {
+    justify-content: stretch;
   }
 
   .workspace-grid {
