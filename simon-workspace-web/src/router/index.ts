@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import WorkspaceView from '../views/WorkspaceView.vue'
+import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
 import { useAuthStore } from '../stores/auth'
@@ -36,6 +37,14 @@ export const router = createRouter({
           component: CourseManagementView,
           meta: {
             title: '课程管理',
+          },
+        },
+        {
+          path: 'classes',
+          name: 'workspace-classes',
+          component: ClassManagementView,
+          meta: {
+            title: '班级管理',
           },
         },
       ],

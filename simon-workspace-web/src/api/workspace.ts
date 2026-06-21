@@ -49,6 +49,27 @@ export interface CoursePayload {
   status?: string | null
 }
 
+export interface ClassInfo {
+  id: string
+  className: string
+  major?: string | null
+  grade?: string | null
+  studentCount?: number | null
+  counselor?: string | null
+  remark?: string | null
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface ClassInfoPayload {
+  className: string
+  major?: string | null
+  grade?: string | null
+  studentCount?: number | null
+  counselor?: string | null
+  remark?: string | null
+}
+
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
     throw new Error(response.message || '请求失败')
@@ -77,5 +98,29 @@ export async function updateCourse(id: string, payload: CoursePayload) {
 
 export async function deleteCourse(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/courses/${id}`)
+  return unwrap(response.data)
+}
+
+export async function fetchClasses(keyword?: string) {
+  const response = await http.get<ApiResponse<ClassInfo[]>>('/classes', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrap(response.data)
+}
+
+export async function createClassInfo(payload: ClassInfoPayload) {
+  const response = await http.post<ApiResponse<ClassInfo>>('/classes', payload)
+  return unwrap(response.data)
+}
+
+export async function updateClassInfo(id: string, payload: ClassInfoPayload) {
+  const response = await http.put<ApiResponse<ClassInfo>>(`/classes/${id}`, payload)
+  return unwrap(response.data)
+}
+
+export async function deleteClassInfo(id: string) {
+  const response = await http.delete<ApiResponse<null>>(`/classes/${id}`)
   return unwrap(response.data)
 }
