@@ -6,6 +6,7 @@ import WorkspaceView from '../views/WorkspaceView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
 import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
+import TemplateManagementView from '../views/workspace/TemplateManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -54,6 +55,14 @@ export const router = createRouter({
           component: SemesterManagementView,
           meta: {
             title: '学期管理',
+          },
+        },
+        {
+          path: 'templates',
+          name: 'workspace-templates',
+          component: TemplateManagementView,
+          meta: {
+            title: '模板管理',
           },
         },
       ],

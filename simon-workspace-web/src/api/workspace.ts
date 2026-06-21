@@ -113,6 +113,59 @@ export interface SemesterCalendar {
   updatedTime?: string
 }
 
+export interface TemplateFile {
+  id: string
+  templateName: string
+  templateType: 'WORD' | 'EXCEL' | 'OTHER' | string
+  originalFilename: string
+  fileSize: number
+  contentType?: string | null
+  description?: string | null
+  status: 'ACTIVE' | 'ARCHIVED' | string
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface TemplatePayload {
+  templateName: string
+  templateType?: string | null
+  description?: string | null
+  status?: string | null
+}
+
+export interface TemplateUploadPayload {
+  templateName?: string | null
+  templateType?: string | null
+  description?: string | null
+  status?: string | null
+}
+
+export interface TemplateField {
+  id: string
+  templateId: string
+  fieldKey: string
+  fieldLabel?: string | null
+  fieldType: 'TEXT' | 'NUMBER' | 'DATE' | 'JSON' | string
+  required: boolean
+  defaultValue?: string | null
+  sortOrder: number
+  remark?: string | null
+  status: 'ACTIVE' | 'DISABLED' | string
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface TemplateFieldPayload {
+  fieldKey: string
+  fieldLabel?: string | null
+  fieldType?: string | null
+  required?: boolean | null
+  defaultValue?: string | null
+  sortOrder?: number | null
+  remark?: string | null
+  status?: string | null
+}
+
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
     throw new Error(response.message || '请求失败')
@@ -194,5 +247,43 @@ export async function generateSemesterCalendar(id: string) {
 
 export async function fetchSemesterCalendar(id: string) {
   const response = await http.get<ApiResponse<SemesterCalendar[]>>(`/semesters/${id}/calendar`)
+  return unwrap(response.data)
+}
+
+export async function fetchTemplates(keyword?: string) {
+  const response = await http.get<ApiResponse<TemplateFile[]>>('/templates', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrap(response.data)
+}
+
+export async function uploadTemplate(file: File, payload: TemplateUploadPayload) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await http.post<ApiResponse<TemplateFile>>('/templates/upload', formData, {
+    params: payload,
+  })
+  return unwrap(response.data)
+}
+
+export async function updateTemplate(id: string, payload: TemplatePayload) {
+  const response = await http.put<ApiResponse<TemplateFile>>(`/templates/${id}`, payload)
+  return unwrap(response.data)
+}
+
+export async function deleteTemplate(id: string) {
+  const response = await http.delete<ApiResponse<null>>(`/templates/${id}`)
+  return unwrap(response.data)
+}
+
+export async function fetchTemplateFields(id: string) {
+  const response = await http.get<ApiResponse<TemplateField[]>>(`/templates/${id}/fields`)
+  return unwrap(response.data)
+}
+
+export async function updateTemplateFields(id: string, fields: TemplateFieldPayload[]) {
+  const response = await http.put<ApiResponse<TemplateField[]>>(`/templates/${id}/fields`, { fields })
   return unwrap(response.data)
 }
