@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import WorkspaceView from '../views/WorkspaceView.vue'
+import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
 import { useAuthStore } from '../stores/auth'
 
 export const router = createRouter({
@@ -15,11 +16,20 @@ export const router = createRouter({
     },
     {
       path: '/workspace',
-      name: 'workspace',
       component: WorkspaceView,
       meta: {
         requiresAuth: true,
       },
+      children: [
+        {
+          path: '',
+          name: 'workspace',
+          component: WorkspaceHomeView,
+          meta: {
+            title: '工作台总览',
+          },
+        },
+      ],
     },
     {
       path: '/login',
