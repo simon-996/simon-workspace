@@ -9,11 +9,13 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
+      MYSQL_URL: ${MYSQL_URL}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USERNAME: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       FLYWAY_ENABLED: true
       APP_FILE_STORAGE_ROOT: /data/files
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
     volumes:
       - api-files:/data/files
     depends_on:
@@ -22,7 +24,7 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "${API_PUBLIC_PORT:-9527}:8080"
     networks:
       - simon-workspace-net
 
@@ -30,11 +32,13 @@ services:
     image: ${WEB_IMAGE:-simon-workspace-web:local}
     build:
       context: ../simon-workspace-web
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     container_name: simon-workspace-web
     depends_on:
       - simon-workspace-api
     ports:
-      - "80:80"
+      - "${WEB_PUBLIC_PORT:-9526}:80"
     networks:
       - simon-workspace-net
 
@@ -58,7 +62,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - "3306:3306"
+      - "${MYSQL_PUBLIC_PORT:-3306}:3306"
     networks:
       - simon-workspace-net
 
