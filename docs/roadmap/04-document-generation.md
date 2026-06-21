@@ -263,7 +263,7 @@ docs: update document generation progress
 
 ## 阶段执行 Todo
 
-当前状态：数据模型与状态基础已完成，教案手动 preview 和文档数据编辑后端接口进行中，已能创建预览任务、保存初始文档 JSON，并保存人工编辑 JSON。依赖第 03 阶段课程、班级、学期、模板、文件中心和生成记录。最后核查时间：2026-06-21。
+当前状态：数据模型与状态基础已完成，教案手动 preview、教学日历 preview 和文档数据编辑后端接口进行中，已能创建预览任务、保存初始文档 JSON，并保存人工编辑 JSON。依赖第 03 阶段课程、班级、学期、模板、文件中心和生成记录。最后核查时间：2026-06-21。
 
 ### 数据模型与状态
 
@@ -300,12 +300,12 @@ docs: update document generation progress
 
 ### 教学日历生成后端
 
-- [ ] 创建教学日历 preview 请求 DTO
-- [ ] 创建教学日历 preview 响应 DTO
-- [ ] 实现 `POST /api/generation/calendars/preview`
-- [ ] preview 时读取 `semester_calendar`
-- [ ] preview 时生成可编辑表格 JSON
-- [ ] preview 时创建生成任务记录
+- [x] 创建教学日历 preview 请求 DTO
+- [x] 创建教学日历 preview 响应 DTO
+- [x] 实现 `POST /api/generation/calendars/preview`
+- [x] preview 时读取 `semester_calendar`
+- [x] preview 时生成可编辑表格 JSON
+- [x] preview 时创建生成任务记录
 - [ ] 实现教学日历导出复用 `POST /api/generation/tasks/{taskId}/export`
 - [ ] 导出时调用 Excel 模板填充服务
 - [ ] 导出失败时任务状态设为 `FAILED`

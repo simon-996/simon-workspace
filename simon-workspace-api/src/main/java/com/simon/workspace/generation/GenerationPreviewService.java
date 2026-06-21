@@ -3,6 +3,8 @@ package com.simon.workspace.generation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simon.workspace.auth.session.AuthContextHolder;
+import com.simon.workspace.generation.dto.CalendarPreviewRequest;
+import com.simon.workspace.generation.dto.CalendarPreviewResponse;
 import com.simon.workspace.generation.dto.DocumentDataResponse;
 import com.simon.workspace.generation.dto.DocumentDataUpdateRequest;
 import com.simon.workspace.generation.dto.GenerationTaskResponse;
@@ -30,6 +32,7 @@ import java.util.Objects;
 public class GenerationPreviewService {
 
     private static final String TASK_TYPE_LESSON = "TEACHING_PLAN";
+    private static final String TASK_TYPE_CALENDAR = "TEACHING_CALENDAR";
 
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
@@ -54,10 +57,54 @@ public class GenerationPreviewService {
         String dataJson = writeJson(buildLessonData(course, classInfo, semester, week, template, fields, topic));
         String taskName = topic + " - 教案";
 
-        long taskId = createTask(ownerUserId, request, taskName, inputJson);
-        long documentDataId = createDocumentData(taskId, dataJson);
+        long taskId = createTask(
+                ownerUserId,
+                TASK_TYPE_LESSON,
+                taskName,
+                request.courseId(),
+                request.classId(),
+                request.semesterId(),
+                request.templateId(),
+                inputJson,
+                "教案预览已生成"
+        );
+        long documentDataId = createDocumentData(taskId, TASK_TYPE_LESSON, dataJson);
 
         return new LessonPreviewResponse(
+                GenerationTaskResponse.from(findTask(taskId, ownerUserId)),
+                String.valueOf(documentDataId),
+                dataJson
+        );
+    }
+
+    @Transactional
+    public CalendarPreviewResponse createCalendarPreview(CalendarPreviewRequest request) {
+        long ownerUserId = AuthContextHolder.requireUser().id();
+        CourseSnapshot course = findCourse(request.courseId());
+        SemesterSnapshot semester = findSemester(request.semesterId());
+        TemplateSnapshot template = findExcelTemplate(request.templateId());
+        List<WeekSnapshot> weeks = findWeeks(request.semesterId(), semester);
+        List<TemplateFieldSnapshot> fields = findTemplateFields(request.templateId());
+
+        String topic = normalizeCalendarTopic(request.topic(), course, semester);
+        String inputJson = writeJson(buildCalendarInputSnapshot(request, topic));
+        String dataJson = writeJson(buildCalendarData(course, semester, weeks, template, fields, topic));
+        String taskName = topic + " - 教学日历";
+
+        long taskId = createTask(
+                ownerUserId,
+                TASK_TYPE_CALENDAR,
+                taskName,
+                request.courseId(),
+                null,
+                request.semesterId(),
+                request.templateId(),
+                inputJson,
+                "教学日历预览已生成"
+        );
+        long documentDataId = createDocumentData(taskId, TASK_TYPE_CALENDAR, dataJson);
+
+        return new CalendarPreviewResponse(
                 GenerationTaskResponse.from(findTask(taskId, ownerUserId)),
                 String.valueOf(documentDataId),
                 dataJson
@@ -97,7 +144,17 @@ public class GenerationPreviewService {
         return findDocumentData(taskId);
     }
 
-    private long createTask(long ownerUserId, LessonPreviewRequest request, String taskName, String inputJson) {
+    private long createTask(
+            long ownerUserId,
+            String taskType,
+            String taskName,
+            Long courseId,
+            Long classId,
+            Long semesterId,
+            Long templateId,
+            String inputJson,
+            String resultSummary
+    ) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement("""
@@ -110,21 +167,21 @@ public class GenerationPreviewService {
                     Statement.RETURN_GENERATED_KEYS
             );
             statement.setLong(1, ownerUserId);
-            statement.setString(2, TASK_TYPE_LESSON);
+            statement.setString(2, taskType);
             statement.setString(3, taskName);
-            statement.setLong(4, request.courseId());
-            statement.setLong(5, request.classId());
-            statement.setLong(6, request.semesterId());
-            statement.setLong(7, request.templateId());
+            statement.setObject(4, courseId);
+            statement.setObject(5, classId);
+            statement.setObject(6, semesterId);
+            statement.setObject(7, templateId);
             statement.setString(8, GenerationTaskStatus.PREVIEW_READY.name());
             statement.setString(9, inputJson);
-            statement.setString(10, "教案预览已生成");
+            statement.setString(10, resultSummary);
             return statement;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
     }
 
-    private long createDocumentData(long taskId, String dataJson) {
+    private long createDocumentData(long taskId, String documentType, String dataJson) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement("""
@@ -134,7 +191,7 @@ public class GenerationPreviewService {
                     Statement.RETURN_GENERATED_KEYS
             );
             statement.setLong(1, taskId);
-            statement.setString(2, TASK_TYPE_LESSON);
+            statement.setString(2, documentType);
             statement.setString(3, dataJson);
             return statement;
         }, keyHolder);
@@ -148,6 +205,15 @@ public class GenerationPreviewService {
         input.put("semesterId", request.semesterId());
         input.put("templateId", request.templateId());
         input.put("weekNo", request.weekNo());
+        input.put("topic", topic);
+        return input;
+    }
+
+    private Map<String, Object> buildCalendarInputSnapshot(CalendarPreviewRequest request, String topic) {
+        Map<String, Object> input = new LinkedHashMap<>();
+        input.put("courseId", request.courseId());
+        input.put("semesterId", request.semesterId());
+        input.put("templateId", request.templateId());
         input.put("topic", topic);
         return input;
     }
@@ -172,6 +238,52 @@ public class GenerationPreviewService {
         data.put("fieldValues", buildFieldValues(fields, course, classInfo, semester, week, topic));
         data.put("lesson", buildLessonBody(course, classInfo, week, topic));
         return data;
+    }
+
+    private Map<String, Object> buildCalendarData(
+            CourseSnapshot course,
+            SemesterSnapshot semester,
+            List<WeekSnapshot> weeks,
+            TemplateSnapshot template,
+            List<TemplateFieldSnapshot> fields,
+            String topic
+    ) {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("documentType", TASK_TYPE_CALENDAR);
+        data.put("topic", topic);
+        data.put("course", course.toMap());
+        data.put("semester", semester.toMap());
+        data.put("template", template.toMap(fields));
+        data.put("fieldValues", buildCalendarFieldValues(fields, course, semester, topic));
+        data.put("calendar", buildCalendarBody(course, semester, weeks));
+        return data;
+    }
+
+    private Map<String, Object> buildCalendarBody(
+            CourseSnapshot course,
+            SemesterSnapshot semester,
+            List<WeekSnapshot> weeks
+    ) {
+        Map<String, Object> calendar = new LinkedHashMap<>();
+        calendar.put("totalWeeks", semester.totalWeeks());
+        calendar.put("weeklyHours", course.weeklyHours());
+        calendar.put("rows", weeks.stream().map(week -> calendarRow(course, week)).toList());
+        return calendar;
+    }
+
+    private Map<String, Object> calendarRow(CourseSnapshot course, WeekSnapshot week) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("weekNo", week.weekNo());
+        row.put("startDate", week.startDate());
+        row.put("endDate", week.endDate());
+        row.put("dateRange", week.startDate() + " - " + week.endDate());
+        row.put("content", "");
+        row.put("hours", course.weeklyHours());
+        row.put("homework", "");
+        row.put("remark", weekRemark(week));
+        row.put("examWeek", week.examWeek());
+        row.put("holiday", week.holiday());
+        return row;
     }
 
     private Map<String, Object> buildLessonBody(
@@ -229,6 +341,21 @@ public class GenerationPreviewService {
         return values;
     }
 
+    private Map<String, Object> buildCalendarFieldValues(
+            List<TemplateFieldSnapshot> fields,
+            CourseSnapshot course,
+            SemesterSnapshot semester,
+            String topic
+    ) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        for (TemplateFieldSnapshot field : fields) {
+            values.put(field.fieldKey(), StringUtils.hasText(field.defaultValue())
+                    ? field.defaultValue().trim()
+                    : inferCalendarFieldValue(field.fieldKey(), course, semester, topic));
+        }
+        return values;
+    }
+
     private Object inferFieldValue(
             String key,
             CourseSnapshot course,
@@ -251,6 +378,25 @@ public class GenerationPreviewService {
             case "teachingKeyPoints", "keyPoint" -> blankToEmpty(course.keyPoint());
             case "teachingDifficultPoints", "difficultPoint" -> blankToEmpty(course.difficultPoint());
             case "textbook" -> blankToEmpty(course.textbook());
+            default -> "";
+        };
+    }
+
+    private Object inferCalendarFieldValue(
+            String key,
+            CourseSnapshot course,
+            SemesterSnapshot semester,
+            String topic
+    ) {
+        return switch (key) {
+            case "courseName" -> course.courseName();
+            case "courseCode" -> course.courseCode();
+            case "major" -> course.major();
+            case "grade" -> course.grade();
+            case "semesterName" -> semester.academicYear() + " " + semester.semesterName();
+            case "topic", "title" -> topic;
+            case "weeklyHours" -> course.weeklyHours();
+            case "totalWeeks" -> semester.totalWeeks();
             default -> "";
         };
     }
@@ -321,6 +467,14 @@ public class GenerationPreviewService {
     }
 
     private TemplateSnapshot findWordTemplate(long id) {
+        return findTemplate(id, "WORD", "教案生成需要选择 Word 模板");
+    }
+
+    private TemplateSnapshot findExcelTemplate(long id) {
+        return findTemplate(id, "EXCEL", "教学日历生成需要选择 Excel 模板");
+    }
+
+    private TemplateSnapshot findTemplate(long id, String expectedType, String typeErrorMessage) {
         return jdbcTemplate.query("""
                         SELECT *
                         FROM template_file
@@ -335,8 +489,8 @@ public class GenerationPreviewService {
                 ),
                 id
         ).stream().findFirst().map(template -> {
-            if (!"WORD".equals(template.templateType())) {
-                throw new IllegalArgumentException("教案生成需要选择 Word 模板");
+            if (!expectedType.equals(template.templateType())) {
+                throw new IllegalArgumentException(typeErrorMessage);
             }
             return template;
         }).orElseThrow(() -> new IllegalArgumentException("模板不存在"));
@@ -365,6 +519,36 @@ public class GenerationPreviewService {
                 semesterId,
                 weekNo
         ).stream().findFirst().orElseGet(() -> calculatedWeek(semester, weekNo));
+    }
+
+    private List<WeekSnapshot> findWeeks(long semesterId, SemesterSnapshot semester) {
+        List<WeekSnapshot> weeks = jdbcTemplate.query("""
+                        SELECT *
+                        FROM semester_calendar
+                        WHERE semester_id = ? AND deleted = 0
+                        ORDER BY week_no ASC
+                        """,
+                (rs, rowNum) -> new WeekSnapshot(
+                        rs.getInt("week_no"),
+                        rs.getObject("start_date", LocalDate.class),
+                        rs.getObject("end_date", LocalDate.class),
+                        rs.getBoolean("is_exam_week"),
+                        rs.getBoolean("is_holiday"),
+                        rs.getString("holiday_note"),
+                        rs.getString("adjustment_note")
+                ),
+                semesterId
+        );
+
+        if (!weeks.isEmpty()) {
+            return weeks;
+        }
+
+        List<WeekSnapshot> calculated = new ArrayList<>();
+        for (int weekNo = 1; weekNo <= semester.totalWeeks(); weekNo++) {
+            calculated.add(calculatedWeek(semester, weekNo));
+        }
+        return calculated;
     }
 
     private WeekSnapshot calculatedWeek(SemesterSnapshot semester, int weekNo) {
@@ -436,6 +620,30 @@ public class GenerationPreviewService {
             return topic.trim();
         }
         return course.courseName() + "第" + weekNo + "周教案";
+    }
+
+    private String normalizeCalendarTopic(String topic, CourseSnapshot course, SemesterSnapshot semester) {
+        if (StringUtils.hasText(topic)) {
+            return topic.trim();
+        }
+        return semester.academicYear() + " " + semester.semesterName() + " " + course.courseName() + "教学日历";
+    }
+
+    private String weekRemark(WeekSnapshot week) {
+        List<String> notes = new ArrayList<>();
+        if (Boolean.TRUE.equals(week.examWeek())) {
+            notes.add("考试周");
+        }
+        if (Boolean.TRUE.equals(week.holiday())) {
+            notes.add("含节假日");
+        }
+        if (StringUtils.hasText(week.holidayNote())) {
+            notes.add(week.holidayNote().trim());
+        }
+        if (StringUtils.hasText(week.adjustmentNote())) {
+            notes.add(week.adjustmentNote().trim());
+        }
+        return String.join("；", notes);
     }
 
     private String normalizeJson(String value) {
