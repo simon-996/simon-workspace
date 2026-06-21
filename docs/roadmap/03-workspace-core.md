@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证后端进行中，已有简单 Token 登录接口和基础工作台占位页。最后核查时间：2026-06-21。
+当前状态：认证链路和课程管理后端进行中，已有简单 Token 登录接口、课程 CRUD 接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -310,15 +310,15 @@ docs: update workspace core progress
 
 ### 课程管理
 
-- [ ] 创建 `course` 数据表迁移
-- [ ] 创建课程实体或记录模型
-- [ ] 创建课程请求/响应 DTO
-- [ ] 实现 `GET /api/courses`
-- [ ] 实现 `GET /api/courses/{id}`
-- [ ] 实现 `POST /api/courses`
-- [ ] 实现 `PUT /api/courses/{id}`
-- [ ] 实现 `DELETE /api/courses/{id}`
-- [ ] 增加课程名称、课程编码唯一性校验
+- [x] 创建 `course` 数据表迁移
+- [x] 创建课程实体或记录模型
+- [x] 创建课程请求/响应 DTO
+- [x] 实现 `GET /api/courses`
+- [x] 实现 `GET /api/courses/{id}`
+- [x] 实现 `POST /api/courses`
+- [x] 实现 `PUT /api/courses/{id}`
+- [x] 实现 `DELETE /api/courses/{id}`
+- [x] 增加课程名称、课程编码唯一性校验
 - [ ] 增加课程 CRUD 测试
 - [ ] 创建 `/workspace/courses` 路由
 - [ ] 实现课程列表
@@ -432,4 +432,8 @@ docs: update workspace core progress
 - axios 请求自动携带 Bearer token
 - `/workspace` 路由增加未登录跳转
 - 工作台顶部显示当前用户并支持退出登录
+- 新增 `course` 表迁移
+- 新增 `/api/courses` 课程 CRUD 接口
+- 课程列表支持按名称或编码搜索
+- 新增课程名称、课程编码唯一性校验
 ```
