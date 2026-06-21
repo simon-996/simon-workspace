@@ -166,6 +166,19 @@ export interface TemplateFieldPayload {
   status?: string | null
 }
 
+export interface FileResource {
+  id: string
+  ownerUserId: string
+  sourceType: string
+  originalFilename: string
+  fileSize: number
+  contentType?: string | null
+  fileExtension?: string | null
+  status: string
+  createdTime?: string
+  updatedTime?: string
+}
+
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
     throw new Error(response.message || '请求失败')
@@ -286,4 +299,41 @@ export async function fetchTemplateFields(id: string) {
 export async function updateTemplateFields(id: string, fields: TemplateFieldPayload[]) {
   const response = await http.put<ApiResponse<TemplateField[]>>(`/templates/${id}/fields`, { fields })
   return unwrap(response.data)
+}
+
+export async function fetchFiles(keyword?: string) {
+  const response = await http.get<ApiResponse<FileResource[]>>('/files', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrap(response.data)
+}
+
+export async function fetchFileDetail(id: string) {
+  const response = await http.get<ApiResponse<FileResource>>(`/files/${id}`)
+  return unwrap(response.data)
+}
+
+export async function deleteFileResource(id: string) {
+  const response = await http.delete<ApiResponse<null>>(`/files/${id}`)
+  return unwrap(response.data)
+}
+
+export async function downloadFileResource(id: string) {
+  const response = await http.get<Blob>(`/files/${id}/download`, {
+    responseType: 'blob',
+  })
+  return {
+    blob: response.data,
+    filename: filenameFromDisposition(response.headers['content-disposition']) || `file-${id}`,
+  }
+}
+
+function filenameFromDisposition(disposition?: string) {
+  if (!disposition) return ''
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1])
+  const filenameMatch = disposition.match(/filename="?([^"]+)"?/i)
+  return filenameMatch?.[1] ? decodeURIComponent(filenameMatch[1]) : ''
 }

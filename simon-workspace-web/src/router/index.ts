@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue'
 import WorkspaceView from '../views/WorkspaceView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
+import FileCenterView from '../views/workspace/FileCenterView.vue'
 import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
 import TemplateManagementView from '../views/workspace/TemplateManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
@@ -63,6 +64,14 @@ export const router = createRouter({
           component: TemplateManagementView,
           meta: {
             title: '模板管理',
+          },
+        },
+        {
+          path: 'files',
+          name: 'workspace-files',
+          component: FileCenterView,
+          meta: {
+            title: '文件中心',
           },
         },
       ],
