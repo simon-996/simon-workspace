@@ -271,23 +271,23 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：未开始，只有基础工作台占位页。最后核查时间：2026-06-20。
+当前状态：认证后端进行中，已有简单 Token 登录接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
-- [ ] 选择第一版认证方案：简单 Token、JWT 或 Sa-Token
-- [ ] 创建认证相关包结构
-- [ ] 创建登录请求 DTO
-- [ ] 创建登录响应 DTO
-- [ ] 创建当前用户响应 DTO
-- [ ] 实现 `POST /api/auth/login`
-- [ ] 实现 `POST /api/auth/logout`
-- [ ] 实现 `GET /api/auth/me`
-- [ ] 实现密码哈希验证
-- [ ] 实现登录失败记录
-- [ ] 实现登录成功后更新最后登录时间
-- [ ] 实现认证拦截器或过滤器
-- [ ] 明确公开接口和工作台接口的权限边界
+- [x] 选择第一版认证方案：简单 Token、JWT 或 Sa-Token
+- [x] 创建认证相关包结构
+- [x] 创建登录请求 DTO
+- [x] 创建登录响应 DTO
+- [x] 创建当前用户响应 DTO
+- [x] 实现 `POST /api/auth/login`
+- [x] 实现 `POST /api/auth/logout`
+- [x] 实现 `GET /api/auth/me`
+- [x] 实现密码哈希验证
+- [x] 实现登录失败记录
+- [x] 实现登录成功后更新最后登录时间
+- [x] 实现认证拦截器或过滤器
+- [x] 明确公开接口和工作台接口的权限边界
 - [ ] 前端创建 `/login` 页面或登录弹窗
 - [ ] 前端保存 token
 - [ ] 前端刷新页面后恢复登录态或明确失效处理
@@ -419,4 +419,12 @@ docs: update workspace core progress
 2026-06-20:
 - 只有 /workspace 基础占位页
 - 尚未实现登录、业务表、业务接口和工作台管理页面
+
+2026-06-21:
+- 后端选择简单 Token 作为第一版认证方案
+- 新增 `/api/auth/login`、`/api/auth/logout`、`/api/auth/me`
+- 登录读取 `user` 表，支持 `sha256:<hex>` 密码哈希校验
+- 登录成功写入 `login_log` 并更新 `last_login_time`
+- 登录失败写入 `login_log`
+- 认证拦截器保护 `/api/**`，公开 `/api/health`、`/api/auth/login` 和 actuator
 ```
