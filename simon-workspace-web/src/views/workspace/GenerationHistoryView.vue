@@ -19,9 +19,11 @@ const detailLoading = ref(false)
 const detailVisible = ref(false)
 const error = ref('')
 
+const activeStatuses = new Set(['PENDING', 'RUNNING', 'PREVIEW_READY', 'FILLING_TEMPLATE'])
+
 const successCount = computed(() => tasks.value.filter((item) => item.status === 'SUCCESS').length)
 const failedCount = computed(() => tasks.value.filter((item) => item.status === 'FAILED').length)
-const runningCount = computed(() => tasks.value.filter((item) => item.status === 'RUNNING').length)
+const runningCount = computed(() => tasks.value.filter((item) => activeStatuses.has(item.status)).length)
 
 onMounted(() => {
   void loadTasks()
@@ -54,9 +56,13 @@ async function openDetail(item: GenerationTask) {
 }
 
 function statusText(status: string) {
+  if (status === 'PENDING') return '等待预览'
+  if (status === 'PREVIEW_READY') return '可预览'
+  if (status === 'FILLING_TEMPLATE') return '导出中'
   if (status === 'SUCCESS') return '成功'
   if (status === 'FAILED') return '失败'
   if (status === 'RUNNING') return '进行中'
+  if (status === 'CANCELED') return '已取消'
   return '等待中'
 }
 
@@ -77,7 +83,7 @@ function typeText(taskType: string) {
       </article>
       <article>
         <n-icon :component="Clock" />
-        <span>进行中</span>
+        <span>处理中</span>
         <strong>{{ runningCount }}</strong>
       </article>
       <article>
@@ -351,9 +357,17 @@ function typeText(taskType: string) {
   color: #a5521f !important;
 }
 
-.status-pill.running {
+.status-pill.running,
+.status-pill.pending,
+.status-pill.preview_ready,
+.status-pill.filling_template {
   background: #f1f9fc;
   color: #1688b9 !important;
+}
+
+.status-pill.canceled {
+  background: #eef1f3;
+  color: #66727d !important;
 }
 
 .error-state,

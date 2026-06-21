@@ -263,21 +263,21 @@ docs: update document generation progress
 
 ## 阶段执行 Todo
 
-当前状态：未开始。依赖第 03 阶段课程、班级、学期、模板、文件中心和生成记录。最后核查时间：2026-06-20。
+当前状态：数据模型与状态基础已开始，已补充文档数据、生成结果表和生成任务状态定义。依赖第 03 阶段课程、班级、学期、模板、文件中心和生成记录。最后核查时间：2026-06-21。
 
 ### 数据模型与状态
 
-- [ ] 创建 `document_data` 数据表迁移
-- [ ] 创建 `generate_result` 数据表迁移
-- [ ] 扩展或确认 `generate_task` 状态字段
-- [ ] 定义生成任务状态：`PENDING`
-- [ ] 定义生成任务状态：`PREVIEW_READY`
-- [ ] 定义生成任务状态：`FILLING_TEMPLATE`
-- [ ] 定义生成任务状态：`SUCCESS`
-- [ ] 定义生成任务状态：`FAILED`
-- [ ] 定义生成任务状态：`CANCELED`
-- [ ] 定义任务失败错误信息保存方式
-- [ ] 定义生成结果和文件资源的关联关系
+- [x] 创建 `document_data` 数据表迁移
+- [x] 创建 `generate_result` 数据表迁移
+- [x] 扩展或确认 `generate_task` 状态字段
+- [x] 定义生成任务状态：`PENDING`
+- [x] 定义生成任务状态：`PREVIEW_READY`
+- [x] 定义生成任务状态：`FILLING_TEMPLATE`
+- [x] 定义生成任务状态：`SUCCESS`
+- [x] 定义生成任务状态：`FAILED`
+- [x] 定义生成任务状态：`CANCELED`
+- [x] 定义任务失败错误信息保存方式
+- [x] 定义生成结果和文件资源的关联关系
 
 ### 教案生成后端
 
