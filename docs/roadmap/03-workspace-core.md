@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证链路和课程管理后端进行中，已有简单 Token 登录接口、课程 CRUD 接口和基础工作台占位页。最后核查时间：2026-06-21。
+当前状态：认证链路、课程管理后端和班级管理后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -329,12 +329,12 @@ docs: update workspace core progress
 
 ### 班级管理
 
-- [ ] 创建 `class_info` 数据表迁移
-- [ ] 创建班级模型和 DTO
-- [ ] 实现 `GET /api/classes`
-- [ ] 实现 `POST /api/classes`
-- [ ] 实现 `PUT /api/classes/{id}`
-- [ ] 实现 `DELETE /api/classes/{id}`
+- [x] 创建 `class_info` 数据表迁移
+- [x] 创建班级模型和 DTO
+- [x] 实现 `GET /api/classes`
+- [x] 实现 `POST /api/classes`
+- [x] 实现 `PUT /api/classes/{id}`
+- [x] 实现 `DELETE /api/classes/{id}`
 - [ ] 增加班级 CRUD 测试
 - [ ] 创建 `/workspace/classes` 路由
 - [ ] 实现班级列表、搜索、新增、编辑、删除
@@ -436,4 +436,8 @@ docs: update workspace core progress
 - 新增 `/api/courses` 课程 CRUD 接口
 - 课程列表支持按名称或编码搜索
 - 新增课程名称、课程编码唯一性校验
+- 新增 `class_info` 表迁移
+- 新增 `/api/classes` 班级 CRUD 接口
+- 班级列表支持按名称、专业、年级搜索
+- 新增班级名称唯一性校验
 ```
