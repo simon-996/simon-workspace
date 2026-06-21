@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证链路、课程管理后端、班级管理后端和学期管理后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口和基础工作台占位页。最后核查时间：2026-06-21。
+当前状态：认证链路、课程管理后端、班级管理后端、学期管理后端和模板管理后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口、模板与字段接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -357,17 +357,17 @@ docs: update workspace core progress
 
 ### 模板管理
 
-- [ ] 创建 `template_file` 数据表迁移
-- [ ] 创建 `template_field` 数据表迁移
-- [ ] 实现模板上传存储
-- [ ] 实现 `GET /api/templates`
-- [ ] 实现 `POST /api/templates/upload`
-- [ ] 实现 `GET /api/templates/{id}`
-- [ ] 实现 `PUT /api/templates/{id}`
-- [ ] 实现 `DELETE /api/templates/{id}`
-- [ ] 实现 `GET /api/templates/{id}/fields`
-- [ ] 实现 `PUT /api/templates/{id}/fields`
-- [ ] 第一版支持手动维护占位符字段
+- [x] 创建 `template_file` 数据表迁移
+- [x] 创建 `template_field` 数据表迁移
+- [x] 实现模板上传存储
+- [x] 实现 `GET /api/templates`
+- [x] 实现 `POST /api/templates/upload`
+- [x] 实现 `GET /api/templates/{id}`
+- [x] 实现 `PUT /api/templates/{id}`
+- [x] 实现 `DELETE /api/templates/{id}`
+- [x] 实现 `GET /api/templates/{id}/fields`
+- [x] 实现 `PUT /api/templates/{id}/fields`
+- [x] 第一版支持手动维护占位符字段
 - [ ] 增加模板字段保存测试
 - [ ] 创建 `/workspace/templates` 路由
 - [ ] 实现模板列表、上传、字段维护、删除
@@ -445,4 +445,8 @@ docs: update workspace core progress
 - 新增学期周历生成和查询接口
 - 学期列表支持按学年或学期名称搜索
 - 新增学年与学期名称组合唯一性校验
+- 新增 `template_file` 和 `template_field` 表迁移
+- 新增 `/api/templates` 模板列表、详情、更新和删除接口
+- 新增 `/api/templates/upload` 模板上传接口，文件保存到 `app.file-storage.root`
+- 新增模板字段查询和保存接口，支持手动维护占位符字段
 ```
