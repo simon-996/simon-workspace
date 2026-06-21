@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证链路、课程管理后端、班级管理后端、学期管理后端和模板管理后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口、模板与字段接口和基础工作台占位页。最后核查时间：2026-06-21。
+当前状态：认证链路、课程管理后端、班级管理后端、学期管理后端、模板管理后端和文件中心后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口、模板与字段接口、文件中心接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -374,15 +374,15 @@ docs: update workspace core progress
 
 ### 文件中心
 
-- [ ] 创建 `file_resource` 数据表迁移
-- [ ] 实现本地文件存储服务
-- [ ] 实现文件元信息保存
-- [ ] 实现 `GET /api/files`
-- [ ] 实现 `GET /api/files/{id}`
-- [ ] 实现 `GET /api/files/{id}/download`
-- [ ] 实现 `DELETE /api/files/{id}`
-- [ ] 文件下载不暴露真实磁盘路径
-- [ ] 文件下载检查 owner 或权限
+- [x] 创建 `file_resource` 数据表迁移
+- [x] 实现本地文件存储服务
+- [x] 实现文件元信息保存
+- [x] 实现 `GET /api/files`
+- [x] 实现 `GET /api/files/{id}`
+- [x] 实现 `GET /api/files/{id}/download`
+- [x] 实现 `DELETE /api/files/{id}`
+- [x] 文件下载不暴露真实磁盘路径
+- [x] 文件下载检查 owner 或权限
 - [ ] 增加文件权限测试
 - [ ] 创建 `/workspace/files` 路由
 - [ ] 实现文件列表、下载、删除
@@ -449,4 +449,8 @@ docs: update workspace core progress
 - 新增 `/api/templates` 模板列表、详情、更新和删除接口
 - 新增 `/api/templates/upload` 模板上传接口，文件保存到 `app.file-storage.root`
 - 新增模板字段查询和保存接口，支持手动维护占位符字段
+- 新增 `file_resource` 表迁移
+- 新增 `/api/files` 文件列表、详情、下载和删除接口
+- 文件中心按当前登录用户 owner 查询，下载不暴露真实磁盘路径
+- 新增文件资源本地存储和元信息保存服务，供后续生成流程复用
 ```
