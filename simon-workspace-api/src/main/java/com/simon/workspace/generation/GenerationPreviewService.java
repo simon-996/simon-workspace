@@ -3,6 +3,8 @@ package com.simon.workspace.generation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simon.workspace.auth.session.AuthContextHolder;
+import com.simon.workspace.generation.dto.DocumentDataResponse;
+import com.simon.workspace.generation.dto.DocumentDataUpdateRequest;
 import com.simon.workspace.generation.dto.GenerationTaskResponse;
 import com.simon.workspace.generation.dto.LessonPreviewRequest;
 import com.simon.workspace.generation.dto.LessonPreviewResponse;
@@ -60,6 +62,39 @@ public class GenerationPreviewService {
                 String.valueOf(documentDataId),
                 dataJson
         );
+    }
+
+    @Transactional
+    public DocumentDataResponse updateDocument(long taskId, DocumentDataUpdateRequest request) {
+        long ownerUserId = AuthContextHolder.requireUser().id();
+        findTask(taskId, ownerUserId);
+        String editedJson = normalizeJson(request.editedJson());
+
+        int affected = jdbcTemplate.update("""
+                        UPDATE document_data
+                        SET edited_json = ?
+                        WHERE task_id = ? AND deleted = 0
+                        """,
+                editedJson,
+                taskId
+        );
+
+        if (affected == 0) {
+            throw new IllegalArgumentException("文档数据不存在");
+        }
+
+        jdbcTemplate.update("""
+                        UPDATE generate_task
+                        SET status = ?, result_summary = ?
+                        WHERE id = ? AND owner_user_id = ? AND deleted = 0
+                        """,
+                GenerationTaskStatus.PREVIEW_READY.name(),
+                "预览内容已编辑",
+                taskId,
+                ownerUserId
+        );
+
+        return findDocumentData(taskId);
     }
 
     private long createTask(long ownerUserId, LessonPreviewRequest request, String taskName, String inputJson) {
@@ -375,11 +410,43 @@ public class GenerationPreviewService {
         ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("生成任务不存在或无权访问"));
     }
 
+    private DocumentDataResponse findDocumentData(long taskId) {
+        return jdbcTemplate.query("""
+                        SELECT *
+                        FROM document_data
+                        WHERE task_id = ? AND deleted = 0
+                        LIMIT 1
+                        """,
+                (rs, rowNum) -> new DocumentDataResponse(
+                        String.valueOf(rs.getLong("id")),
+                        String.valueOf(rs.getLong("task_id")),
+                        rs.getString("document_type"),
+                        rs.getString("data_json"),
+                        rs.getString("edited_json"),
+                        rs.getString("version"),
+                        rs.getTimestamp("created_time").toLocalDateTime(),
+                        rs.getTimestamp("updated_time").toLocalDateTime()
+                ),
+                taskId
+        ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("文档数据不存在"));
+    }
+
     private String normalizeTopic(String topic, CourseSnapshot course, int weekNo) {
         if (StringUtils.hasText(topic)) {
             return topic.trim();
         }
         return course.courseName() + "第" + weekNo + "周教案";
+    }
+
+    private String normalizeJson(String value) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException("编辑内容不能为空");
+        }
+        try {
+            return objectMapper.writeValueAsString(objectMapper.readTree(value));
+        } catch (JsonProcessingException exception) {
+            throw new IllegalArgumentException("编辑内容不是合法 JSON", exception);
+        }
     }
 
     private String writeJson(Object value) {

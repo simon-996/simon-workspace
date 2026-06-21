@@ -263,7 +263,7 @@ docs: update document generation progress
 
 ## 阶段执行 Todo
 
-当前状态：数据模型与状态基础已完成，教案手动 preview 后端接口进行中，已能创建预览任务并保存初始文档 JSON。依赖第 03 阶段课程、班级、学期、模板、文件中心和生成记录。最后核查时间：2026-06-21。
+当前状态：数据模型与状态基础已完成，教案手动 preview 和文档数据编辑后端接口进行中，已能创建预览任务、保存初始文档 JSON，并保存人工编辑 JSON。依赖第 03 阶段课程、班级、学期、模板、文件中心和生成记录。最后核查时间：2026-06-21。
 
 ### 数据模型与状态
 
@@ -288,8 +288,8 @@ docs: update document generation progress
 - [x] preview 时根据课程、班级、学期、周次、模板生成初始 JSON
 - [x] preview 时创建生成任务记录
 - [x] preview 时保存 `document_data.data_json`
-- [ ] 实现 `PUT /api/generation/tasks/{taskId}/document`
-- [ ] 编辑时保存 `document_data.edited_json`
+- [x] 实现 `PUT /api/generation/tasks/{taskId}/document`
+- [x] 编辑时保存 `document_data.edited_json`
 - [ ] 实现 `POST /api/generation/tasks/{taskId}/export`
 - [ ] 导出时读取最终 JSON
 - [ ] 导出时调用 Word 模板填充服务
