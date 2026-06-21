@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证链路、课程管理后端和班级管理后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口和基础工作台占位页。最后核查时间：2026-06-21。
+当前状态：认证链路、课程管理后端、班级管理后端和学期管理后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -341,15 +341,15 @@ docs: update workspace core progress
 
 ### 学期管理
 
-- [ ] 创建 `semester` 数据表迁移
-- [ ] 创建 `semester_calendar` 数据表迁移
-- [ ] 创建学期模型和 DTO
-- [ ] 实现 `GET /api/semesters`
-- [ ] 实现 `GET /api/semesters/{id}`
-- [ ] 实现 `POST /api/semesters`
-- [ ] 实现 `PUT /api/semesters/{id}`
-- [ ] 实现 `POST /api/semesters/{id}/calendar/generate`
-- [ ] 实现 `GET /api/semesters/{id}/calendar`
+- [x] 创建 `semester` 数据表迁移
+- [x] 创建 `semester_calendar` 数据表迁移
+- [x] 创建学期模型和 DTO
+- [x] 实现 `GET /api/semesters`
+- [x] 实现 `GET /api/semesters/{id}`
+- [x] 实现 `POST /api/semesters`
+- [x] 实现 `PUT /api/semesters/{id}`
+- [x] 实现 `POST /api/semesters/{id}/calendar/generate`
+- [x] 实现 `GET /api/semesters/{id}/calendar`
 - [ ] 支持学期周历生成后人工微调
 - [ ] 增加学期和周历测试
 - [ ] 创建 `/workspace/semesters` 路由
@@ -440,4 +440,9 @@ docs: update workspace core progress
 - 新增 `/api/classes` 班级 CRUD 接口
 - 班级列表支持按名称、专业、年级搜索
 - 新增班级名称唯一性校验
+- 新增 `semester` 和 `semester_calendar` 表迁移
+- 新增 `/api/semesters` 学期 CRUD 接口
+- 新增学期周历生成和查询接口
+- 学期列表支持按学年或学期名称搜索
+- 新增学年与学期名称组合唯一性校验
 ```
