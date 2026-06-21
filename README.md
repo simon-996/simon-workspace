@@ -55,8 +55,7 @@ docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build
 
 Services:
 
-- Web: `http://localhost`
-- API: `http://localhost:8080/api/health`
-- MySQL: `localhost:3306`
-- Redis: `localhost:6379`
-- MinIO console: `http://localhost:9001`
+- Web: `http://localhost:9526`
+- API: `http://localhost:9527/api/health`
+- MySQL: remote service configured by `MYSQL_URL`
+- Redis: remote service configured by `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`
