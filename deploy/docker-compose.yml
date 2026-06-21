@@ -7,22 +7,20 @@ services:
     environment:
       SERVER_PORT: 8080
       SPRING_PROFILES_ACTIVE: prod
-      MYSQL_HOST: mysql
-      MYSQL_PORT: 3306
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
       MYSQL_URL: ${MYSQL_URL}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USERNAME: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
       FLYWAY_ENABLED: true
       APP_FILE_STORAGE_ROOT: /data/files
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
     volumes:
       - api-files:/data/files
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     ports:
       - "${API_PUBLIC_PORT:-9527}:8080"
     networks:
@@ -39,46 +37,6 @@ services:
       - simon-workspace-api
     ports:
       - "${WEB_PUBLIC_PORT:-9526}:80"
-    networks:
-      - simon-workspace-net
-
-  mysql:
-    image: mysql:8.4
-    container_name: simon-workspace-mysql
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./mysql/init:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    ports:
-      - "${MYSQL_PUBLIC_PORT:-3306}:3306"
-    networks:
-      - simon-workspace-net
-
-  redis:
-    image: redis:7.4-alpine
-    container_name: simon-workspace-redis
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
     networks:
       - simon-workspace-net
 
@@ -103,6 +61,4 @@ networks:
 
 volumes:
   api-files:
-  mysql-data:
-  redis-data:
   minio-data:
