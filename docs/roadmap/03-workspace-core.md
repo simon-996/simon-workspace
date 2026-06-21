@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证链路、课程管理后端、班级管理后端、学期管理后端、模板管理后端和文件中心后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口、模板与字段接口、文件中心接口和基础工作台占位页。最后核查时间：2026-06-21。
+当前状态：认证链路、课程管理后端、班级管理后端、学期管理后端、模板管理后端、文件中心后端和生成记录查询后端进行中，已有简单 Token 登录接口、课程/班级 CRUD 接口、学期与周历接口、模板与字段接口、文件中心接口、生成记录查询接口和基础工作台占位页。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -389,9 +389,9 @@ docs: update workspace core progress
 
 ### 生成记录
 
-- [ ] 创建 `generate_task` 数据表迁移
-- [ ] 实现 `GET /api/generation/tasks`
-- [ ] 实现 `GET /api/generation/tasks/{id}`
+- [x] 创建 `generate_task` 数据表迁移
+- [x] 实现 `GET /api/generation/tasks`
+- [x] 实现 `GET /api/generation/tasks/{id}`
 - [ ] 增加生成记录查询测试
 - [ ] 创建 `/workspace/history` 路由
 - [ ] 实现生成记录列表
@@ -453,4 +453,7 @@ docs: update workspace core progress
 - 新增 `/api/files` 文件列表、详情、下载和删除接口
 - 文件中心按当前登录用户 owner 查询，下载不暴露真实磁盘路径
 - 新增文件资源本地存储和元信息保存服务，供后续生成流程复用
+- 新增 `generate_task` 表迁移
+- 新增 `/api/generation/tasks` 生成记录列表和详情查询接口
+- 生成记录查询按当前登录用户 owner 过滤
 ```
