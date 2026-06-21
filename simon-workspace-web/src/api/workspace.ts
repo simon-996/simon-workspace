@@ -179,6 +179,25 @@ export interface FileResource {
   updatedTime?: string
 }
 
+export interface GenerationTask {
+  id: string
+  ownerUserId: string
+  taskType: string
+  taskName: string
+  courseId?: string | null
+  classId?: string | null
+  semesterId?: string | null
+  templateId?: string | null
+  status: string
+  inputJson?: string | null
+  resultSummary?: string | null
+  failureReason?: string | null
+  startedTime?: string | null
+  finishedTime?: string | null
+  createdTime?: string
+  updatedTime?: string
+}
+
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
     throw new Error(response.message || '请求失败')
@@ -324,9 +343,10 @@ export async function downloadFileResource(id: string) {
   const response = await http.get<Blob>(`/files/${id}/download`, {
     responseType: 'blob',
   })
+  const disposition = response.headers['content-disposition']
   return {
     blob: response.data,
-    filename: filenameFromDisposition(response.headers['content-disposition']) || `file-${id}`,
+    filename: filenameFromDisposition(typeof disposition === 'string' ? disposition : undefined) || `file-${id}`,
   }
 }
 
@@ -336,4 +356,18 @@ function filenameFromDisposition(disposition?: string) {
   if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1])
   const filenameMatch = disposition.match(/filename="?([^"]+)"?/i)
   return filenameMatch?.[1] ? decodeURIComponent(filenameMatch[1]) : ''
+}
+
+export async function fetchGenerationTasks(keyword?: string) {
+  const response = await http.get<ApiResponse<GenerationTask[]>>('/generation/tasks', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrap(response.data)
+}
+
+export async function fetchGenerationTaskDetail(id: string) {
+  const response = await http.get<ApiResponse<GenerationTask>>(`/generation/tasks/${id}`)
+  return unwrap(response.data)
 }

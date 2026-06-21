@@ -6,6 +6,7 @@ import WorkspaceView from '../views/WorkspaceView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
 import FileCenterView from '../views/workspace/FileCenterView.vue'
+import GenerationHistoryView from '../views/workspace/GenerationHistoryView.vue'
 import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
 import TemplateManagementView from '../views/workspace/TemplateManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
@@ -72,6 +73,14 @@ export const router = createRouter({
           component: FileCenterView,
           meta: {
             title: '文件中心',
+          },
+        },
+        {
+          path: 'history',
+          name: 'workspace-history',
+          component: GenerationHistoryView,
+          meta: {
+            title: '生成记录',
           },
         },
       ],
