@@ -113,6 +113,15 @@ export interface SemesterCalendar {
   updatedTime?: string
 }
 
+export interface SemesterCalendarPayload {
+  startDate: string
+  endDate: string
+  examWeek?: boolean | null
+  holiday?: boolean | null
+  holidayNote?: string | null
+  adjustmentNote?: string | null
+}
+
 export interface TemplateFile {
   id: string
   templateName: string
@@ -279,6 +288,18 @@ export async function generateSemesterCalendar(id: string) {
 
 export async function fetchSemesterCalendar(id: string) {
   const response = await http.get<ApiResponse<SemesterCalendar[]>>(`/semesters/${id}/calendar`)
+  return unwrap(response.data)
+}
+
+export async function updateSemesterCalendar(
+  semesterId: string,
+  calendarId: string,
+  payload: SemesterCalendarPayload,
+) {
+  const response = await http.put<ApiResponse<SemesterCalendar>>(
+    `/semesters/${semesterId}/calendar/${calendarId}`,
+    payload,
+  )
   return unwrap(response.data)
 }
 

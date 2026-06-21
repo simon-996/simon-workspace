@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
   NButton,
+  NCheckbox,
   NIcon,
   NInput,
   NInputNumber,
@@ -17,9 +18,11 @@ import {
   fetchSemesterCalendar,
   fetchSemesters,
   generateSemesterCalendar,
+  updateSemesterCalendar,
   updateSemester,
   type Semester,
   type SemesterCalendar,
+  type SemesterCalendarPayload,
   type SemesterPayload,
 } from '../../api/workspace'
 
@@ -33,8 +36,10 @@ const calendarLoading = ref(false)
 const saving = ref(false)
 const error = ref('')
 const modalVisible = ref(false)
+const calendarEditVisible = ref(false)
 const editingId = ref<string | null>(null)
 const selectedSemesterId = ref<string | null>(null)
+const editingCalendarId = ref<string | null>(null)
 
 const statusOptions = [
   { label: '计划中', value: 'PLANNED' },
@@ -53,6 +58,16 @@ const form = reactive({
   adjustmentJson: '',
   remark: '',
   status: 'PLANNED',
+})
+
+const calendarForm = reactive({
+  weekNo: 0,
+  startDate: '',
+  endDate: '',
+  examWeek: false,
+  holiday: false,
+  holidayNote: '',
+  adjustmentNote: '',
 })
 
 const activeSemester = computed(() => semesters.value.find((item) => item.status === 'ACTIVE'))
@@ -169,6 +184,54 @@ async function generateCalendar(item: Semester) {
     message.error(err instanceof Error ? err.message : '生成周历失败')
   } finally {
     calendarLoading.value = false
+  }
+}
+
+function openCalendarEdit(week: SemesterCalendar) {
+  editingCalendarId.value = week.id
+  calendarForm.weekNo = week.weekNo
+  calendarForm.startDate = week.startDate
+  calendarForm.endDate = week.endDate
+  calendarForm.examWeek = Boolean(week.examWeek)
+  calendarForm.holiday = Boolean(week.holiday)
+  calendarForm.holidayNote = week.holidayNote ?? ''
+  calendarForm.adjustmentNote = week.adjustmentNote ?? ''
+  calendarEditVisible.value = true
+}
+
+async function submitCalendarEdit() {
+  if (!selectedSemesterId.value || !editingCalendarId.value) {
+    return
+  }
+
+  if (!calendarForm.startDate || !calendarForm.endDate) {
+    message.warning('请选择周开始和结束日期')
+    return
+  }
+
+  if (calendarForm.endDate < calendarForm.startDate) {
+    message.warning('周结束日期不能早于开始日期')
+    return
+  }
+
+  saving.value = true
+  try {
+    const payload: SemesterCalendarPayload = {
+      startDate: calendarForm.startDate,
+      endDate: calendarForm.endDate,
+      examWeek: calendarForm.examWeek,
+      holiday: calendarForm.holiday,
+      holidayNote: textOrNull(calendarForm.holidayNote),
+      adjustmentNote: textOrNull(calendarForm.adjustmentNote),
+    }
+    const updated = await updateSemesterCalendar(selectedSemesterId.value, editingCalendarId.value, payload)
+    calendarRows.value = calendarRows.value.map((item) => (item.id === updated.id ? updated : item))
+    calendarEditVisible.value = false
+    message.success('周历已更新')
+  } catch (err) {
+    message.error(err instanceof Error ? err.message : '保存周历失败')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -371,9 +434,20 @@ function statusText(status: string) {
 
       <div v-else class="week-grid">
         <article v-for="week in calendarRows" :key="week.id" :class="{ exam: week.examWeek }">
-          <strong>第 {{ week.weekNo }} 周</strong>
+          <div class="week-card-heading">
+            <strong>第 {{ week.weekNo }} 周</strong>
+            <n-button quaternary size="tiny" @click="openCalendarEdit(week)">
+              <template #icon>
+                <n-icon :component="Edit" />
+              </template>
+            </n-button>
+          </div>
           <span>{{ week.startDate }} - {{ week.endDate }}</span>
           <em v-if="week.examWeek">考试周</em>
+          <em v-if="week.holiday">含节假日</em>
+          <p v-if="week.holidayNote || week.adjustmentNote">
+            {{ week.holidayNote || week.adjustmentNote }}
+          </p>
         </article>
       </div>
     </section>
@@ -432,6 +506,48 @@ function statusText(status: string) {
 
         <div class="form-actions span-2">
           <n-button @click="modalVisible = false">取消</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+        </div>
+      </form>
+    </n-modal>
+
+    <n-modal v-model:show="calendarEditVisible" preset="card" title="调整周历" class="semester-modal">
+      <form class="semester-form" @submit.prevent="submitCalendarEdit">
+        <label class="field">
+          <span>周次</span>
+          <n-input-number v-model:value="calendarForm.weekNo" disabled />
+        </label>
+
+        <label class="field">
+          <span>周开始日期</span>
+          <input v-model="calendarForm.startDate" class="date-input" type="date" />
+        </label>
+
+        <label class="field">
+          <span>周结束日期</span>
+          <input v-model="calendarForm.endDate" class="date-input" type="date" />
+        </label>
+
+        <label class="check-field">
+          <n-checkbox v-model:checked="calendarForm.examWeek">考试周</n-checkbox>
+        </label>
+
+        <label class="check-field">
+          <n-checkbox v-model:checked="calendarForm.holiday">含节假日</n-checkbox>
+        </label>
+
+        <label class="field span-2">
+          <span>节假日说明</span>
+          <n-input v-model:value="calendarForm.holidayNote" />
+        </label>
+
+        <label class="field span-2">
+          <span>调课说明</span>
+          <n-input v-model:value="calendarForm.adjustmentNote" />
+        </label>
+
+        <div class="form-actions span-2">
+          <n-button @click="calendarEditVisible = false">取消</n-button>
           <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
         </div>
       </form>
@@ -641,9 +757,17 @@ function statusText(status: string) {
   background: #f1f9fc;
 }
 
+.week-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .week-grid strong,
 .week-grid span,
-.week-grid em {
+.week-grid em,
+.week-grid p {
   display: block;
 }
 
@@ -665,6 +789,13 @@ function statusText(status: string) {
   font-size: 12px;
   font-style: normal;
   font-weight: 800;
+}
+
+.week-grid p {
+  margin: 8px 0 0;
+  color: #4f6374;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .error-state,
@@ -719,6 +850,12 @@ function statusText(status: string) {
 
 .field :deep(.n-input-number) {
   width: 100%;
+}
+
+.check-field {
+  display: flex;
+  align-items: end;
+  min-height: 34px;
 }
 
 .date-input {

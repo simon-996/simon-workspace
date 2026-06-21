@@ -271,7 +271,7 @@ docs: update workspace core progress
 
 ## 阶段执行 Todo
 
-当前状态：认证链路、课程管理、班级管理、学期管理、模板管理、文件中心、生成记录查询和工作台主布局进行中，已有简单 Token 登录接口、课程/班级/学期/模板/文件中心/生成记录前后端和响应式工作台壳层。最后核查时间：2026-06-21。
+当前状态：认证链路、课程管理、班级管理、学期管理、模板管理、文件中心、生成记录查询和工作台主布局进行中，已有简单 Token 登录接口、课程/班级/学期/模板/文件中心/生成记录前后端和响应式工作台壳层，学期周历支持生成后人工微调。最后核查时间：2026-06-21。
 
 ### 认证与当前用户
 
@@ -350,7 +350,7 @@ docs: update workspace core progress
 - [x] 实现 `PUT /api/semesters/{id}`
 - [x] 实现 `POST /api/semesters/{id}/calendar/generate`
 - [x] 实现 `GET /api/semesters/{id}/calendar`
-- [ ] 支持学期周历生成后人工微调
+- [x] 支持学期周历生成后人工微调
 - [ ] 增加学期和周历测试
 - [x] 创建 `/workspace/semesters` 路由
 - [x] 实现学期列表、表单和周历维护界面
@@ -464,6 +464,8 @@ docs: update workspace core progress
 - 班级管理页支持列表、搜索、新增、编辑、删除确认、加载、错误和空状态
 - 前端新增 `/workspace/semesters` 学期管理页
 - 学期管理页支持列表、搜索、新增、编辑、生成周历、查看周历、加载、错误和空状态
+- 新增学期周历单周更新接口 `PUT /api/semesters/{id}/calendar/{calendarId}`
+- 学期管理页支持编辑单周起止日期、考试周、节假日和调课说明
 - 前端新增 `/workspace/templates` 模板管理页
 - 模板管理页支持列表、搜索、上传、编辑、删除确认和手动字段维护
 - 前端新增 `/workspace/files` 文件中心页

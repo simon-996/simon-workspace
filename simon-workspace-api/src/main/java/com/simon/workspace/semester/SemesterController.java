@@ -2,6 +2,7 @@ package com.simon.workspace.semester;
 
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.semester.dto.SemesterCalendarResponse;
+import com.simon.workspace.semester.dto.SemesterCalendarUpdateRequest;
 import com.simon.workspace.semester.dto.SemesterRequest;
 import com.simon.workspace.semester.dto.SemesterResponse;
 import jakarta.validation.Valid;
@@ -54,5 +55,14 @@ public class SemesterController {
     @GetMapping("/{id}/calendar")
     public ApiResponse<List<SemesterCalendarResponse>> calendar(@PathVariable long id) {
         return ApiResponse.ok(semesterService.calendar(id));
+    }
+
+    @PutMapping("/{id}/calendar/{calendarId}")
+    public ApiResponse<SemesterCalendarResponse> updateCalendar(
+            @PathVariable long id,
+            @PathVariable long calendarId,
+            @Valid @RequestBody SemesterCalendarUpdateRequest request
+    ) {
+        return ApiResponse.ok(semesterService.updateCalendar(id, calendarId, request));
     }
 }

@@ -1,6 +1,7 @@
 package com.simon.workspace.semester;
 
 import com.simon.workspace.semester.dto.SemesterCalendarResponse;
+import com.simon.workspace.semester.dto.SemesterCalendarUpdateRequest;
 import com.simon.workspace.semester.dto.SemesterRequest;
 import com.simon.workspace.semester.dto.SemesterResponse;
 import com.simon.workspace.semester.model.Semester;
@@ -161,6 +162,34 @@ public class SemesterService {
         );
     }
 
+    @Transactional
+    public SemesterCalendarResponse updateCalendar(long semesterId, long calendarId, SemesterCalendarUpdateRequest request) {
+        findRequired(semesterId);
+        validateCalendarRequest(request);
+
+        int affected = jdbcTemplate.update("""
+                        UPDATE semester_calendar
+                        SET start_date = ?, end_date = ?, is_exam_week = ?, is_holiday = ?,
+                            holiday_note = ?, adjustment_note = ?
+                        WHERE id = ? AND semester_id = ? AND deleted = 0
+                        """,
+                request.startDate(),
+                request.endDate(),
+                Boolean.TRUE.equals(request.examWeek()),
+                Boolean.TRUE.equals(request.holiday()),
+                blankToNull(request.holidayNote()),
+                blankToNull(request.adjustmentNote()),
+                calendarId,
+                semesterId
+        );
+
+        if (affected == 0) {
+            throw new IllegalArgumentException("学期周历不存在");
+        }
+
+        return findCalendarRequired(semesterId, calendarId);
+    }
+
     private Semester findRequired(long id) {
         return jdbcTemplate.query("""
                         SELECT *
@@ -181,6 +210,29 @@ public class SemesterService {
         if (request.examWeek() != null && (request.examWeek() < 1 || request.examWeek() > request.totalWeeks())) {
             throw new IllegalArgumentException("考试周必须在总周数范围内");
         }
+    }
+
+    private void validateCalendarRequest(SemesterCalendarUpdateRequest request) {
+        if (request.startDate() == null || request.endDate() == null) {
+            throw new IllegalArgumentException("周开始日期和结束日期不能为空");
+        }
+
+        if (request.endDate().isBefore(request.startDate())) {
+            throw new IllegalArgumentException("周结束日期不能早于开始日期");
+        }
+    }
+
+    private SemesterCalendarResponse findCalendarRequired(long semesterId, long calendarId) {
+        return jdbcTemplate.query("""
+                        SELECT *
+                        FROM semester_calendar
+                        WHERE id = ? AND semester_id = ? AND deleted = 0
+                        LIMIT 1
+                        """,
+                (rs, rowNum) -> SemesterCalendarResponse.from(SemesterRowMapper.mapCalendar(rs)),
+                calendarId,
+                semesterId
+        ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("学期周历不存在"));
     }
 
     private void validateUnique(Long currentId, SemesterRequest request) {
