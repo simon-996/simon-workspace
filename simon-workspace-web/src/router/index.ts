@@ -5,6 +5,7 @@ import LoginView from '../views/LoginView.vue'
 import WorkspaceView from '../views/WorkspaceView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
+import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
 import { useAuthStore } from '../stores/auth'
 
@@ -45,6 +46,14 @@ export const router = createRouter({
           component: ClassManagementView,
           meta: {
             title: '班级管理',
+          },
+        },
+        {
+          path: 'semesters',
+          name: 'workspace-semesters',
+          component: SemesterManagementView,
+          meta: {
+            title: '学期管理',
           },
         },
       ],

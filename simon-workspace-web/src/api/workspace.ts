@@ -70,6 +70,49 @@ export interface ClassInfoPayload {
   remark?: string | null
 }
 
+export interface Semester {
+  id: string
+  academicYear: string
+  semesterName: string
+  startDate: string
+  endDate?: string | null
+  totalWeeks: number
+  examWeek?: number | null
+  holidayJson?: string | null
+  adjustmentJson?: string | null
+  remark?: string | null
+  status: 'PLANNED' | 'ACTIVE' | 'CLOSED' | string
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface SemesterPayload {
+  academicYear: string
+  semesterName: string
+  startDate: string
+  endDate?: string | null
+  totalWeeks: number
+  examWeek?: number | null
+  holidayJson?: string | null
+  adjustmentJson?: string | null
+  remark?: string | null
+  status?: string | null
+}
+
+export interface SemesterCalendar {
+  id: string
+  semesterId: string
+  weekNo: number
+  startDate: string
+  endDate: string
+  examWeek: boolean
+  holiday: boolean
+  holidayNote?: string | null
+  adjustmentNote?: string | null
+  createdTime?: string
+  updatedTime?: string
+}
+
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
     throw new Error(response.message || '请求失败')
@@ -122,5 +165,34 @@ export async function updateClassInfo(id: string, payload: ClassInfoPayload) {
 
 export async function deleteClassInfo(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/classes/${id}`)
+  return unwrap(response.data)
+}
+
+export async function fetchSemesters(keyword?: string) {
+  const response = await http.get<ApiResponse<Semester[]>>('/semesters', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrap(response.data)
+}
+
+export async function createSemester(payload: SemesterPayload) {
+  const response = await http.post<ApiResponse<Semester>>('/semesters', payload)
+  return unwrap(response.data)
+}
+
+export async function updateSemester(id: string, payload: SemesterPayload) {
+  const response = await http.put<ApiResponse<Semester>>(`/semesters/${id}`, payload)
+  return unwrap(response.data)
+}
+
+export async function generateSemesterCalendar(id: string) {
+  const response = await http.post<ApiResponse<SemesterCalendar[]>>(`/semesters/${id}/calendar/generate`)
+  return unwrap(response.data)
+}
+
+export async function fetchSemesterCalendar(id: string) {
+  const response = await http.get<ApiResponse<SemesterCalendar[]>>(`/semesters/${id}/calendar`)
   return unwrap(response.data)
 }
