@@ -1,154 +1,174 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { NButton, NIcon } from 'naive-ui'
+import { computed, onMounted, ref } from 'vue'
+import { NButton, NIcon, NSpin } from 'naive-ui'
 import {
   Book,
-  Calendar,
+  Briefcase,
   ChevronRight,
-  Download,
-  FileText,
+  CircleCheck,
   Files,
+  Mail,
   Menu2,
-  Wand,
+  UserCircle,
 } from '@vicons/tabler'
 
-import TerminalPanel from '../components/TerminalPanel.vue'
+import { fetchPublicSiteConfig, type SiteConfig } from '../api/site'
 
 const navOpen = ref(false)
+const loading = ref(false)
+const error = ref('')
+const site = ref<SiteConfig>({
+  id: 'fallback',
+  siteTitle: 'Simon Workspace',
+  ownerName: 'Simon',
+  heroTitle: '个人主页、博客和教学工作台',
+  heroSubtitle: '记录教学、开发和项目实践；公开页面给访客阅读，工作台留给授权账号使用。',
+  ownerRole: '软件教师 / 独立开发者',
+  contactEmail: null,
+  githubUrl: 'https://github.com/simon-996',
+  profileVisible: true,
+  blogVisible: true,
+  projectsVisible: true,
+  workspaceEntryVisible: false,
+})
 
-const workflowSteps = [
-  {
-    icon: Book,
-    number: '01',
-    title: 'Course',
-    summary: 'Create and manage your courses.',
-  },
-  {
-    icon: Calendar,
-    number: '02',
-    title: 'Semester',
-    summary: 'Build and maintain semester calendars.',
-  },
-  {
-    icon: FileText,
-    number: '03',
-    title: 'Template',
-    summary: 'Use or edit templates for any topic.',
-  },
-  {
-    icon: Wand,
-    number: '04',
-    title: 'Generate',
-    summary: 'Generate lesson plans, resources, and more.',
-  },
-  {
-    icon: Download,
-    number: '05',
-    title: 'Download',
-    summary: 'Export Word, Excel, or PDF files.',
-  },
-]
+const visibleSections = computed(() => [
+  site.value.profileVisible,
+  site.value.blogVisible,
+  site.value.projectsVisible,
+].filter(Boolean).length)
 
-const quickActions = [
-  { icon: Book, title: 'Generate lesson plan', detail: 'Create with AI' },
-  { icon: Book, title: 'View my courses', detail: 'Manage all courses' },
-  { icon: FileText, title: 'Browse templates', detail: 'Use or edit templates' },
-  { icon: Files, title: 'My files', detail: 'Generated documents' },
-]
+onMounted(() => {
+  void loadSite()
+})
+
+async function loadSite() {
+  loading.value = true
+  error.value = ''
+  try {
+    site.value = await fetchPublicSiteConfig()
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : '公开配置加载失败'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
   <main class="home-page">
     <nav class="top-nav">
-      <a class="brand" href="/"><span>&gt;_</span> Simon Workspace</a>
+      <a class="brand" href="/">
+        <span>S</span>
+        {{ site.siteTitle }}
+      </a>
       <button class="menu-button" type="button" aria-label="Toggle navigation" @click="navOpen = !navOpen">
         <n-icon :component="Menu2" />
       </button>
       <div class="nav-links" :class="{ open: navOpen }">
-        <router-link to="/workspace">Workspace</router-link>
-        <a href="/#blog">Blog</a>
-        <a href="/#help">Help</a>
+        <a v-if="site.profileVisible" href="/#profile">关于</a>
+        <a v-if="site.blogVisible" href="/#blog">博客</a>
+        <a v-if="site.projectsVisible" href="/#projects">项目</a>
+        <router-link v-if="site.workspaceEntryVisible" to="/workspace">工作台</router-link>
       </div>
     </nav>
 
     <section class="hero-section">
       <div class="hero-copy">
-        <p class="eyebrow">// Personal site and AI teaching workspace</p>
-        <h1>Teach better. Automate the rest.</h1>
-        <p class="summary">
-          Maintain courses, semester calendars, templates, and teaching materials.
-          Generate lesson plans, track tasks, and keep everything in sync.
-        </p>
+        <p class="eyebrow">{{ site.ownerName }}</p>
+        <h1>{{ site.heroTitle }}</h1>
+        <p class="summary">{{ site.heroSubtitle }}</p>
         <div class="actions">
-          <n-button class="primary-action" type="primary" size="large" tag="router-link" to="/workspace">
-            <span>&gt;_</span> Enter Workspace
+          <n-button
+            v-if="site.blogVisible"
+            class="primary-action"
+            type="primary"
+            size="large"
+            tag="a"
+            href="/#blog"
+          >
+            阅读博客
           </n-button>
-          <n-button class="ghost-action" ghost size="large">
-            <n-icon :component="Book" /> Read Blog
+          <n-button
+            v-if="site.workspaceEntryVisible"
+            class="ghost-action"
+            ghost
+            size="large"
+            tag="router-link"
+            to="/workspace"
+          >
+            进入工作台
           </n-button>
         </div>
-        <p class="ready-state"><span /> AI tools ready</p>
+        <p class="ready-state">
+          <span />
+          {{ site.ownerRole || 'Personal site' }}
+        </p>
       </div>
 
-      <TerminalPanel />
-    </section>
-
-    <section class="workflow-section" aria-label="Workspace workflow">
-      <p class="section-kicker">Workflow</p>
-      <div class="workflow-rail">
-        <article v-for="(step, index) in workflowSteps" :key="step.title" class="workflow-step">
-          <div class="step-heading">
-            <n-icon :component="step.icon" />
-            <span>{{ step.number }}</span>
+      <aside class="portrait-panel" aria-label="站点概览">
+        <n-spin :show="loading">
+          <div class="portrait-card">
+            <div class="portrait-mark">
+              <n-icon :component="UserCircle" />
+            </div>
+            <div>
+              <span>Owner</span>
+              <strong>{{ site.ownerName }}</strong>
+              <p>{{ site.ownerRole || '个人主页维护者' }}</p>
+            </div>
+            <ul>
+              <li>
+                <n-icon :component="CircleCheck" />
+                <span>{{ visibleSections }} 个公开模块</span>
+              </li>
+              <li v-if="site.contactEmail">
+                <n-icon :component="Mail" />
+                <a :href="`mailto:${site.contactEmail}`">{{ site.contactEmail }}</a>
+              </li>
+              <li v-if="site.githubUrl">
+                <n-icon :component="Files" />
+                <a :href="site.githubUrl" target="_blank" rel="noreferrer">GitHub</a>
+              </li>
+            </ul>
+            <p v-if="error" class="load-note">{{ error }}，当前显示默认内容。</p>
           </div>
-          <h2>{{ step.title }}</h2>
-          <p>{{ step.summary }}</p>
-          <n-icon v-if="index < workflowSteps.length - 1" class="step-arrow" :component="ChevronRight" />
-        </article>
-      </div>
+        </n-spin>
+      </aside>
     </section>
 
-    <section class="overview-section" aria-label="Workspace overview">
+    <section class="public-grid" aria-label="公开内容入口">
+      <article v-if="site.profileVisible" id="profile">
+        <n-icon :component="UserCircle" />
+        <span>Profile</span>
+        <h2>关于 {{ site.ownerName }}</h2>
+        <p>这里会承载个人介绍、教学方向、技术栈和公开联系方式。当前先提供可配置骨架，后续内容可以继续细化。</p>
+      </article>
+
+      <article v-if="site.blogVisible" id="blog">
+        <n-icon :component="Book" />
+        <span>Blog</span>
+        <h2>博客入口</h2>
+        <p>后续文章发布后，访客会在这里看到已公开的技术笔记、教学复盘和项目记录。</p>
+      </article>
+
+      <article v-if="site.projectsVisible" id="projects">
+        <n-icon :component="Briefcase" />
+        <span>Projects</span>
+        <h2>项目展示</h2>
+        <p>这里会展示公开项目、作品说明和链接。隐藏开关关闭后，访客不会看到这个模块。</p>
+      </article>
+    </section>
+
+    <section class="closing-band">
       <div>
-        <p class="section-kicker">Overview</p>
-        <h2>Everything in one place.</h2>
-        <p>Organized. Searchable. AI-assisted.</p>
+        <p class="section-kicker">Access</p>
+        <h2>公开内容给访客，工作台给授权账号。</h2>
       </div>
-      <div class="overview-list">
-        <article>
-          <n-icon :component="Files" />
-          <div>
-            <h3>Courses & Calendars</h3>
-            <p>All courses and semester schedules at a glance.</p>
-          </div>
-        </article>
-        <article>
-          <n-icon :component="FileText" />
-          <div>
-            <h3>Templates</h3>
-            <p>Reusable teaching documents for lessons and activities.</p>
-          </div>
-        </article>
-        <article>
-          <n-icon :component="Wand" />
-          <div>
-            <h3>AI Assistance</h3>
-            <p>Generate structured content faster, then review it yourself.</p>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="mobile-actions" aria-label="Quick actions">
-      <p class="section-kicker">Quick Actions</p>
-      <a v-for="action in quickActions" :key="action.title" href="/workspace">
-        <n-icon :component="action.icon" />
-        <span>
-          <strong>{{ action.title }}</strong>
-          <small>{{ action.detail }}</small>
-        </span>
+      <router-link to="/login" class="login-link">
+        登录
         <n-icon :component="ChevronRight" />
-      </a>
+      </router-link>
     </section>
   </main>
 </template>
@@ -158,68 +178,65 @@ const quickActions = [
   min-height: 100dvh;
   overflow-x: hidden;
   background:
-    linear-gradient(90deg, rgba(62, 198, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(62, 198, 255, 0.04) 1px, transparent 1px),
-    radial-gradient(circle at 72% 12%, rgba(62, 198, 255, 0.08), transparent 32%),
-    #061018;
-  background-size: 120px 120px, 120px 120px, auto, auto;
-  color: #f6fbff;
+    linear-gradient(90deg, rgba(32, 164, 216, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(33, 70, 92, 0.06) 1px, transparent 1px),
+    #f6f8fa;
+  background-size: 104px 104px;
+  color: #14202b;
 }
 
 .top-nav {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative;
-  width: min(1260px, calc(100% - 48px));
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 34px 0 20px;
+  padding: 28px 0 18px;
 }
 
 .brand {
-  align-items: center;
   display: inline-flex;
-  gap: 12px;
-  color: #f5fbff;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 16px;
+  align-items: center;
+  gap: 10px;
+  color: #14202b;
+  font-size: 15px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .brand span {
-  color: #3fc6ff;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #1688b9;
+  color: #ffffff;
 }
 
 .nav-links {
   display: flex;
-  gap: 32px;
-  color: #91a2b5;
-  font-family: "JetBrains Mono", Consolas, monospace;
+  align-items: center;
+  gap: 26px;
+  color: #5c6d7b;
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 800;
 }
 
 .nav-links a {
-  padding-bottom: 8px;
-  transition: color 180ms ease, border-color 180ms ease;
+  transition: color 180ms ease;
 }
 
-.nav-links a:hover,
-.nav-links a.router-link-active {
-  border-bottom: 2px solid #3fc6ff;
-  color: #3fc6ff;
+.nav-links a:hover {
+  color: #1688b9;
 }
 
 .menu-button {
   display: none;
-  border: 1px solid rgba(91, 147, 180, 0.35);
+  border: 1px solid #d8e0e7;
   border-radius: 8px;
-  background: rgba(7, 18, 29, 0.68);
-  color: #d8e9f5;
+  background: #ffffff;
+  color: #14202b;
   cursor: pointer;
   font-size: 24px;
   padding: 8px 10px;
@@ -227,261 +244,267 @@ const quickActions = [
 
 .hero-section {
   display: grid;
-  grid-template-columns: minmax(320px, 0.82fr) minmax(560px, 1.18fr);
+  grid-template-columns: minmax(0, 0.92fr) minmax(360px, 0.68fr);
   align-items: center;
-  gap: 88px;
-  width: min(1260px, calc(100% - 48px));
+  gap: 72px;
+  width: min(1180px, calc(100% - 48px));
   min-height: calc(100dvh - 96px);
   margin: 0 auto;
-  padding: 44px 0 42px;
+  padding: 42px 0 64px;
 }
 
 .hero-copy {
-  max-width: 420px;
+  max-width: 720px;
 }
 
-.eyebrow {
-  margin: 0 0 24px;
-  color: #3fc6ff;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 13px;
-  font-weight: 600;
+.eyebrow,
+.section-kicker,
+.portrait-card span,
+.public-grid article > span {
+  color: #1688b9;
+  font-size: 12px;
+  font-weight: 800;
   letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 h1 {
-  margin: 0;
-  color: #f9fcff;
-  font-size: clamp(42px, 5.2vw, 76px);
-  font-weight: 500;
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: #111a23;
+  font-size: clamp(42px, 6.2vw, 84px);
+  font-weight: 800;
   letter-spacing: 0;
-  line-height: 1.08;
+  line-height: 1.02;
 }
 
 .summary {
+  max-width: 650px;
   margin: 26px 0 0;
-  color: #aab5c2;
+  color: #516271;
   font-size: 18px;
-  line-height: 1.55;
+  line-height: 1.7;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 40px;
+  gap: 14px;
+  margin-top: 34px;
 }
 
 .actions :deep(.n-button) {
-  --n-border-radius: 6px !important;
-  min-width: 220px;
-  height: 54px;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  --n-border-radius: 8px !important;
+  min-width: 156px;
+  height: 48px;
+  font-weight: 800;
 }
 
-.primary-action span {
-  color: #062033;
-  margin-right: 8px;
-}
-
-.ghost-action :deep(.n-button__content) {
-  gap: 10px;
+.ghost-action {
+  color: #1688b9;
 }
 
 .ready-state {
-  align-items: center;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   margin: 22px 0 0;
-  color: #81d778;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 13px;
+  color: #526574;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .ready-state span {
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  background: #75d46c;
+  background: #4b9f6b;
 }
 
-.workflow-section,
-.overview-section {
-  width: min(1260px, calc(100% - 48px));
-  margin: 0 auto;
-  border-top: 1px solid rgba(83, 137, 169, 0.22);
+.portrait-panel {
+  min-width: 0;
 }
 
-.workflow-section {
-  padding: 22px 0 44px;
-}
-
-.section-kicker {
-  margin: 0 0 28px;
-  color: #3fc6ff;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.workflow-rail {
+.portrait-card {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 22px;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 28px;
+  box-shadow: 0 20px 42px rgba(44, 74, 94, 0.08);
 }
 
-.workflow-step {
-  position: relative;
-  min-height: 126px;
-  border-left: 1px solid rgba(83, 137, 169, 0.2);
-  padding: 0 28px 0 20px;
+.portrait-mark {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 24px;
+  background: #e7f5fb;
+  color: #1688b9;
+  font-size: 58px;
 }
 
-.step-heading {
-  align-items: center;
-  display: flex;
-  gap: 15px;
-  color: #3fc6ff;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-weight: 700;
-}
-
-.step-heading .n-icon {
+.portrait-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #111a23;
   font-size: 28px;
+  font-weight: 800;
 }
 
-.workflow-step h2 {
-  margin: 20px 0 0;
-  color: #ffffff;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 15px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.workflow-step p {
-  margin: 9px 0 0;
-  color: #95a4b3;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.step-arrow {
-  position: absolute;
-  top: 42px;
-  right: 22px;
-  color: #aab5c2;
-  font-size: 24px;
-}
-
-.overview-section {
-  display: grid;
-  grid-template-columns: minmax(240px, 0.75fr) minmax(0, 1.25fr);
-  gap: 60px;
-  padding: 30px 0 70px;
-}
-
-.overview-section h2 {
-  margin: 0;
-  color: #f8fbff;
-  font-size: 28px;
-  font-weight: 500;
-}
-
-.overview-section p {
-  margin: 10px 0 0;
-  color: #9daab8;
-  font-size: 18px;
-}
-
-.overview-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 40px;
-}
-
-.overview-list article {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 16px;
-}
-
-.overview-list .n-icon {
-  color: #3fc6ff;
-  font-size: 28px;
-}
-
-.overview-list h3 {
-  margin: 0;
-  color: #f4f8fb;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.overview-list p {
-  margin: 12px 0 0;
-  color: #9aa8b5;
-  font-size: 14px;
+.portrait-card p {
+  margin: 8px 0 0;
+  color: #647586;
   line-height: 1.55;
 }
 
-.mobile-actions {
-  display: none;
+.portrait-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.portrait-card li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  color: #405363;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.portrait-card li .n-icon {
+  color: #1688b9;
+  font-size: 20px;
+}
+
+.load-note {
+  border-top: 1px solid #e4ebf0;
+  padding-top: 14px;
+  color: #9a642c !important;
+  font-size: 13px;
+}
+
+.public-grid,
+.closing-band {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.public-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.92fr 0.92fr;
+  gap: 12px;
+  padding-bottom: 26px;
+}
+
+.public-grid article {
+  display: grid;
+  align-content: start;
+  min-height: 230px;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px;
+}
+
+.public-grid article > .n-icon {
+  color: #1688b9;
+  font-size: 32px;
+}
+
+.public-grid h2 {
+  margin: 24px 0 0;
+  color: #111a23;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.public-grid p {
+  margin: 12px 0 0;
+  color: #647586;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.closing-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #d8e0e7;
+  padding: 32px 0 56px;
+}
+
+.closing-band h2 {
+  max-width: 620px;
+  margin: 8px 0 0;
+  color: #111a23;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.login-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 1px solid #bfd0dc;
+  border-radius: 8px;
+  color: #1688b9;
+  padding: 0 16px;
+  font-weight: 800;
 }
 
 @media (max-width: 900px) {
   .top-nav {
-    width: min(100% - 32px, 520px);
-    padding-top: 28px;
+    width: min(100% - 32px, 560px);
   }
 
   .menu-button {
-    align-items: center;
     display: inline-flex;
   }
 
   .nav-links {
-    display: none;
     position: absolute;
     top: 78px;
     right: 0;
     left: 0;
     z-index: 2;
-    border: 1px solid rgba(83, 137, 169, 0.26);
+    display: none;
+    border: 1px solid #d8e0e7;
     border-radius: 8px;
-    background: rgba(7, 18, 29, 0.96);
-    padding: 18px;
+    background: #ffffff;
+    padding: 16px;
   }
 
   .nav-links.open {
     display: grid;
-    gap: 16px;
+    gap: 14px;
+  }
+
+  .hero-section,
+  .public-grid,
+  .closing-band {
+    width: min(100% - 32px, 560px);
   }
 
   .hero-section {
     grid-template-columns: 1fr;
-    gap: 32px;
-    width: min(100% - 32px, 520px);
+    gap: 28px;
     min-height: auto;
-    padding: 42px 0 32px;
-  }
-
-  .hero-copy {
-    max-width: none;
-  }
-
-  .eyebrow {
-    margin-bottom: 14px;
-    font-size: 11px;
+    padding: 38px 0;
   }
 
   h1 {
-    font-size: clamp(32px, 10vw, 42px);
+    font-size: clamp(34px, 11vw, 48px);
   }
 
   .summary {
@@ -490,97 +513,19 @@ h1 {
 
   .actions {
     display: grid;
-    gap: 12px;
-    margin-top: 28px;
   }
 
   .actions :deep(.n-button) {
     width: 100%;
-    min-width: 0;
   }
 
-  .workflow-section,
-  .overview-section,
-  .mobile-actions {
-    width: min(100% - 32px, 520px);
-  }
-
-  .workflow-rail {
-    display: grid;
-    gap: 0;
+  .public-grid {
     grid-template-columns: 1fr;
   }
 
-  .workflow-step {
-    display: none;
-  }
-
-  .workflow-step:nth-child(-n + 3) {
-    display: block;
-    min-height: auto;
-    border-top: 1px solid rgba(83, 137, 169, 0.18);
-    padding: 18px 0;
-  }
-
-  .workflow-step:first-child {
-    border-top: 0;
-  }
-
-  .step-arrow {
-    display: none;
-  }
-
-  .overview-section {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    padding-bottom: 32px;
-  }
-
-  .overview-list {
-    grid-template-columns: 1fr;
-    gap: 22px;
-  }
-
-  .mobile-actions {
-    display: block;
-    margin: 0 auto;
-    padding: 0 0 54px;
-  }
-
-  .mobile-actions a {
-    align-items: center;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 14px;
-    border: 1px solid rgba(83, 137, 169, 0.24);
-    border-radius: 6px;
-    color: #dce8f2;
-    margin-top: 10px;
-    padding: 14px;
-  }
-
-  .mobile-actions a > .n-icon:first-child {
-    color: #3fc6ff;
-    font-size: 24px;
-  }
-
-  .mobile-actions strong,
-  .mobile-actions small {
-    display: block;
-  }
-
-  .mobile-actions strong {
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .mobile-actions small {
-    color: #92a1af;
-    margin-top: 2px;
-  }
-
-  .mobile-actions a > .n-icon:last-child {
-    color: #8da0b0;
+  .closing-band {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

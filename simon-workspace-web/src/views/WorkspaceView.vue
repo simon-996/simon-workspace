@@ -10,6 +10,7 @@ import {
   Files,
   History,
   Logout,
+  Settings,
   Template,
   UserCircle,
   Users,
@@ -30,6 +31,7 @@ const navItems = [
   { to: '/workspace/files', label: '文件', icon: Files, permission: 'file:manage' },
   { to: '/workspace/history', label: '记录', icon: History, permission: 'generation:history' },
   { to: '/workspace/security', label: '权限', icon: Users, permission: 'user:manage' },
+  { to: '/workspace/site', label: '站点', icon: Settings, permission: 'site:config' },
 ]
 
 const visibleNavItems = computed(() => navItems.filter((item) => auth.hasPermission(item.permission)))

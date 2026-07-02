@@ -9,6 +9,7 @@ import FileCenterView from '../views/workspace/FileCenterView.vue'
 import GenerationHistoryView from '../views/workspace/GenerationHistoryView.vue'
 import SecurityManagementView from '../views/workspace/SecurityManagementView.vue'
 import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
+import SiteConfigView from '../views/workspace/SiteConfigView.vue'
 import TemplateManagementView from '../views/workspace/TemplateManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
 import { useAuthStore } from '../stores/auth'
@@ -99,6 +100,15 @@ export const router = createRouter({
           meta: {
             title: '权限管理',
             permission: 'user:manage',
+          },
+        },
+        {
+          path: 'site',
+          name: 'workspace-site',
+          component: SiteConfigView,
+          meta: {
+            title: '站点配置',
+            permission: 'site:config',
           },
         },
       ],
