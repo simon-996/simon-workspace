@@ -12,6 +12,7 @@ import {
   Logout,
   Template,
   UserCircle,
+  Users,
 } from '@vicons/tabler'
 
 import { useAuthStore } from '../stores/auth'
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/workspace/templates', label: '模板', icon: Template, permission: 'template:manage' },
   { to: '/workspace/files', label: '文件', icon: Files, permission: 'file:manage' },
   { to: '/workspace/history', label: '记录', icon: History, permission: 'generation:history' },
+  { to: '/workspace/security', label: '权限', icon: Users, permission: 'user:manage' },
 ]
 
 const visibleNavItems = computed(() => navItems.filter((item) => auth.hasPermission(item.permission)))
@@ -259,16 +261,17 @@ h1 {
     bottom: 0;
     left: 0;
     z-index: 20;
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    display: flex;
     min-height: 64px;
     border-top: 1px solid #d8e0e7;
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
+    overflow-x: auto;
   }
 
   .mobile-tabs a {
     display: grid;
+    flex: 0 0 58px;
     place-items: center;
     align-content: center;
     gap: 3px;

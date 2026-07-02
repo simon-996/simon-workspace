@@ -207,6 +207,38 @@ export interface GenerationTask {
   updatedTime?: string
 }
 
+export interface ManagedUser {
+  id: string
+  username: string
+  nickname: string
+  email?: string | null
+  status: string
+  lastLoginTime?: string | null
+  roles: string[]
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface Permission {
+  id: string
+  permissionCode: string
+  permissionName: string
+  resourceType: string
+  description?: string | null
+}
+
+export interface Role {
+  id: string
+  roleCode: string
+  roleName: string
+  description?: string | null
+  permissions: Permission[]
+}
+
+export interface UpdateUserRolesPayload {
+  roleCodes: string[]
+}
+
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
     throw new Error(response.message || '请求失败')
@@ -390,5 +422,24 @@ export async function fetchGenerationTasks(keyword?: string) {
 
 export async function fetchGenerationTaskDetail(id: string) {
   const response = await http.get<ApiResponse<GenerationTask>>(`/generation/tasks/${id}`)
+  return unwrap(response.data)
+}
+
+export async function fetchSecurityUsers(keyword?: string) {
+  const response = await http.get<ApiResponse<ManagedUser[]>>('/security/users', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrap(response.data)
+}
+
+export async function fetchSecurityRoles() {
+  const response = await http.get<ApiResponse<Role[]>>('/security/roles')
+  return unwrap(response.data)
+}
+
+export async function updateSecurityUserRoles(id: string, payload: UpdateUserRolesPayload) {
+  const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/roles`, payload)
   return unwrap(response.data)
 }
