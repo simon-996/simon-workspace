@@ -25,6 +25,7 @@ export const router = createRouter({
       component: WorkspaceView,
       meta: {
         requiresAuth: true,
+        permission: 'workspace:view',
       },
       children: [
         {
@@ -33,6 +34,7 @@ export const router = createRouter({
           component: WorkspaceHomeView,
           meta: {
             title: '工作台总览',
+            permission: 'workspace:view',
           },
         },
         {
@@ -41,6 +43,7 @@ export const router = createRouter({
           component: CourseManagementView,
           meta: {
             title: '课程管理',
+            permission: 'course:manage',
           },
         },
         {
@@ -49,6 +52,7 @@ export const router = createRouter({
           component: ClassManagementView,
           meta: {
             title: '班级管理',
+            permission: 'class:manage',
           },
         },
         {
@@ -57,6 +61,7 @@ export const router = createRouter({
           component: SemesterManagementView,
           meta: {
             title: '学期管理',
+            permission: 'semester:manage',
           },
         },
         {
@@ -65,6 +70,7 @@ export const router = createRouter({
           component: TemplateManagementView,
           meta: {
             title: '模板管理',
+            permission: 'template:manage',
           },
         },
         {
@@ -73,6 +79,7 @@ export const router = createRouter({
           component: FileCenterView,
           meta: {
             title: '文件中心',
+            permission: 'file:manage',
           },
         },
         {
@@ -81,6 +88,7 @@ export const router = createRouter({
           component: GenerationHistoryView,
           meta: {
             title: '生成记录',
+            permission: 'generation:history',
           },
         },
       ],
@@ -105,6 +113,11 @@ router.beforeEach(async (to) => {
           redirect: to.fullPath,
         },
       }
+    }
+
+    const permission = typeof to.meta.permission === 'string' ? to.meta.permission : ''
+    if (permission && !auth.hasPermission(permission)) {
+      return { name: 'home' }
     }
   }
 

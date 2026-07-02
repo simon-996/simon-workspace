@@ -14,6 +14,8 @@ export interface CurrentUser {
   nickname: string
   avatarUrl?: string
   email?: string
+  roles: string[]
+  permissions: string[]
 }
 
 interface LoginData {
@@ -36,6 +38,13 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => Boolean(state.token),
     displayName: (state) => state.user?.nickname || state.user?.username || 'Simon',
+    hasRole: (state) => (role: string) => state.user?.roles?.includes(role) ?? false,
+    hasPermission: (state) => (permission: string) => {
+      if (state.user?.roles?.includes('OWNER')) {
+        return true
+      }
+      return state.user?.permissions?.includes(permission) ?? false
+    },
   },
   actions: {
     async login(username: string, password: string) {

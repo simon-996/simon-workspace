@@ -1,5 +1,6 @@
 package com.simon.workspace.template;
 
+import com.simon.workspace.auth.permission.RequirePermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.template.dto.TemplateFieldResponse;
 import com.simon.workspace.template.dto.TemplateFieldsRequest;
@@ -23,6 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/templates")
+@RequirePermission("template:manage")
 public class TemplateController {
 
     private final TemplateService templateService;

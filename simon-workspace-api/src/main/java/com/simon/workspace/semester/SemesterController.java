@@ -1,5 +1,6 @@
 package com.simon.workspace.semester;
 
+import com.simon.workspace.auth.permission.RequirePermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.semester.dto.SemesterCalendarResponse;
 import com.simon.workspace.semester.dto.SemesterCalendarUpdateRequest;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/semesters")
+@RequirePermission("semester:manage")
 public class SemesterController {
 
     private final SemesterService semesterService;

@@ -1,5 +1,6 @@
 package com.simon.workspace.classinfo;
 
+import com.simon.workspace.auth.permission.RequirePermission;
 import com.simon.workspace.classinfo.dto.ClassInfoRequest;
 import com.simon.workspace.classinfo.dto.ClassInfoResponse;
 import com.simon.workspace.common.ApiResponse;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/classes")
+@RequirePermission("class:manage")
 public class ClassInfoController {
 
     private final ClassInfoService classInfoService;

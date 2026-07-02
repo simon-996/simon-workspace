@@ -21,15 +21,16 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const navItems = [
-  { to: '/workspace', label: '总览', icon: CircleCheck },
-  { to: '/workspace/courses', label: '课程', icon: Book },
-  { to: '/workspace/classes', label: '班级', icon: FileText },
-  { to: '/workspace/semesters', label: '学期', icon: Calendar },
-  { to: '/workspace/templates', label: '模板', icon: Template },
-  { to: '/workspace/files', label: '文件', icon: Files },
-  { to: '/workspace/history', label: '记录', icon: History },
+  { to: '/workspace', label: '总览', icon: CircleCheck, permission: 'workspace:view' },
+  { to: '/workspace/courses', label: '课程', icon: Book, permission: 'course:manage' },
+  { to: '/workspace/classes', label: '班级', icon: FileText, permission: 'class:manage' },
+  { to: '/workspace/semesters', label: '学期', icon: Calendar, permission: 'semester:manage' },
+  { to: '/workspace/templates', label: '模板', icon: Template, permission: 'template:manage' },
+  { to: '/workspace/files', label: '文件', icon: Files, permission: 'file:manage' },
+  { to: '/workspace/history', label: '记录', icon: History, permission: 'generation:history' },
 ]
 
+const visibleNavItems = computed(() => navItems.filter((item) => auth.hasPermission(item.permission)))
 const pageTitle = computed(() => String(route.meta.title ?? '工作台'))
 
 async function logout() {
@@ -47,7 +48,7 @@ async function logout() {
       </RouterLink>
 
       <nav class="side-nav">
-        <RouterLink v-for="item in navItems" :key="item.to" :to="item.to" class="nav-link">
+        <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to" class="nav-link">
           <n-icon :component="item.icon" />
           <span>{{ item.label }}</span>
         </RouterLink>
@@ -79,7 +80,7 @@ async function logout() {
     </section>
 
     <nav class="mobile-tabs" aria-label="移动端导航">
-      <RouterLink v-for="item in navItems" :key="item.to" :to="item.to">
+      <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to">
         <n-icon :component="item.icon" />
         <span>{{ item.label }}</span>
       </RouterLink>

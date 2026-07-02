@@ -1,5 +1,6 @@
 package com.simon.workspace.generation;
 
+import com.simon.workspace.auth.permission.RequirePermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.generation.dto.DocumentDataResponse;
 import com.simon.workspace.generation.dto.DocumentDataUpdateRequest;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/generation/tasks")
+@RequirePermission("generation:history")
 public class GenerationTaskController {
 
     private final GenerationTaskService generationTaskService;
@@ -41,6 +43,7 @@ public class GenerationTaskController {
     }
 
     @PutMapping("/{id}/document")
+    @RequirePermission("generation:document:edit")
     public ApiResponse<DocumentDataResponse> updateDocument(
             @PathVariable long id,
             @Valid @RequestBody DocumentDataUpdateRequest request
