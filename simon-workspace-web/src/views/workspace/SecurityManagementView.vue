@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
@@ -21,6 +22,7 @@ import {
   type Role,
 } from '../../api/workspace'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const users = ref<ManagedUser[]>([])
@@ -40,7 +42,14 @@ const permissionCount = computed(() => {
   roles.value.forEach((role) => role.permissions.forEach((permission) => codes.add(permission.permissionCode)))
   return codes.size
 })
-const modalTitle = computed(() => editingUser.value ? `设置 ${editingUser.value.nickname || editingUser.value.username} 的角色` : '设置角色')
+const modalTitle = computed(() => {
+  if (!editingUser.value) {
+    return t('workspace.security.roles.defaultModalTitle')
+  }
+  return t('workspace.security.roles.modalTitle', {
+    name: editingUser.value.nickname || editingUser.value.username,
+  })
+})
 
 onMounted(() => {
   void loadSecurity()
@@ -57,7 +66,7 @@ async function loadSecurity() {
     users.value = userList
     roles.value = roleList
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '权限数据加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.security.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -81,10 +90,10 @@ async function submitRoles() {
       roleCodes: selectedRoles.value,
     })
     users.value = users.value.map((user) => user.id === updated.id ? updated : user)
-    message.success('角色已更新')
+    message.success(t('workspace.security.messages.updated'))
     modalVisible.value = false
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '角色更新失败')
+    message.error(err instanceof Error ? err.message : t('workspace.security.messages.updateFailed'))
   } finally {
     saving.value = false
   }
@@ -95,8 +104,8 @@ function roleName(roleCode: string) {
 }
 
 function statusText(status: string) {
-  if (status === 'ENABLED') return '启用'
-  if (status === 'DISABLED') return '停用'
+  if (status === 'ENABLED') return t('common.states.enabled')
+  if (status === 'DISABLED') return t('common.states.disabled')
   return status
 }
 </script>
@@ -106,12 +115,12 @@ function statusText(status: string) {
     <div class="summary-grid">
       <article>
         <n-icon :component="Users" />
-        <span>账号总数</span>
+        <span>{{ t('workspace.security.summary.accounts') }}</span>
         <strong>{{ users.length }}</strong>
       </article>
       <article>
         <n-icon :component="CircleCheck" />
-        <span>启用账号</span>
+        <span>{{ t('workspace.security.summary.enabled') }}</span>
         <strong>{{ enabledCount }}</strong>
       </article>
       <article>
@@ -121,7 +130,7 @@ function statusText(status: string) {
       </article>
       <article>
         <n-icon :component="CircleCheck" />
-        <span>权限点</span>
+        <span>{{ t('workspace.security.summary.permissions') }}</span>
         <strong>{{ permissionCount }}</strong>
       </article>
     </div>
@@ -130,7 +139,7 @@ function statusText(status: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索账号、昵称或邮箱"
+        :placeholder="t('workspace.security.searchPlaceholder')"
         @keyup.enter="loadSecurity"
       >
         <template #prefix>
@@ -141,7 +150,7 @@ function statusText(status: string) {
         <template #icon>
           <n-icon :component="Refresh" />
         </template>
-        刷新
+        {{ t('common.actions.refresh') }}
       </n-button>
     </section>
 
@@ -149,7 +158,7 @@ function statusText(status: string) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadSecurity">重试</n-button>
+        <n-button size="small" tertiary @click="loadSecurity">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else-if="loading" :show="loading">
@@ -159,19 +168,19 @@ function statusText(status: string) {
       </n-spin>
 
       <div v-else-if="users.length === 0" class="empty-state">
-        <strong>暂无账号</strong>
+        <strong>{{ t('workspace.security.emptyTitle') }}</strong>
       </div>
 
       <div v-else class="security-table-wrap">
         <table class="security-table">
           <thead>
             <tr>
-              <th>账号</th>
-              <th>状态</th>
-              <th>角色</th>
-              <th>最近登录</th>
-              <th>更新时间</th>
-              <th>操作</th>
+              <th>{{ t('workspace.security.table.account') }}</th>
+              <th>{{ t('workspace.security.table.status') }}</th>
+              <th>{{ t('workspace.security.table.roles') }}</th>
+              <th>{{ t('workspace.security.table.lastLogin') }}</th>
+              <th>{{ t('workspace.security.table.updatedTime') }}</th>
+              <th>{{ t('workspace.security.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -190,7 +199,7 @@ function statusText(status: string) {
                   <n-tag v-for="role in user.roles" :key="role" size="small" round>
                     {{ roleName(role) }}
                   </n-tag>
-                  <span v-if="user.roles.length === 0" class="muted">未分配</span>
+                  <span v-if="user.roles.length === 0" class="muted">{{ t('workspace.security.table.unassigned') }}</span>
                 </div>
               </td>
               <td>{{ user.lastLoginTime ? user.lastLoginTime.slice(0, 16).replace('T', ' ') : '-' }}</td>
@@ -210,8 +219,8 @@ function statusText(status: string) {
 
     <section class="role-panel">
       <header>
-        <strong>角色权限</strong>
-        <span>{{ roles.length }} 个角色</span>
+        <strong>{{ t('workspace.security.roles.title') }}</strong>
+        <span>{{ t('workspace.security.roles.count', { count: roles.length }) }}</span>
       </header>
       <div class="role-grid">
         <article v-for="role in roles" :key="role.id">
@@ -237,15 +246,15 @@ function statusText(status: string) {
               <n-checkbox :value="role.roleCode" />
               <span>
                 <strong>{{ role.roleName }}</strong>
-                <em>{{ role.roleCode }} · {{ role.permissions.length }} 项权限</em>
+                <em>{{ role.roleCode }} · {{ t('workspace.security.roles.permissionCount', { count: role.permissions.length }) }}</em>
               </span>
             </label>
           </div>
         </n-checkbox-group>
 
         <div class="form-actions">
-          <n-button @click="modalVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+          <n-button @click="modalVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
         </div>
       </form>
     </n-modal>

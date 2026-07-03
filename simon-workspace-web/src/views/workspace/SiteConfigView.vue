@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NButton, NIcon, NInput, NSpin, NSwitch, useMessage } from 'naive-ui'
 import { AlertTriangle, ExternalLink, Eye, Refresh, Settings } from '@vicons/tabler'
 
@@ -10,6 +11,7 @@ import {
   type SiteConfigPayload,
 } from '../../api/site'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const loading = ref(false)
@@ -50,7 +52,7 @@ async function loadConfig() {
     config.value = data
     syncForm(data)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '站点配置加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.site.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -59,15 +61,15 @@ async function loadConfig() {
 
 async function submitConfig() {
   if (!form.siteTitle.trim()) {
-    message.warning('请输入站点标题')
+    message.warning(t('workspace.site.messages.siteTitleRequired'))
     return
   }
   if (!form.ownerName.trim()) {
-    message.warning('请输入所有者名称')
+    message.warning(t('workspace.site.messages.ownerNameRequired'))
     return
   }
   if (!form.heroTitle.trim()) {
-    message.warning('请输入首页标题')
+    message.warning(t('workspace.site.messages.heroTitleRequired'))
     return
   }
 
@@ -88,9 +90,9 @@ async function submitConfig() {
     })
     config.value = updated
     syncForm(updated)
-    message.success('站点配置已保存')
+    message.success(t('workspace.site.messages.saved'))
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '站点配置保存失败')
+    message.error(err instanceof Error ? err.message : t('workspace.site.messages.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -121,35 +123,35 @@ function textOrNull(value?: string | null) {
     <div class="summary-grid">
       <article>
         <n-icon :component="Settings" />
-        <span>站点标题</span>
+        <span>{{ t('workspace.site.summary.title') }}</span>
         <strong>{{ form.siteTitle || '-' }}</strong>
       </article>
       <article>
         <n-icon :component="Eye" />
-        <span>公开模块</span>
+        <span>{{ t('workspace.site.summary.publicModules') }}</span>
         <strong>{{ visibleCount }}</strong>
       </article>
       <article>
         <n-icon :component="Settings" />
-        <span>最近更新</span>
+        <span>{{ t('workspace.site.summary.updatedTime') }}</span>
         <strong>{{ config?.updatedTime ? config.updatedTime.slice(0, 10) : '-' }}</strong>
       </article>
     </div>
 
     <section class="toolbar">
-      <span>控制访客在首页能看到的内容</span>
+      <span>{{ t('workspace.site.toolbarText') }}</span>
       <div class="toolbar-actions">
         <n-button secondary class="icon-button" @click="loadConfig">
           <template #icon>
             <n-icon :component="Refresh" />
           </template>
-          刷新
+          {{ t('common.actions.refresh') }}
         </n-button>
         <n-button tag="a" href="/" target="_blank" class="icon-button">
           <template #icon>
             <n-icon :component="ExternalLink" />
           </template>
-          打开首页
+          {{ t('workspace.site.openHome') }}
         </n-button>
       </div>
     </section>
@@ -158,85 +160,85 @@ function textOrNull(value?: string | null) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadConfig">重试</n-button>
+        <n-button size="small" tertiary @click="loadConfig">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else :show="loading">
         <form class="config-form" @submit.prevent="submitConfig">
           <label class="field">
-            <span>站点标题</span>
-            <n-input v-model:value="form.siteTitle" placeholder="例如：Simon Workspace" />
+            <span>{{ t('workspace.site.fields.siteTitle') }}</span>
+            <n-input v-model:value="form.siteTitle" :placeholder="t('workspace.site.fields.siteTitlePlaceholder')" />
           </label>
 
           <label class="field">
-            <span>所有者名称</span>
-            <n-input v-model:value="form.ownerName" placeholder="例如：Simon" />
+            <span>{{ t('workspace.site.fields.ownerName') }}</span>
+            <n-input v-model:value="form.ownerName" :placeholder="t('workspace.site.fields.ownerNamePlaceholder')" />
           </label>
 
           <label class="field span-2">
-            <span>首页标题</span>
-            <n-input v-model:value="form.heroTitle" placeholder="首页第一屏主标题" />
+            <span>{{ t('workspace.site.fields.heroTitle') }}</span>
+            <n-input v-model:value="form.heroTitle" :placeholder="t('workspace.site.fields.heroTitlePlaceholder')" />
           </label>
 
           <label class="field span-2">
-            <span>首页副标题</span>
+            <span>{{ t('workspace.site.fields.heroSubtitle') }}</span>
             <n-input
               v-model:value="form.heroSubtitle"
               type="textarea"
               :autosize="{ minRows: 3, maxRows: 5 }"
-              placeholder="给访客看的简短介绍"
+              :placeholder="t('workspace.site.fields.heroSubtitlePlaceholder')"
             />
           </label>
 
           <label class="field">
-            <span>身份说明</span>
-            <n-input v-model:value="form.ownerRole" placeholder="例如：软件教师 / 独立开发者" />
+            <span>{{ t('workspace.site.fields.ownerRole') }}</span>
+            <n-input v-model:value="form.ownerRole" :placeholder="t('workspace.site.fields.ownerRolePlaceholder')" />
           </label>
 
           <label class="field">
-            <span>公开邮箱</span>
-            <n-input v-model:value="form.contactEmail" placeholder="可留空" />
+            <span>{{ t('workspace.site.fields.contactEmail') }}</span>
+            <n-input v-model:value="form.contactEmail" :placeholder="t('workspace.site.fields.contactEmailPlaceholder')" />
           </label>
 
           <label class="field span-2">
-            <span>GitHub 地址</span>
+            <span>{{ t('workspace.site.fields.githubUrl') }}</span>
             <n-input v-model:value="form.githubUrl" placeholder="https://github.com/..." />
           </label>
 
           <div class="switch-grid span-2">
             <label class="switch-item">
               <span>
-                <strong>个人简介</strong>
-                <small>首页显示关于我模块</small>
+                <strong>{{ t('workspace.site.switches.profile') }}</strong>
+                <small>{{ t('workspace.site.switches.profileHelp') }}</small>
               </span>
               <n-switch v-model:value="form.profileVisible" />
             </label>
             <label class="switch-item">
               <span>
-                <strong>博客入口</strong>
-                <small>首页显示博客占位和入口</small>
+                <strong>{{ t('workspace.site.switches.blog') }}</strong>
+                <small>{{ t('workspace.site.switches.blogHelp') }}</small>
               </span>
               <n-switch v-model:value="form.blogVisible" />
             </label>
             <label class="switch-item">
               <span>
-                <strong>项目展示</strong>
-                <small>首页显示公开项目模块</small>
+                <strong>{{ t('workspace.site.switches.projects') }}</strong>
+                <small>{{ t('workspace.site.switches.projectsHelp') }}</small>
               </span>
               <n-switch v-model:value="form.projectsVisible" />
             </label>
             <label class="switch-item">
               <span>
-                <strong>工作台入口</strong>
-                <small>首页导航显示工作台入口</small>
+                <strong>{{ t('workspace.site.switches.workspace') }}</strong>
+                <small>{{ t('workspace.site.switches.workspaceHelp') }}</small>
               </span>
               <n-switch v-model:value="form.workspaceEntryVisible" />
             </label>
           </div>
 
           <div class="form-actions span-2">
-            <n-button @click="loadConfig">重置</n-button>
-            <n-button type="primary" attr-type="submit" :loading="saving">保存配置</n-button>
+            <n-button @click="loadConfig">{{ t('common.actions.reset') }}</n-button>
+            <n-button type="primary" attr-type="submit" :loading="saving">{{ t('workspace.site.saveConfig') }}</n-button>
           </div>
         </form>
       </n-spin>
