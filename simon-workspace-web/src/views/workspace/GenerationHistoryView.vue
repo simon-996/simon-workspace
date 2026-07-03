@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NButton, NIcon, NInput, NModal, NSpin, useMessage } from 'naive-ui'
 import { AlertTriangle, Clock, Eye, History, Refresh, Search } from '@vicons/tabler'
 
@@ -9,6 +10,7 @@ import {
   type GenerationTask,
 } from '../../api/workspace'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const tasks = ref<GenerationTask[]>([])
@@ -35,7 +37,7 @@ async function loadTasks() {
   try {
     tasks.value = await fetchGenerationTasks(keyword.value.trim())
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '生成记录加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.history.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -49,27 +51,27 @@ async function openDetail(item: GenerationTask) {
   try {
     selectedTask.value = await fetchGenerationTaskDetail(item.id)
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '读取生成记录失败')
+    message.error(err instanceof Error ? err.message : t('workspace.history.messages.detailFailed'))
   } finally {
     detailLoading.value = false
   }
 }
 
 function statusText(status: string) {
-  if (status === 'PENDING') return '等待预览'
-  if (status === 'PREVIEW_READY') return '可预览'
-  if (status === 'FILLING_TEMPLATE') return '导出中'
-  if (status === 'SUCCESS') return '成功'
-  if (status === 'FAILED') return '失败'
-  if (status === 'RUNNING') return '进行中'
-  if (status === 'CANCELED') return '已取消'
-  return '等待中'
+  if (status === 'PENDING') return t('workspace.history.status.pending')
+  if (status === 'PREVIEW_READY') return t('workspace.history.status.previewReady')
+  if (status === 'FILLING_TEMPLATE') return t('workspace.history.status.fillingTemplate')
+  if (status === 'SUCCESS') return t('workspace.history.status.success')
+  if (status === 'FAILED') return t('workspace.history.status.failed')
+  if (status === 'RUNNING') return t('workspace.history.status.running')
+  if (status === 'CANCELED') return t('workspace.history.status.canceled')
+  return t('workspace.history.status.waiting')
 }
 
 function typeText(taskType: string) {
-  if (taskType === 'TEACHING_PLAN') return '教案'
-  if (taskType === 'TEACHING_CALENDAR') return '教学日历'
-  return '其他'
+  if (taskType === 'TEACHING_PLAN') return t('workspace.history.type.teachingPlan')
+  if (taskType === 'TEACHING_CALENDAR') return t('workspace.history.type.teachingCalendar')
+  return t('workspace.history.type.other')
 }
 </script>
 
@@ -78,22 +80,22 @@ function typeText(taskType: string) {
     <div class="summary-grid">
       <article>
         <n-icon :component="History" />
-        <span>任务总数</span>
+        <span>{{ t('workspace.history.summary.total') }}</span>
         <strong>{{ tasks.length }}</strong>
       </article>
       <article>
         <n-icon :component="Clock" />
-        <span>处理中</span>
+        <span>{{ t('workspace.history.summary.running') }}</span>
         <strong>{{ runningCount }}</strong>
       </article>
       <article>
         <n-icon :component="History" />
-        <span>成功</span>
+        <span>{{ t('workspace.history.summary.success') }}</span>
         <strong>{{ successCount }}</strong>
       </article>
       <article>
         <n-icon :component="AlertTriangle" />
-        <span>失败</span>
+        <span>{{ t('workspace.history.summary.failed') }}</span>
         <strong>{{ failedCount }}</strong>
       </article>
     </div>
@@ -102,7 +104,7 @@ function typeText(taskType: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索任务名称、类型或状态"
+        :placeholder="t('workspace.history.searchPlaceholder')"
         @keyup.enter="loadTasks"
       >
         <template #prefix>
@@ -113,7 +115,7 @@ function typeText(taskType: string) {
         <template #icon>
           <n-icon :component="Refresh" />
         </template>
-        刷新
+        {{ t('common.actions.refresh') }}
       </n-button>
     </section>
 
@@ -121,7 +123,7 @@ function typeText(taskType: string) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadTasks">重试</n-button>
+        <n-button size="small" tertiary @click="loadTasks">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else-if="loading" :show="loading">
@@ -131,28 +133,28 @@ function typeText(taskType: string) {
       </n-spin>
 
       <div v-else-if="tasks.length === 0" class="empty-state">
-        <strong>暂无生成记录</strong>
-        <span>生成任务创建后会显示在这里。</span>
+        <strong>{{ t('workspace.history.emptyTitle') }}</strong>
+        <span>{{ t('workspace.history.emptyText') }}</span>
       </div>
 
       <div v-else class="history-table-wrap">
         <table class="history-table">
           <thead>
             <tr>
-              <th>任务</th>
-              <th>类型</th>
-              <th>状态</th>
-              <th>开始</th>
-              <th>完成</th>
-              <th>创建时间</th>
-              <th>操作</th>
+              <th>{{ t('workspace.history.table.task') }}</th>
+              <th>{{ t('workspace.history.table.type') }}</th>
+              <th>{{ t('workspace.history.table.status') }}</th>
+              <th>{{ t('workspace.history.table.started') }}</th>
+              <th>{{ t('workspace.history.table.finished') }}</th>
+              <th>{{ t('workspace.history.table.created') }}</th>
+              <th>{{ t('workspace.history.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in tasks" :key="item.id">
               <td>
                 <strong>{{ item.taskName }}</strong>
-                <span>{{ item.resultSummary || item.failureReason || '无摘要' }}</span>
+                <span>{{ item.resultSummary || item.failureReason || t('workspace.history.table.noSummary') }}</span>
               </td>
               <td>{{ typeText(item.taskType) }}</td>
               <td>
@@ -176,35 +178,35 @@ function typeText(taskType: string) {
       </div>
     </section>
 
-    <n-modal v-model:show="detailVisible" preset="card" title="生成记录详情" class="history-modal">
+    <n-modal v-model:show="detailVisible" preset="card" :title="t('workspace.history.detail.title')" class="history-modal">
       <n-spin :show="detailLoading">
         <section v-if="selectedTask" class="detail-grid">
           <article>
-            <span>任务名称</span>
+            <span>{{ t('workspace.history.detail.taskName') }}</span>
             <strong>{{ selectedTask.taskName }}</strong>
           </article>
           <article>
-            <span>任务类型</span>
+            <span>{{ t('workspace.history.detail.taskType') }}</span>
             <strong>{{ typeText(selectedTask.taskType) }}</strong>
           </article>
           <article>
-            <span>状态</span>
+            <span>{{ t('workspace.history.detail.status') }}</span>
             <strong>{{ statusText(selectedTask.status) }}</strong>
           </article>
           <article>
-            <span>课程 / 班级 / 学期</span>
+            <span>{{ t('workspace.history.detail.context') }}</span>
             <strong>{{ selectedTask.courseId || '-' }} / {{ selectedTask.classId || '-' }} / {{ selectedTask.semesterId || '-' }}</strong>
           </article>
           <article class="span-2">
-            <span>结果摘要</span>
+            <span>{{ t('workspace.history.detail.resultSummary') }}</span>
             <p>{{ selectedTask.resultSummary || '-' }}</p>
           </article>
           <article class="span-2">
-            <span>失败原因</span>
+            <span>{{ t('workspace.history.detail.failureReason') }}</span>
             <p>{{ selectedTask.failureReason || '-' }}</p>
           </article>
           <article class="span-2">
-            <span>输入快照</span>
+            <span>{{ t('workspace.history.detail.inputJson') }}</span>
             <pre>{{ selectedTask.inputJson || '{}' }}</pre>
           </article>
         </section>

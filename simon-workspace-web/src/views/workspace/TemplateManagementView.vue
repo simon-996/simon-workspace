@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
@@ -39,6 +40,8 @@ import {
   type TemplateUploadPayload,
 } from '../../api/workspace'
 
+const { t } = useI18n()
+
 interface FieldDraft {
   fieldKey: string
   fieldLabel: string
@@ -65,28 +68,28 @@ const uploadModalVisible = ref(false)
 const editModalVisible = ref(false)
 const uploadFileRef = ref<File | null>(null)
 
-const typeOptions = [
-  { label: 'Word', value: 'WORD' },
-  { label: 'Excel', value: 'EXCEL' },
-  { label: '其他', value: 'OTHER' },
-]
+const typeOptions = computed(() => [
+  { label: t('workspace.templates.type.word'), value: 'WORD' },
+  { label: t('workspace.templates.type.excel'), value: 'EXCEL' },
+  { label: t('workspace.templates.type.other'), value: 'OTHER' },
+])
 
-const statusOptions = [
-  { label: '启用', value: 'ACTIVE' },
-  { label: '归档', value: 'ARCHIVED' },
-]
+const statusOptions = computed(() => [
+  { label: t('common.states.active'), value: 'ACTIVE' },
+  { label: t('common.states.archived'), value: 'ARCHIVED' },
+])
 
-const fieldTypeOptions = [
-  { label: '文本', value: 'TEXT' },
-  { label: '数字', value: 'NUMBER' },
-  { label: '日期', value: 'DATE' },
-  { label: 'JSON', value: 'JSON' },
-]
+const fieldTypeOptions = computed(() => [
+  { label: t('workspace.templates.fieldType.text'), value: 'TEXT' },
+  { label: t('workspace.templates.fieldType.number'), value: 'NUMBER' },
+  { label: t('workspace.templates.fieldType.date'), value: 'DATE' },
+  { label: t('workspace.templates.fieldType.json'), value: 'JSON' },
+])
 
-const fieldStatusOptions = [
-  { label: '启用', value: 'ACTIVE' },
-  { label: '停用', value: 'DISABLED' },
-]
+const fieldStatusOptions = computed(() => [
+  { label: t('common.states.active'), value: 'ACTIVE' },
+  { label: t('common.states.disabled'), value: 'DISABLED' },
+])
 
 const uploadForm = reactive({
   templateName: '',
@@ -120,7 +123,7 @@ async function loadTemplates() {
       await selectTemplate(templates.value[0])
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '模板列表加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.templates.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -152,7 +155,7 @@ function onFileChange(event: Event) {
 
 async function submitUpload() {
   if (!uploadFileRef.value) {
-    message.warning('请选择模板文件')
+    message.warning(t('workspace.templates.messages.fileRequired'))
     return
   }
 
@@ -165,13 +168,13 @@ async function submitUpload() {
       status: uploadForm.status,
     }
     const created = await uploadTemplate(uploadFileRef.value, payload)
-    message.success('模板已上传')
+    message.success(t('workspace.templates.messages.uploaded'))
     uploadModalVisible.value = false
     selectedTemplateId.value = created.id
     await loadTemplates()
     await selectTemplate(created)
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '上传模板失败')
+    message.error(err instanceof Error ? err.message : t('workspace.templates.messages.uploadFailed'))
   } finally {
     uploading.value = false
   }
@@ -180,7 +183,7 @@ async function submitUpload() {
 async function submitEdit() {
   if (!selectedTemplateId.value) return
   if (!editForm.templateName.trim()) {
-    message.warning('请输入模板名称')
+    message.warning(t('workspace.templates.messages.nameRequired'))
     return
   }
 
@@ -193,11 +196,11 @@ async function submitEdit() {
       status: editForm.status,
     }
     await updateTemplate(selectedTemplateId.value, payload)
-    message.success('模板已更新')
+    message.success(t('workspace.templates.messages.updated'))
     editModalVisible.value = false
     await loadTemplates()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '更新模板失败')
+    message.error(err instanceof Error ? err.message : t('workspace.templates.messages.updateFailed'))
   } finally {
     saving.value = false
   }
@@ -210,7 +213,7 @@ async function selectTemplate(item: TemplateFile) {
     const rows = await fetchTemplateFields(item.id)
     fields.value = rows.map(fieldToDraft)
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '读取模板字段失败')
+    message.error(err instanceof Error ? err.message : t('workspace.templates.messages.fieldsLoadFailed'))
   } finally {
     fieldsLoading.value = false
   }
@@ -237,7 +240,7 @@ async function saveFields() {
   if (!selectedTemplateId.value) return
   const invalid = fields.value.find((field) => !field.fieldKey.trim())
   if (invalid) {
-    message.warning('字段键不能为空')
+    message.warning(t('workspace.templates.messages.fieldKeyRequired'))
     return
   }
 
@@ -246,9 +249,9 @@ async function saveFields() {
     const payload = fields.value.map(fieldDraftToPayload)
     const saved = await updateTemplateFields(selectedTemplateId.value, payload)
     fields.value = saved.map(fieldToDraft)
-    message.success('模板字段已保存')
+    message.success(t('workspace.templates.messages.fieldsSaved'))
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '保存模板字段失败')
+    message.error(err instanceof Error ? err.message : t('workspace.templates.messages.fieldsSaveFailed'))
   } finally {
     saving.value = false
   }
@@ -257,14 +260,14 @@ async function saveFields() {
 async function confirmDelete(item: TemplateFile) {
   try {
     await deleteTemplate(item.id)
-    message.success('模板已删除')
+    message.success(t('workspace.templates.messages.deleted'))
     if (selectedTemplateId.value === item.id) {
       selectedTemplateId.value = null
       fields.value = []
     }
     await loadTemplates()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '删除模板失败')
+    message.error(err instanceof Error ? err.message : t('workspace.templates.messages.deleteFailed'))
   }
 }
 
@@ -306,9 +309,9 @@ function formatSize(size: number) {
 }
 
 function typeText(type: string) {
-  if (type === 'WORD') return 'Word'
-  if (type === 'EXCEL') return 'Excel'
-  return '其他'
+  if (type === 'WORD') return t('workspace.templates.type.word')
+  if (type === 'EXCEL') return t('workspace.templates.type.excel')
+  return t('workspace.templates.type.other')
 }
 </script>
 
@@ -317,12 +320,12 @@ function typeText(type: string) {
     <div class="summary-grid">
       <article>
         <n-icon :component="Template" />
-        <span>模板总数</span>
+        <span>{{ t('workspace.templates.summary.total') }}</span>
         <strong>{{ templates.length }}</strong>
       </article>
       <article>
         <n-icon :component="Template" />
-        <span>启用模板</span>
+        <span>{{ t('workspace.templates.summary.active') }}</span>
         <strong>{{ activeCount }}</strong>
       </article>
       <article>
@@ -341,7 +344,7 @@ function typeText(type: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索模板名称、文件名或类型"
+        :placeholder="t('workspace.templates.searchPlaceholder')"
         @keyup.enter="loadTemplates"
       >
         <template #prefix>
@@ -353,13 +356,13 @@ function typeText(type: string) {
           <template #icon>
             <n-icon :component="Refresh" />
           </template>
-          刷新
+          {{ t('common.actions.refresh') }}
         </n-button>
         <n-button type="primary" class="icon-button" @click="openUpload">
           <template #icon>
             <n-icon :component="Upload" />
           </template>
-          上传模板
+          {{ t('workspace.templates.upload') }}
         </n-button>
       </div>
     </section>
@@ -369,7 +372,7 @@ function typeText(type: string) {
         <div v-if="error" class="error-state">
           <n-icon :component="AlertTriangle" />
           <span>{{ error }}</span>
-          <n-button size="small" tertiary @click="loadTemplates">重试</n-button>
+          <n-button size="small" tertiary @click="loadTemplates">{{ t('common.actions.retry') }}</n-button>
         </div>
 
         <n-spin v-else-if="loading" :show="loading">
@@ -379,13 +382,13 @@ function typeText(type: string) {
         </n-spin>
 
         <div v-else-if="templates.length === 0" class="empty-state">
-          <strong>暂无模板</strong>
-          <span>上传 Word 或 Excel 模板后维护字段。</span>
+          <strong>{{ t('workspace.templates.emptyTitle') }}</strong>
+          <span>{{ t('workspace.templates.emptyText') }}</span>
           <n-button type="primary" class="icon-button" @click="openUpload">
             <template #icon>
               <n-icon :component="Upload" />
             </template>
-            上传模板
+            {{ t('workspace.templates.upload') }}
           </n-button>
         </div>
 
@@ -393,12 +396,12 @@ function typeText(type: string) {
           <table class="template-table">
             <thead>
               <tr>
-                <th>模板</th>
-                <th>类型</th>
-                <th>大小</th>
-                <th>状态</th>
-                <th>更新时间</th>
-                <th>操作</th>
+                <th>{{ t('workspace.templates.table.template') }}</th>
+                <th>{{ t('workspace.templates.table.type') }}</th>
+                <th>{{ t('workspace.templates.table.size') }}</th>
+                <th>{{ t('workspace.templates.table.status') }}</th>
+                <th>{{ t('workspace.templates.table.updatedTime') }}</th>
+                <th>{{ t('workspace.templates.table.actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -411,7 +414,7 @@ function typeText(type: string) {
                 <td>{{ formatSize(item.fileSize) }}</td>
                 <td>
                   <span class="status-pill" :class="{ archived: item.status === 'ARCHIVED' }">
-                    {{ item.status === 'ARCHIVED' ? '归档' : '启用' }}
+                    {{ item.status === 'ARCHIVED' ? t('common.states.archived') : t('common.states.active') }}
                   </span>
                 </td>
                 <td>{{ item.updatedTime ? item.updatedTime.slice(0, 10) : '-' }}</td>
@@ -428,8 +431,8 @@ function typeText(type: string) {
                       </template>
                     </n-button>
                     <n-popconfirm
-                      positive-text="删除"
-                      negative-text="取消"
+                      :positive-text="t('common.actions.delete')"
+                      :negative-text="t('common.actions.cancel')"
                       @positive-click="confirmDelete(item)"
                     >
                       <template #trigger>
@@ -439,7 +442,7 @@ function typeText(type: string) {
                           </template>
                         </n-button>
                       </template>
-                      删除后模板和字段将从列表中移除。
+                      {{ t('workspace.templates.messages.deleteConfirm') }}
                     </n-popconfirm>
                   </div>
                 </td>
@@ -452,21 +455,21 @@ function typeText(type: string) {
       <section class="field-panel">
         <header>
           <div>
-            <span>字段</span>
-            <h2>{{ selectedTemplate?.templateName || '未选择模板' }}</h2>
+            <span>{{ t('workspace.templates.fields.title') }}</span>
+            <h2>{{ selectedTemplate?.templateName || t('workspace.templates.fields.unselected') }}</h2>
           </div>
           <div class="toolbar-actions">
             <n-button secondary class="icon-button" :disabled="!selectedTemplate" @click="addField">
               <template #icon>
                 <n-icon :component="Plus" />
               </template>
-              新增字段
+              {{ t('workspace.templates.fields.add') }}
             </n-button>
             <n-button type="primary" class="icon-button" :disabled="!selectedTemplate" :loading="saving" @click="saveFields">
               <template #icon>
                 <n-icon :component="DeviceFloppy" />
               </template>
-              保存字段
+              {{ t('workspace.templates.fields.save') }}
             </n-button>
           </div>
         </header>
@@ -478,43 +481,43 @@ function typeText(type: string) {
         </n-spin>
 
         <div v-else-if="!selectedTemplate" class="field-empty">
-          <strong>选择模板</strong>
-          <span>选择左侧模板后维护占位符字段。</span>
+          <strong>{{ t('workspace.templates.fields.chooseTitle') }}</strong>
+          <span>{{ t('workspace.templates.fields.chooseText') }}</span>
         </div>
 
         <div v-else-if="fields.length === 0" class="field-empty">
-          <strong>暂无字段</strong>
-          <span>新增字段后保存到模板。</span>
+          <strong>{{ t('workspace.templates.fields.emptyTitle') }}</strong>
+          <span>{{ t('workspace.templates.fields.emptyText') }}</span>
         </div>
 
         <div v-else class="field-list">
           <article v-for="(field, index) in fields" :key="index" class="field-row">
             <label>
-              <span>字段键</span>
+              <span>{{ t('workspace.templates.fields.fieldKey') }}</span>
               <n-input v-model:value="field.fieldKey" placeholder="courseName" />
             </label>
             <label>
-              <span>显示名</span>
+              <span>{{ t('workspace.templates.fields.fieldLabel') }}</span>
               <n-input v-model:value="field.fieldLabel" placeholder="课程名称" />
             </label>
             <label>
-              <span>类型</span>
+              <span>{{ t('workspace.templates.fields.fieldType') }}</span>
               <n-select v-model:value="field.fieldType" :options="fieldTypeOptions" />
             </label>
             <label>
-              <span>排序</span>
+              <span>{{ t('workspace.templates.fields.sortOrder') }}</span>
               <n-input-number v-model:value="field.sortOrder" :min="0" clearable />
             </label>
             <label>
-              <span>默认值</span>
+              <span>{{ t('workspace.templates.fields.defaultValue') }}</span>
               <n-input v-model:value="field.defaultValue" />
             </label>
             <label>
-              <span>状态</span>
+              <span>{{ t('workspace.templates.fields.status') }}</span>
               <n-select v-model:value="field.status" :options="fieldStatusOptions" />
             </label>
             <label class="field-check">
-              <n-checkbox v-model:checked="field.required">必填</n-checkbox>
+              <n-checkbox v-model:checked="field.required">{{ t('workspace.templates.fields.required') }}</n-checkbox>
             </label>
             <n-button quaternary type="error" size="small" @click="removeField(index)">
               <template #icon>
@@ -526,65 +529,65 @@ function typeText(type: string) {
       </section>
     </div>
 
-    <n-modal v-model:show="uploadModalVisible" preset="card" title="上传模板" class="template-modal">
+    <n-modal v-model:show="uploadModalVisible" preset="card" :title="t('workspace.templates.form.uploadTitle')" class="template-modal">
       <form class="template-form" @submit.prevent="submitUpload">
         <label class="field span-2">
-          <span>模板文件</span>
+          <span>{{ t('workspace.templates.form.file') }}</span>
           <input class="file-input" type="file" accept=".doc,.docx,.xls,.xlsx" @change="onFileChange" />
         </label>
 
         <label class="field">
-          <span>模板名称</span>
-          <n-input v-model:value="uploadForm.templateName" placeholder="不填则使用文件名" />
+          <span>{{ t('workspace.templates.form.templateName') }}</span>
+          <n-input v-model:value="uploadForm.templateName" :placeholder="t('workspace.templates.form.templateNamePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>模板类型</span>
+          <span>{{ t('workspace.templates.form.templateType') }}</span>
           <n-select v-model:value="uploadForm.templateType" clearable :options="typeOptions" />
         </label>
 
         <label class="field">
-          <span>状态</span>
+          <span>{{ t('workspace.templates.form.status') }}</span>
           <n-select v-model:value="uploadForm.status" :options="statusOptions" />
         </label>
 
         <label class="field span-2">
-          <span>说明</span>
+          <span>{{ t('workspace.templates.form.description') }}</span>
           <n-input v-model:value="uploadForm.description" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <div class="form-actions span-2">
-          <n-button @click="uploadModalVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="uploading">上传</n-button>
+          <n-button @click="uploadModalVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="uploading">{{ t('common.actions.upload') }}</n-button>
         </div>
       </form>
     </n-modal>
 
-    <n-modal v-model:show="editModalVisible" preset="card" title="编辑模板" class="template-modal">
+    <n-modal v-model:show="editModalVisible" preset="card" :title="t('workspace.templates.form.editTitle')" class="template-modal">
       <form class="template-form" @submit.prevent="submitEdit">
         <label class="field">
-          <span>模板名称</span>
+          <span>{{ t('workspace.templates.form.templateName') }}</span>
           <n-input v-model:value="editForm.templateName" />
         </label>
 
         <label class="field">
-          <span>模板类型</span>
+          <span>{{ t('workspace.templates.form.templateType') }}</span>
           <n-select v-model:value="editForm.templateType" :options="typeOptions" />
         </label>
 
         <label class="field">
-          <span>状态</span>
+          <span>{{ t('workspace.templates.form.status') }}</span>
           <n-select v-model:value="editForm.status" :options="statusOptions" />
         </label>
 
         <label class="field span-2">
-          <span>说明</span>
+          <span>{{ t('workspace.templates.form.description') }}</span>
           <n-input v-model:value="editForm.description" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <div class="form-actions span-2">
-          <n-button @click="editModalVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+          <n-button @click="editModalVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
         </div>
       </form>
     </n-modal>

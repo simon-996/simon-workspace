@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NButton, NIcon, NInput, NPopconfirm, NSpin, useMessage } from 'naive-ui'
 import { AlertTriangle, Download, FileText, Files, Refresh, Search, Trash } from '@vicons/tabler'
 
@@ -10,6 +11,7 @@ import {
   type FileResource,
 } from '../../api/workspace'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const files = ref<FileResource[]>([])
@@ -32,7 +34,7 @@ async function loadFiles() {
   try {
     files.value = await fetchFiles(keyword.value.trim())
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '文件列表加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.files.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -52,7 +54,7 @@ async function downloadFile(item: FileResource) {
     link.remove()
     URL.revokeObjectURL(url)
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '文件下载失败')
+    message.error(err instanceof Error ? err.message : t('workspace.files.messages.downloadFailed'))
   } finally {
     downloadingId.value = null
   }
@@ -61,10 +63,10 @@ async function downloadFile(item: FileResource) {
 async function confirmDelete(item: FileResource) {
   try {
     await deleteFileResource(item.id)
-    message.success('文件已删除')
+    message.success(t('workspace.files.messages.deleted'))
     await loadFiles()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '删除文件失败')
+    message.error(err instanceof Error ? err.message : t('workspace.files.messages.deleteFailed'))
   }
 }
 
@@ -75,10 +77,10 @@ function formatSize(size: number) {
 }
 
 function sourceText(sourceType: string) {
-  if (sourceType === 'UPLOAD') return '上传'
-  if (sourceType === 'TEMPLATE') return '模板'
-  if (sourceType === 'GENERATED') return '生成'
-  return '其他'
+  if (sourceType === 'UPLOAD') return t('workspace.files.source.upload')
+  if (sourceType === 'TEMPLATE') return t('workspace.files.source.template')
+  if (sourceType === 'GENERATED') return t('workspace.files.source.generated')
+  return t('workspace.files.source.other')
 }
 </script>
 
@@ -87,22 +89,22 @@ function sourceText(sourceType: string) {
     <div class="summary-grid">
       <article>
         <n-icon :component="Files" />
-        <span>文件总数</span>
+        <span>{{ t('workspace.files.summary.total') }}</span>
         <strong>{{ files.length }}</strong>
       </article>
       <article>
         <n-icon :component="FileText" />
-        <span>生成文件</span>
+        <span>{{ t('workspace.files.summary.generated') }}</span>
         <strong>{{ generatedCount }}</strong>
       </article>
       <article>
         <n-icon :component="FileText" />
-        <span>上传文件</span>
+        <span>{{ t('workspace.files.summary.uploaded') }}</span>
         <strong>{{ uploadCount }}</strong>
       </article>
       <article>
         <n-icon :component="Files" />
-        <span>总大小</span>
+        <span>{{ t('workspace.files.summary.size') }}</span>
         <strong>{{ formatSize(totalSize) }}</strong>
       </article>
     </div>
@@ -111,7 +113,7 @@ function sourceText(sourceType: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索文件名或来源"
+        :placeholder="t('workspace.files.searchPlaceholder')"
         @keyup.enter="loadFiles"
       >
         <template #prefix>
@@ -122,7 +124,7 @@ function sourceText(sourceType: string) {
         <template #icon>
           <n-icon :component="Refresh" />
         </template>
-        刷新
+        {{ t('common.actions.refresh') }}
       </n-button>
     </section>
 
@@ -130,7 +132,7 @@ function sourceText(sourceType: string) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadFiles">重试</n-button>
+        <n-button size="small" tertiary @click="loadFiles">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else-if="loading" :show="loading">
@@ -140,20 +142,20 @@ function sourceText(sourceType: string) {
       </n-spin>
 
       <div v-else-if="files.length === 0" class="empty-state">
-        <strong>暂无文件</strong>
-        <span>生成或上传后的文件会显示在这里。</span>
+        <strong>{{ t('workspace.files.emptyTitle') }}</strong>
+        <span>{{ t('workspace.files.emptyText') }}</span>
       </div>
 
       <div v-else class="file-table-wrap">
         <table class="file-table">
           <thead>
             <tr>
-              <th>文件</th>
-              <th>来源</th>
-              <th>类型</th>
-              <th>大小</th>
-              <th>创建时间</th>
-              <th>操作</th>
+              <th>{{ t('workspace.files.table.file') }}</th>
+              <th>{{ t('workspace.files.table.source') }}</th>
+              <th>{{ t('workspace.files.table.type') }}</th>
+              <th>{{ t('workspace.files.table.size') }}</th>
+              <th>{{ t('workspace.files.table.createdTime') }}</th>
+              <th>{{ t('workspace.files.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -181,8 +183,8 @@ function sourceText(sourceType: string) {
                     </template>
                   </n-button>
                   <n-popconfirm
-                    positive-text="删除"
-                    negative-text="取消"
+                    :positive-text="t('common.actions.delete')"
+                    :negative-text="t('common.actions.cancel')"
                     @positive-click="confirmDelete(item)"
                   >
                     <template #trigger>
@@ -192,7 +194,7 @@ function sourceText(sourceType: string) {
                         </template>
                       </n-button>
                     </template>
-                    删除后文件将从列表中移除。
+                    {{ t('workspace.files.messages.deleteConfirm') }}
                   </n-popconfirm>
                 </div>
               </td>
