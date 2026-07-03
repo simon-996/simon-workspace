@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NIcon,
@@ -22,6 +23,7 @@ import {
   type CoursePayload,
 } from '../../api/workspace'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const courses = ref<Course[]>([])
@@ -32,10 +34,10 @@ const error = ref('')
 const modalVisible = ref(false)
 const editingId = ref<string | null>(null)
 
-const statusOptions = [
-  { label: '启用', value: 'ACTIVE' },
-  { label: '归档', value: 'ARCHIVED' },
-]
+const statusOptions = computed(() => [
+  { label: t('common.states.active'), value: 'ACTIVE' },
+  { label: t('common.states.archived'), value: 'ARCHIVED' },
+])
 
 const form = reactive({
   courseName: '',
@@ -60,7 +62,7 @@ const form = reactive({
 const activeCount = computed(() => courses.value.filter((course) => course.status === 'ACTIVE').length)
 const archivedCount = computed(() => courses.value.filter((course) => course.status === 'ARCHIVED').length)
 const totalHours = computed(() => courses.value.reduce((sum, course) => sum + (course.totalHours ?? 0), 0))
-const modalTitle = computed(() => (editingId.value ? '编辑课程' : '新增课程'))
+const modalTitle = computed(() => (editingId.value ? t('workspace.courses.modal.edit') : t('workspace.courses.modal.create')))
 
 onMounted(() => {
   void loadCourses()
@@ -72,7 +74,7 @@ async function loadCourses() {
   try {
     courses.value = await fetchCourses(keyword.value.trim())
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '课程列表加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.courses.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -109,12 +111,12 @@ function openEdit(course: Course) {
 
 async function submitCourse() {
   if (!form.courseName.trim()) {
-    message.warning('请输入课程名称')
+    message.warning(t('workspace.courses.messages.nameRequired'))
     return
   }
 
   if (form.totalHours < 0) {
-    message.warning('总学时不能小于 0')
+    message.warning(t('workspace.courses.messages.invalidTotalHours'))
     return
   }
 
@@ -123,15 +125,15 @@ async function submitCourse() {
     const payload = buildPayload()
     if (editingId.value) {
       await updateCourse(editingId.value, payload)
-      message.success('课程已更新')
+      message.success(t('workspace.courses.messages.updated'))
     } else {
       await createCourse(payload)
-      message.success('课程已新增')
+      message.success(t('workspace.courses.messages.created'))
     }
     modalVisible.value = false
     await loadCourses()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '保存课程失败')
+    message.error(err instanceof Error ? err.message : t('workspace.courses.messages.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -140,10 +142,10 @@ async function submitCourse() {
 async function confirmDelete(course: Course) {
   try {
     await deleteCourse(course.id)
-    message.success('课程已删除')
+    message.success(t('workspace.courses.messages.deleted'))
     await loadCourses()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '删除课程失败')
+    message.error(err instanceof Error ? err.message : t('workspace.courses.messages.deleteFailed'))
   }
 }
 
@@ -195,7 +197,7 @@ function textOrNull(value: string) {
 }
 
 function statusText(status: string) {
-  return status === 'ARCHIVED' ? '归档' : '启用'
+  return status === 'ARCHIVED' ? t('common.states.archived') : t('common.states.active')
 }
 </script>
 
@@ -203,19 +205,19 @@ function statusText(status: string) {
   <section class="course-page">
     <div class="summary-grid">
       <article>
-        <span>课程总数</span>
+        <span>{{ t('workspace.courses.summary.total') }}</span>
         <strong>{{ courses.length }}</strong>
       </article>
       <article>
-        <span>启用课程</span>
+        <span>{{ t('workspace.courses.summary.active') }}</span>
         <strong>{{ activeCount }}</strong>
       </article>
       <article>
-        <span>归档课程</span>
+        <span>{{ t('workspace.courses.summary.archived') }}</span>
         <strong>{{ archivedCount }}</strong>
       </article>
       <article>
-        <span>总学时</span>
+        <span>{{ t('workspace.courses.summary.totalHours') }}</span>
         <strong>{{ totalHours }}</strong>
       </article>
     </div>
@@ -224,7 +226,7 @@ function statusText(status: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索课程名称或编码"
+        :placeholder="t('workspace.courses.searchPlaceholder')"
         @keyup.enter="loadCourses"
       >
         <template #prefix>
@@ -236,13 +238,13 @@ function statusText(status: string) {
           <template #icon>
             <n-icon :component="Refresh" />
           </template>
-          刷新
+          {{ t('common.actions.refresh') }}
         </n-button>
         <n-button type="primary" class="icon-button" @click="openCreate">
           <template #icon>
             <n-icon :component="Plus" />
           </template>
-          新增课程
+          {{ t('workspace.courses.create') }}
         </n-button>
       </div>
     </section>
@@ -251,7 +253,7 @@ function statusText(status: string) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadCourses">重试</n-button>
+        <n-button size="small" tertiary @click="loadCourses">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else-if="loading" :show="loading">
@@ -261,13 +263,13 @@ function statusText(status: string) {
       </n-spin>
 
       <div v-else-if="courses.length === 0" class="empty-state">
-        <strong>暂无课程</strong>
-        <span>创建第一门课程后会显示在这里。</span>
+        <strong>{{ t('workspace.courses.emptyTitle') }}</strong>
+        <span>{{ t('workspace.courses.emptyText') }}</span>
         <n-button type="primary" class="icon-button" @click="openCreate">
           <template #icon>
             <n-icon :component="Plus" />
           </template>
-          新增课程
+          {{ t('workspace.courses.create') }}
         </n-button>
       </div>
 
@@ -275,28 +277,28 @@ function statusText(status: string) {
         <table class="course-table">
           <thead>
             <tr>
-              <th>课程</th>
-              <th>专业 / 年级</th>
-              <th>学时</th>
-              <th>学分</th>
-              <th>状态</th>
-              <th>更新时间</th>
-              <th>操作</th>
+              <th>{{ t('workspace.courses.table.course') }}</th>
+              <th>{{ t('workspace.courses.table.majorGrade') }}</th>
+              <th>{{ t('workspace.courses.table.hours') }}</th>
+              <th>{{ t('workspace.courses.table.credit') }}</th>
+              <th>{{ t('workspace.courses.table.status') }}</th>
+              <th>{{ t('workspace.courses.table.updatedTime') }}</th>
+              <th>{{ t('workspace.courses.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="course in courses" :key="course.id">
               <td>
                 <strong>{{ course.courseName }}</strong>
-                <span>{{ course.courseCode || '未设置编码' }}</span>
+                <span>{{ course.courseCode || t('workspace.courses.table.unsetCode') }}</span>
               </td>
               <td>
-                <strong>{{ course.major || '未设置专业' }}</strong>
-                <span>{{ course.grade || '未设置年级' }}</span>
+                <strong>{{ course.major || t('workspace.courses.table.unsetMajor') }}</strong>
+                <span>{{ course.grade || t('workspace.courses.table.unsetGrade') }}</span>
               </td>
               <td>
                 <strong>{{ course.totalHours ?? 0 }}</strong>
-                <span>理论 {{ course.theoryHours ?? '-' }} / 实验 {{ course.experimentHours ?? '-' }}</span>
+                <span>{{ t('workspace.courses.table.theoryExperiment', { theory: course.theoryHours ?? '-', experiment: course.experimentHours ?? '-' }) }}</span>
               </td>
               <td>{{ course.credit ?? '-' }}</td>
               <td>
@@ -313,8 +315,8 @@ function statusText(status: string) {
                     </template>
                   </n-button>
                   <n-popconfirm
-                    positive-text="删除"
-                    negative-text="取消"
+                    :positive-text="t('common.actions.delete')"
+                    :negative-text="t('common.actions.cancel')"
                     @positive-click="confirmDelete(course)"
                   >
                     <template #trigger>
@@ -324,7 +326,7 @@ function statusText(status: string) {
                         </template>
                       </n-button>
                     </template>
-                    删除后课程将从列表中移除。
+                    {{ t('workspace.courses.messages.deleteConfirm') }}
                   </n-popconfirm>
                 </div>
               </td>
@@ -337,93 +339,93 @@ function statusText(status: string) {
     <n-modal v-model:show="modalVisible" preset="card" :title="modalTitle" class="course-modal">
       <form class="course-form" @submit.prevent="submitCourse">
         <label class="field span-2">
-          <span>课程名称</span>
-          <n-input v-model:value="form.courseName" placeholder="例如：Java 程序设计" />
+          <span>{{ t('workspace.courses.form.courseName') }}</span>
+          <n-input v-model:value="form.courseName" :placeholder="t('workspace.courses.form.courseNamePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>课程编码</span>
-          <n-input v-model:value="form.courseCode" placeholder="例如：CS-JAVA-01" />
+          <span>{{ t('workspace.courses.form.courseCode') }}</span>
+          <n-input v-model:value="form.courseCode" :placeholder="t('workspace.courses.form.courseCodePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>状态</span>
+          <span>{{ t('workspace.courses.form.status') }}</span>
           <n-select v-model:value="form.status" :options="statusOptions" />
         </label>
 
         <label class="field">
-          <span>专业</span>
-          <n-input v-model:value="form.major" placeholder="例如：软件技术" />
+          <span>{{ t('workspace.courses.form.major') }}</span>
+          <n-input v-model:value="form.major" :placeholder="t('workspace.courses.form.majorPlaceholder')" />
         </label>
 
         <label class="field">
-          <span>年级</span>
-          <n-input v-model:value="form.grade" placeholder="例如：2026" />
+          <span>{{ t('workspace.courses.form.grade') }}</span>
+          <n-input v-model:value="form.grade" :placeholder="t('workspace.courses.form.gradePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>总学时</span>
+          <span>{{ t('workspace.courses.form.totalHours') }}</span>
           <n-input-number v-model:value="form.totalHours" :min="0" />
         </label>
 
         <label class="field">
-          <span>理论学时</span>
+          <span>{{ t('workspace.courses.form.theoryHours') }}</span>
           <n-input-number v-model:value="form.theoryHours" :min="0" clearable />
         </label>
 
         <label class="field">
-          <span>实验学时</span>
+          <span>{{ t('workspace.courses.form.experimentHours') }}</span>
           <n-input-number v-model:value="form.experimentHours" :min="0" clearable />
         </label>
 
         <label class="field">
-          <span>周学时</span>
+          <span>{{ t('workspace.courses.form.weeklyHours') }}</span>
           <n-input-number v-model:value="form.weeklyHours" :min="0" clearable />
         </label>
 
         <label class="field">
-          <span>学分</span>
+          <span>{{ t('workspace.courses.form.credit') }}</span>
           <n-input-number v-model:value="form.credit" :min="0" :precision="1" clearable />
         </label>
 
         <label class="field span-2">
-          <span>教材</span>
-          <n-input v-model:value="form.textbook" placeholder="教材名称、版本或出版社" />
+          <span>{{ t('workspace.courses.form.textbook') }}</span>
+          <n-input v-model:value="form.textbook" :placeholder="t('workspace.courses.form.textbookPlaceholder')" />
         </label>
 
         <label class="field span-2">
-          <span>课程目标</span>
+          <span>{{ t('workspace.courses.form.courseGoal') }}</span>
           <n-input v-model:value="form.courseGoal" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <label class="field">
-          <span>教学重点</span>
+          <span>{{ t('workspace.courses.form.keyPoint') }}</span>
           <n-input v-model:value="form.keyPoint" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <label class="field">
-          <span>教学难点</span>
+          <span>{{ t('workspace.courses.form.difficultPoint') }}</span>
           <n-input v-model:value="form.difficultPoint" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <label class="field span-2">
-          <span>考核方式</span>
+          <span>{{ t('workspace.courses.form.assessmentMethod') }}</span>
           <n-input v-model:value="form.assessmentMethod" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <label class="field span-2">
-          <span>课程大纲</span>
+          <span>{{ t('workspace.courses.form.syllabus') }}</span>
           <n-input v-model:value="form.syllabus" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" />
         </label>
 
         <label class="field span-2">
-          <span>课程简介</span>
+          <span>{{ t('workspace.courses.form.description') }}</span>
           <n-input v-model:value="form.description" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" />
         </label>
 
         <div class="form-actions span-2">
-          <n-button @click="modalVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+          <n-button @click="modalVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
         </div>
       </form>
     </n-modal>
