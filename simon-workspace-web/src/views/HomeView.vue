@@ -62,9 +62,6 @@ async function loadSite() {
         <div class="link-row" aria-label="主要入口">
           <n-button v-if="site.blogVisible" text tag="a" href="#blog">Blog</n-button>
           <n-button v-if="site.projectsVisible" text tag="a" href="#projects">Projects</n-button>
-          <n-button v-if="site.githubUrl" text tag="a" :href="site.githubUrl" target="_blank" rel="noreferrer">
-            GitHub
-          </n-button>
           <n-button text tag="router-link" to="/login">Login</n-button>
         </div>
 
