@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NIcon,
@@ -21,6 +22,7 @@ import {
   type ClassInfoPayload,
 } from '../../api/workspace'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const classes = ref<ClassInfo[]>([])
@@ -45,7 +47,7 @@ const totalStudents = computed(() =>
 )
 const majorCount = computed(() => new Set(classes.value.map((item) => item.major).filter(Boolean)).size)
 const gradeCount = computed(() => new Set(classes.value.map((item) => item.grade).filter(Boolean)).size)
-const modalTitle = computed(() => (editingId.value ? '编辑班级' : '新增班级'))
+const modalTitle = computed(() => (editingId.value ? t('workspace.classes.modal.edit') : t('workspace.classes.modal.create')))
 
 onMounted(() => {
   void loadClasses()
@@ -57,7 +59,7 @@ async function loadClasses() {
   try {
     classes.value = await fetchClasses(keyword.value.trim())
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '班级列表加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.classes.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -83,12 +85,12 @@ function openEdit(item: ClassInfo) {
 
 async function submitClassInfo() {
   if (!form.className.trim()) {
-    message.warning('请输入班级名称')
+    message.warning(t('workspace.classes.messages.nameRequired'))
     return
   }
 
   if (form.studentCount !== null && form.studentCount < 0) {
-    message.warning('学生人数不能小于 0')
+    message.warning(t('workspace.classes.messages.invalidStudentCount'))
     return
   }
 
@@ -97,15 +99,15 @@ async function submitClassInfo() {
     const payload = buildPayload()
     if (editingId.value) {
       await updateClassInfo(editingId.value, payload)
-      message.success('班级已更新')
+      message.success(t('workspace.classes.messages.updated'))
     } else {
       await createClassInfo(payload)
-      message.success('班级已新增')
+      message.success(t('workspace.classes.messages.created'))
     }
     modalVisible.value = false
     await loadClasses()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '保存班级失败')
+    message.error(err instanceof Error ? err.message : t('workspace.classes.messages.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -114,10 +116,10 @@ async function submitClassInfo() {
 async function confirmDelete(item: ClassInfo) {
   try {
     await deleteClassInfo(item.id)
-    message.success('班级已删除')
+    message.success(t('workspace.classes.messages.deleted'))
     await loadClasses()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '删除班级失败')
+    message.error(err instanceof Error ? err.message : t('workspace.classes.messages.deleteFailed'))
   }
 }
 
@@ -152,22 +154,22 @@ function textOrNull(value: string) {
     <div class="summary-strip">
       <article>
         <n-icon :component="Users" />
-        <span>班级总数</span>
+        <span>{{ t('workspace.classes.summary.total') }}</span>
         <strong>{{ classes.length }}</strong>
       </article>
       <article>
         <n-icon :component="School" />
-        <span>专业覆盖</span>
+        <span>{{ t('workspace.classes.summary.majorCoverage') }}</span>
         <strong>{{ majorCount }}</strong>
       </article>
       <article>
         <n-icon :component="School" />
-        <span>年级覆盖</span>
+        <span>{{ t('workspace.classes.summary.gradeCoverage') }}</span>
         <strong>{{ gradeCount }}</strong>
       </article>
       <article>
         <n-icon :component="Users" />
-        <span>学生人数</span>
+        <span>{{ t('workspace.classes.summary.students') }}</span>
         <strong>{{ totalStudents }}</strong>
       </article>
     </div>
@@ -176,7 +178,7 @@ function textOrNull(value: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索班级、专业或年级"
+        :placeholder="t('workspace.classes.searchPlaceholder')"
         @keyup.enter="loadClasses"
       >
         <template #prefix>
@@ -188,13 +190,13 @@ function textOrNull(value: string) {
           <template #icon>
             <n-icon :component="Refresh" />
           </template>
-          刷新
+          {{ t('common.actions.refresh') }}
         </n-button>
         <n-button type="primary" class="icon-button" @click="openCreate">
           <template #icon>
             <n-icon :component="Plus" />
           </template>
-          新增班级
+          {{ t('workspace.classes.create') }}
         </n-button>
       </div>
     </section>
@@ -203,7 +205,7 @@ function textOrNull(value: string) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadClasses">重试</n-button>
+        <n-button size="small" tertiary @click="loadClasses">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else-if="loading" :show="loading">
@@ -213,13 +215,13 @@ function textOrNull(value: string) {
       </n-spin>
 
       <div v-else-if="classes.length === 0" class="empty-state">
-        <strong>暂无班级</strong>
-        <span>新增班级后可以关联课程、学期和生成任务。</span>
+        <strong>{{ t('workspace.classes.emptyTitle') }}</strong>
+        <span>{{ t('workspace.classes.emptyText') }}</span>
         <n-button type="primary" class="icon-button" @click="openCreate">
           <template #icon>
             <n-icon :component="Plus" />
           </template>
-          新增班级
+          {{ t('workspace.classes.create') }}
         </n-button>
       </div>
 
@@ -227,20 +229,20 @@ function textOrNull(value: string) {
         <table class="class-table">
           <thead>
             <tr>
-              <th>班级</th>
-              <th>专业</th>
-              <th>年级</th>
-              <th>学生人数</th>
-              <th>辅导员</th>
-              <th>更新时间</th>
-              <th>操作</th>
+              <th>{{ t('workspace.classes.table.className') }}</th>
+              <th>{{ t('workspace.classes.table.major') }}</th>
+              <th>{{ t('workspace.classes.table.grade') }}</th>
+              <th>{{ t('workspace.classes.table.studentCount') }}</th>
+              <th>{{ t('workspace.classes.table.counselor') }}</th>
+              <th>{{ t('workspace.classes.table.updatedTime') }}</th>
+              <th>{{ t('workspace.classes.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in classes" :key="item.id">
               <td>
                 <strong>{{ item.className }}</strong>
-                <span>{{ item.remark || '无备注' }}</span>
+                <span>{{ item.remark || t('workspace.classes.table.noRemark') }}</span>
               </td>
               <td>{{ item.major || '-' }}</td>
               <td>{{ item.grade || '-' }}</td>
@@ -255,8 +257,8 @@ function textOrNull(value: string) {
                     </template>
                   </n-button>
                   <n-popconfirm
-                    positive-text="删除"
-                    negative-text="取消"
+                    :positive-text="t('common.actions.delete')"
+                    :negative-text="t('common.actions.cancel')"
                     @positive-click="confirmDelete(item)"
                   >
                     <template #trigger>
@@ -266,7 +268,7 @@ function textOrNull(value: string) {
                         </template>
                       </n-button>
                     </template>
-                    删除后班级将从列表中移除。
+                    {{ t('workspace.classes.messages.deleteConfirm') }}
                   </n-popconfirm>
                 </div>
               </td>
@@ -279,38 +281,38 @@ function textOrNull(value: string) {
     <n-modal v-model:show="modalVisible" preset="card" :title="modalTitle" class="class-modal">
       <form class="class-form" @submit.prevent="submitClassInfo">
         <label class="field">
-          <span>班级名称</span>
-          <n-input v-model:value="form.className" placeholder="例如：软件 2601 班" />
+          <span>{{ t('workspace.classes.form.className') }}</span>
+          <n-input v-model:value="form.className" :placeholder="t('workspace.classes.form.classNamePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>专业</span>
-          <n-input v-model:value="form.major" placeholder="例如：软件技术" />
+          <span>{{ t('workspace.classes.form.major') }}</span>
+          <n-input v-model:value="form.major" :placeholder="t('workspace.classes.form.majorPlaceholder')" />
         </label>
 
         <label class="field">
-          <span>年级</span>
-          <n-input v-model:value="form.grade" placeholder="例如：2026" />
+          <span>{{ t('workspace.classes.form.grade') }}</span>
+          <n-input v-model:value="form.grade" :placeholder="t('workspace.classes.form.gradePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>学生人数</span>
+          <span>{{ t('workspace.classes.form.studentCount') }}</span>
           <n-input-number v-model:value="form.studentCount" :min="0" clearable />
         </label>
 
         <label class="field">
-          <span>辅导员</span>
-          <n-input v-model:value="form.counselor" placeholder="辅导员姓名" />
+          <span>{{ t('workspace.classes.form.counselor') }}</span>
+          <n-input v-model:value="form.counselor" :placeholder="t('workspace.classes.form.counselorPlaceholder')" />
         </label>
 
         <label class="field span-2">
-          <span>备注</span>
+          <span>{{ t('workspace.classes.form.remark') }}</span>
           <n-input v-model:value="form.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" />
         </label>
 
         <div class="form-actions span-2">
-          <n-button @click="modalVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+          <n-button @click="modalVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
         </div>
       </form>
     </n-modal>

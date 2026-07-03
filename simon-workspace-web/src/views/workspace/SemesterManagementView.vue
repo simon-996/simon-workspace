@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
   NButton,
   NCheckbox,
@@ -26,6 +27,7 @@ import {
   type SemesterPayload,
 } from '../../api/workspace'
 
+const { t } = useI18n()
 const message = useMessage()
 
 const semesters = ref<Semester[]>([])
@@ -41,11 +43,11 @@ const editingId = ref<string | null>(null)
 const selectedSemesterId = ref<string | null>(null)
 const editingCalendarId = ref<string | null>(null)
 
-const statusOptions = [
-  { label: '计划中', value: 'PLANNED' },
-  { label: '进行中', value: 'ACTIVE' },
-  { label: '已结束', value: 'CLOSED' },
-]
+const statusOptions = computed(() => [
+  { label: t('common.states.planned'), value: 'PLANNED' },
+  { label: t('common.states.active'), value: 'ACTIVE' },
+  { label: t('common.states.closed'), value: 'CLOSED' },
+])
 
 const form = reactive({
   academicYear: '',
@@ -74,7 +76,7 @@ const activeSemester = computed(() => semesters.value.find((item) => item.status
 const plannedCount = computed(() => semesters.value.filter((item) => item.status === 'PLANNED').length)
 const closedCount = computed(() => semesters.value.filter((item) => item.status === 'CLOSED').length)
 const selectedSemester = computed(() => semesters.value.find((item) => item.id === selectedSemesterId.value))
-const modalTitle = computed(() => (editingId.value ? '编辑学期' : '新增学期'))
+const modalTitle = computed(() => (editingId.value ? t('workspace.semesters.modal.edit') : t('workspace.semesters.modal.create')))
 
 onMounted(() => {
   void loadSemesters()
@@ -89,7 +91,7 @@ async function loadSemesters() {
       selectedSemesterId.value = semesters.value[0].id
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '学期列表加载失败'
+    error.value = err instanceof Error ? err.message : t('workspace.semesters.messages.loadFailed')
     message.error(error.value)
   } finally {
     loading.value = false
@@ -119,27 +121,27 @@ function openEdit(item: Semester) {
 
 async function submitSemester() {
   if (!form.academicYear.trim() || !form.semesterName.trim()) {
-    message.warning('请输入学年和学期名称')
+    message.warning(t('workspace.semesters.messages.nameRequired'))
     return
   }
 
   if (!form.startDate) {
-    message.warning('请选择开学日期')
+    message.warning(t('workspace.semesters.messages.startDateRequired'))
     return
   }
 
   if (!form.totalWeeks || form.totalWeeks < 1) {
-    message.warning('总周数至少为 1')
+    message.warning(t('workspace.semesters.messages.invalidTotalWeeks'))
     return
   }
 
   if (form.endDate && form.endDate < form.startDate) {
-    message.warning('结束日期不能早于开学日期')
+    message.warning(t('workspace.semesters.messages.invalidEndDate'))
     return
   }
 
   if (form.examWeek !== null && (form.examWeek < 1 || form.examWeek > form.totalWeeks)) {
-    message.warning('考试周必须在总周数范围内')
+    message.warning(t('workspace.semesters.messages.invalidExamWeek'))
     return
   }
 
@@ -148,15 +150,15 @@ async function submitSemester() {
     const payload = buildPayload()
     if (editingId.value) {
       await updateSemester(editingId.value, payload)
-      message.success('学期已更新')
+      message.success(t('workspace.semesters.messages.updated'))
     } else {
       await createSemester(payload)
-      message.success('学期已新增')
+      message.success(t('workspace.semesters.messages.created'))
     }
     modalVisible.value = false
     await loadSemesters()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '保存学期失败')
+    message.error(err instanceof Error ? err.message : t('workspace.semesters.messages.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -168,7 +170,7 @@ async function viewCalendar(item: Semester) {
   try {
     calendarRows.value = await fetchSemesterCalendar(item.id)
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '读取周历失败')
+    message.error(err instanceof Error ? err.message : t('workspace.semesters.messages.calendarLoadFailed'))
   } finally {
     calendarLoading.value = false
   }
@@ -179,9 +181,9 @@ async function generateCalendar(item: Semester) {
   calendarLoading.value = true
   try {
     calendarRows.value = await generateSemesterCalendar(item.id)
-    message.success('周历已生成')
+    message.success(t('workspace.semesters.messages.calendarGenerated'))
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '生成周历失败')
+    message.error(err instanceof Error ? err.message : t('workspace.semesters.messages.calendarGenerateFailed'))
   } finally {
     calendarLoading.value = false
   }
@@ -205,12 +207,12 @@ async function submitCalendarEdit() {
   }
 
   if (!calendarForm.startDate || !calendarForm.endDate) {
-    message.warning('请选择周开始和结束日期')
+    message.warning(t('workspace.semesters.messages.calendarDateRequired'))
     return
   }
 
   if (calendarForm.endDate < calendarForm.startDate) {
-    message.warning('周结束日期不能早于开始日期')
+    message.warning(t('workspace.semesters.messages.calendarInvalidEndDate'))
     return
   }
 
@@ -227,9 +229,9 @@ async function submitCalendarEdit() {
     const updated = await updateSemesterCalendar(selectedSemesterId.value, editingCalendarId.value, payload)
     calendarRows.value = calendarRows.value.map((item) => (item.id === updated.id ? updated : item))
     calendarEditVisible.value = false
-    message.success('周历已更新')
+    message.success(t('workspace.semesters.messages.calendarUpdated'))
   } catch (err) {
-    message.error(err instanceof Error ? err.message : '保存周历失败')
+    message.error(err instanceof Error ? err.message : t('workspace.semesters.messages.calendarSaveFailed'))
   } finally {
     saving.value = false
   }
@@ -269,9 +271,9 @@ function textOrNull(value: string) {
 }
 
 function statusText(status: string) {
-  if (status === 'ACTIVE') return '进行中'
-  if (status === 'CLOSED') return '已结束'
-  return '计划中'
+  if (status === 'ACTIVE') return t('common.states.active')
+  if (status === 'CLOSED') return t('common.states.closed')
+  return t('common.states.planned')
 }
 </script>
 
@@ -280,22 +282,22 @@ function statusText(status: string) {
     <div class="summary-grid">
       <article>
         <n-icon :component="Calendar" />
-        <span>学期总数</span>
+        <span>{{ t('workspace.semesters.summary.total') }}</span>
         <strong>{{ semesters.length }}</strong>
       </article>
       <article>
         <n-icon :component="CalendarTime" />
-        <span>当前学期</span>
+        <span>{{ t('workspace.semesters.summary.current') }}</span>
         <strong>{{ activeSemester?.semesterName || '-' }}</strong>
       </article>
       <article>
         <n-icon :component="Calendar" />
-        <span>计划中</span>
+        <span>{{ t('workspace.semesters.summary.planned') }}</span>
         <strong>{{ plannedCount }}</strong>
       </article>
       <article>
         <n-icon :component="Calendar" />
-        <span>已结束</span>
+        <span>{{ t('workspace.semesters.summary.closed') }}</span>
         <strong>{{ closedCount }}</strong>
       </article>
     </div>
@@ -304,7 +306,7 @@ function statusText(status: string) {
       <n-input
         v-model:value="keyword"
         clearable
-        placeholder="搜索学年或学期名称"
+        :placeholder="t('workspace.semesters.searchPlaceholder')"
         @keyup.enter="loadSemesters"
       >
         <template #prefix>
@@ -316,13 +318,13 @@ function statusText(status: string) {
           <template #icon>
             <n-icon :component="Refresh" />
           </template>
-          刷新
+          {{ t('common.actions.refresh') }}
         </n-button>
         <n-button type="primary" class="icon-button" @click="openCreate">
           <template #icon>
             <n-icon :component="Plus" />
           </template>
-          新增学期
+          {{ t('workspace.semesters.create') }}
         </n-button>
       </div>
     </section>
@@ -331,7 +333,7 @@ function statusText(status: string) {
       <div v-if="error" class="error-state">
         <n-icon :component="AlertTriangle" />
         <span>{{ error }}</span>
-        <n-button size="small" tertiary @click="loadSemesters">重试</n-button>
+        <n-button size="small" tertiary @click="loadSemesters">{{ t('common.actions.retry') }}</n-button>
       </div>
 
       <n-spin v-else-if="loading" :show="loading">
@@ -341,13 +343,13 @@ function statusText(status: string) {
       </n-spin>
 
       <div v-else-if="semesters.length === 0" class="empty-state">
-        <strong>暂无学期</strong>
-        <span>新增学期后可以生成周历。</span>
+        <strong>{{ t('workspace.semesters.emptyTitle') }}</strong>
+        <span>{{ t('workspace.semesters.emptyText') }}</span>
         <n-button type="primary" class="icon-button" @click="openCreate">
           <template #icon>
             <n-icon :component="Plus" />
           </template>
-          新增学期
+          {{ t('workspace.semesters.create') }}
         </n-button>
       </div>
 
@@ -355,13 +357,13 @@ function statusText(status: string) {
         <table class="semester-table">
           <thead>
             <tr>
-              <th>学期</th>
-              <th>日期</th>
-              <th>周数</th>
-              <th>考试周</th>
-              <th>状态</th>
-              <th>更新时间</th>
-              <th>操作</th>
+              <th>{{ t('workspace.semesters.table.semester') }}</th>
+              <th>{{ t('workspace.semesters.table.date') }}</th>
+              <th>{{ t('workspace.semesters.table.weeks') }}</th>
+              <th>{{ t('workspace.semesters.table.examWeek') }}</th>
+              <th>{{ t('workspace.semesters.table.status') }}</th>
+              <th>{{ t('workspace.semesters.table.updatedTime') }}</th>
+              <th>{{ t('workspace.semesters.table.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -372,7 +374,7 @@ function statusText(status: string) {
               </td>
               <td>
                 <strong>{{ item.startDate }}</strong>
-                <span>{{ item.endDate || '未设置结束日期' }}</span>
+                <span>{{ item.endDate || t('workspace.semesters.table.unsetEndDate') }}</span>
               </td>
               <td>{{ item.totalWeeks }}</td>
               <td>{{ item.examWeek ?? '-' }}</td>
@@ -410,14 +412,14 @@ function statusText(status: string) {
     <section class="calendar-panel">
       <header>
         <div>
-          <span>周历</span>
-          <h2>{{ selectedSemester ? `${selectedSemester.academicYear} ${selectedSemester.semesterName}` : '未选择学期' }}</h2>
+          <span>{{ t('workspace.semesters.calendar.title') }}</span>
+          <h2>{{ selectedSemester ? `${selectedSemester.academicYear} ${selectedSemester.semesterName}` : t('workspace.semesters.calendar.unselected') }}</h2>
         </div>
         <n-button v-if="selectedSemester" secondary class="icon-button" :loading="calendarLoading" @click="viewCalendar(selectedSemester)">
           <template #icon>
             <n-icon :component="Refresh" />
           </template>
-          刷新周历
+          {{ t('workspace.semesters.calendar.refresh') }}
         </n-button>
       </header>
 
@@ -428,14 +430,14 @@ function statusText(status: string) {
       </n-spin>
 
       <div v-else-if="calendarRows.length === 0" class="calendar-empty">
-        <strong>暂无周历</strong>
-        <span>点击表格中的生成按钮创建周历。</span>
+        <strong>{{ t('workspace.semesters.calendar.emptyTitle') }}</strong>
+        <span>{{ t('workspace.semesters.calendar.emptyText') }}</span>
       </div>
 
       <div v-else class="week-grid">
         <article v-for="week in calendarRows" :key="week.id" :class="{ exam: week.examWeek }">
           <div class="week-card-heading">
-            <strong>第 {{ week.weekNo }} 周</strong>
+            <strong>{{ t('workspace.semesters.calendar.week', { week: week.weekNo }) }}</strong>
             <n-button quaternary size="tiny" @click="openCalendarEdit(week)">
               <template #icon>
                 <n-icon :component="Edit" />
@@ -443,8 +445,8 @@ function statusText(status: string) {
             </n-button>
           </div>
           <span>{{ week.startDate }} - {{ week.endDate }}</span>
-          <em v-if="week.examWeek">考试周</em>
-          <em v-if="week.holiday">含节假日</em>
+          <em v-if="week.examWeek">{{ t('workspace.semesters.calendar.examWeek') }}</em>
+          <em v-if="week.holiday">{{ t('workspace.semesters.calendar.holiday') }}</em>
           <p v-if="week.holidayNote || week.adjustmentNote">
             {{ week.holidayNote || week.adjustmentNote }}
           </p>
@@ -455,100 +457,100 @@ function statusText(status: string) {
     <n-modal v-model:show="modalVisible" preset="card" :title="modalTitle" class="semester-modal">
       <form class="semester-form" @submit.prevent="submitSemester">
         <label class="field">
-          <span>学年</span>
-          <n-input v-model:value="form.academicYear" placeholder="例如：2026-2027" />
+          <span>{{ t('workspace.semesters.form.academicYear') }}</span>
+          <n-input v-model:value="form.academicYear" :placeholder="t('workspace.semesters.form.academicYearPlaceholder')" />
         </label>
 
         <label class="field">
-          <span>学期名称</span>
-          <n-input v-model:value="form.semesterName" placeholder="例如：第一学期" />
+          <span>{{ t('workspace.semesters.form.semesterName') }}</span>
+          <n-input v-model:value="form.semesterName" :placeholder="t('workspace.semesters.form.semesterNamePlaceholder')" />
         </label>
 
         <label class="field">
-          <span>开学日期</span>
+          <span>{{ t('workspace.semesters.form.startDate') }}</span>
           <input v-model="form.startDate" class="date-input" type="date" />
         </label>
 
         <label class="field">
-          <span>结束日期</span>
+          <span>{{ t('workspace.semesters.form.endDate') }}</span>
           <input v-model="form.endDate" class="date-input" type="date" />
         </label>
 
         <label class="field">
-          <span>总周数</span>
+          <span>{{ t('workspace.semesters.form.totalWeeks') }}</span>
           <n-input-number v-model:value="form.totalWeeks" :min="1" />
         </label>
 
         <label class="field">
-          <span>考试周</span>
+          <span>{{ t('workspace.semesters.form.examWeek') }}</span>
           <n-input-number v-model:value="form.examWeek" :min="1" clearable />
         </label>
 
         <label class="field">
-          <span>状态</span>
+          <span>{{ t('workspace.semesters.form.status') }}</span>
           <n-select v-model:value="form.status" :options="statusOptions" />
         </label>
 
         <label class="field">
-          <span>备注</span>
+          <span>{{ t('workspace.semesters.form.remark') }}</span>
           <n-input v-model:value="form.remark" />
         </label>
 
         <label class="field span-2">
-          <span>节假日 JSON</span>
+          <span>{{ t('workspace.semesters.form.holidayJson') }}</span>
           <n-input v-model:value="form.holidayJson" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }" />
         </label>
 
         <label class="field span-2">
-          <span>调课 JSON</span>
+          <span>{{ t('workspace.semesters.form.adjustmentJson') }}</span>
           <n-input v-model:value="form.adjustmentJson" type="textarea" :autosize="{ minRows: 2, maxRows: 5 }" />
         </label>
 
         <div class="form-actions span-2">
-          <n-button @click="modalVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+          <n-button @click="modalVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
         </div>
       </form>
     </n-modal>
 
-    <n-modal v-model:show="calendarEditVisible" preset="card" title="调整周历" class="semester-modal">
+    <n-modal v-model:show="calendarEditVisible" preset="card" :title="t('workspace.semesters.modal.calendarEdit')" class="semester-modal">
       <form class="semester-form" @submit.prevent="submitCalendarEdit">
         <label class="field">
-          <span>周次</span>
+          <span>{{ t('workspace.semesters.form.weekNo') }}</span>
           <n-input-number v-model:value="calendarForm.weekNo" disabled />
         </label>
 
         <label class="field">
-          <span>周开始日期</span>
+          <span>{{ t('workspace.semesters.form.weekStartDate') }}</span>
           <input v-model="calendarForm.startDate" class="date-input" type="date" />
         </label>
 
         <label class="field">
-          <span>周结束日期</span>
+          <span>{{ t('workspace.semesters.form.weekEndDate') }}</span>
           <input v-model="calendarForm.endDate" class="date-input" type="date" />
         </label>
 
         <label class="check-field">
-          <n-checkbox v-model:checked="calendarForm.examWeek">考试周</n-checkbox>
+          <n-checkbox v-model:checked="calendarForm.examWeek">{{ t('workspace.semesters.calendar.examWeek') }}</n-checkbox>
         </label>
 
         <label class="check-field">
-          <n-checkbox v-model:checked="calendarForm.holiday">含节假日</n-checkbox>
+          <n-checkbox v-model:checked="calendarForm.holiday">{{ t('workspace.semesters.calendar.holiday') }}</n-checkbox>
         </label>
 
         <label class="field span-2">
-          <span>节假日说明</span>
+          <span>{{ t('workspace.semesters.form.holidayNote') }}</span>
           <n-input v-model:value="calendarForm.holidayNote" />
         </label>
 
         <label class="field span-2">
-          <span>调课说明</span>
+          <span>{{ t('workspace.semesters.form.adjustmentNote') }}</span>
           <n-input v-model:value="calendarForm.adjustmentNote" />
         </label>
 
         <div class="form-actions span-2">
-          <n-button @click="calendarEditVisible = false">取消</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">保存</n-button>
+          <n-button @click="calendarEditVisible = false">{{ t('common.actions.cancel') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
         </div>
       </form>
     </n-modal>
