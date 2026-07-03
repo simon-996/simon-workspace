@@ -41,7 +41,6 @@ async function loadSite() {
   <main class="home-page">
     <nav class="top-nav">
       <a class="brand" href="/">
-        <span>S</span>
         {{ site.siteTitle }}
       </a>
       <button class="menu-button" type="button" aria-label="Toggle navigation" @click="navOpen = !navOpen">
@@ -58,9 +57,7 @@ async function loadSite() {
 
     <section class="hero-section">
       <section class="intro-column" aria-label="个人主页">
-        <p class="eyebrow">{{ site.ownerRole || 'Personal homepage' }}</p>
         <h1>{{ site.ownerName }}</h1>
-        <p class="summary">{{ site.heroSubtitle || site.heroTitle }}</p>
 
         <div class="link-row" aria-label="主要入口">
           <n-button v-if="site.blogVisible" text tag="a" href="#blog">Blog</n-button>
@@ -80,7 +77,7 @@ async function loadSite() {
     <section class="quiet-links" aria-label="公开内容">
       <a v-if="site.profileVisible" id="about" href="#about">
         <span>About</span>
-        <strong>{{ site.ownerRole || 'Personal notes' }}</strong>
+        <strong>{{ site.ownerName }}</strong>
       </a>
       <a v-if="site.blogVisible" id="blog" href="#blog">
         <span>Blog</span>
@@ -119,16 +116,6 @@ async function loadSite() {
   color: #17212b;
   font-size: 14px;
   font-weight: 800;
-}
-
-.brand span {
-  display: inline-grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: #1b83a8;
-  color: #ffffff;
 }
 
 .nav-links,
@@ -179,29 +166,13 @@ async function loadSite() {
   align-content: center;
 }
 
-.eyebrow {
-  margin: 0;
-  color: #1b83a8;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
 h1 {
-  margin: 18px 0 0;
+  margin: 0;
   color: #111a23;
   font-size: clamp(56px, 10vw, 126px);
   font-weight: 800;
   letter-spacing: 0;
   line-height: 0.92;
-}
-
-.summary {
-  max-width: 520px;
-  margin: 28px 0 0;
-  color: #5c6b78;
-  font-size: 17px;
-  line-height: 1.7;
 }
 
 .link-row {
@@ -300,10 +271,6 @@ h1 {
 
   h1 {
     font-size: clamp(48px, 18vw, 86px);
-  }
-
-  .summary {
-    font-size: 16px;
   }
 
   .quiet-links {
