@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createI18n } from 'vue-i18n'
 
 import {
   LANGUAGE_STORAGE_KEY,
@@ -7,6 +8,7 @@ import {
   normalizeLanguage,
   saveLanguage,
 } from './language'
+import { messages } from './messages'
 
 function createStorage(initial: Record<string, string> = {}): Storage {
   const data = new Map(Object.entries(initial))
@@ -64,5 +66,22 @@ describe('language helpers', () => {
 
     expect(storage.getItem(LANGUAGE_STORAGE_KEY)).toBe('th-TH')
     expect(loadStoredLanguage(storage)).toBe('th-TH')
+  })
+
+  it('compiles homepage contact email messages for every locale', () => {
+    const i18n = createI18n({
+      legacy: false,
+      locale: 'en',
+      fallbackLocale: 'en',
+      messages,
+    })
+
+    for (const locale of Object.keys(messages)) {
+      if (!isAppLanguage(locale)) {
+        throw new Error(`Unsupported test locale: ${locale}`)
+      }
+      i18n.global.locale.value = locale
+      expect(i18n.global.t('home.intro.contactEmail')).toBe('simon996chen@outlook.com')
+    }
   })
 })

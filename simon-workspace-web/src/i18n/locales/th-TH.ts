@@ -55,7 +55,7 @@ export default {
       body: 'งานหลักคือพัฒนา Web, WeChat Mini Program และ Flutter App พร้อมบันทึกการสอน งานโปรเจกต์ และการทดลองทางเทคนิคไว้ที่นี่',
       philosophy: 'ผมให้ความสำคัญกับการแก้ปัญหาจริงมากกว่าการเรียงรายชื่อเครื่องมือ',
       contactLabel: 'อีเมล',
-      contactEmail: 'simon996chen@outlook.com',
+      contactEmail: "simon996chen{'@'}outlook.com",
       techAria: 'เทคโนโลยีที่ใช้',
       groups: {
         backendLabel: 'Backend',
