@@ -498,7 +498,7 @@ function typeText(type: string) {
             </label>
             <label>
               <span>{{ t('workspace.templates.fields.fieldLabel') }}</span>
-              <n-input v-model:value="field.fieldLabel" placeholder="课程名称" />
+              <n-input v-model:value="field.fieldLabel" :placeholder="t('workspace.templates.fields.fieldLabelPlaceholder')" />
             </label>
             <label>
               <span>{{ t('workspace.templates.fields.fieldType') }}</span>

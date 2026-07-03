@@ -1,4 +1,5 @@
 import { http } from './http'
+import { translate } from '../i18n'
 import type { ApiResponse } from './workspace'
 
 export interface SiteConfig {
@@ -33,7 +34,7 @@ export interface SiteConfigPayload {
 
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
-    throw new Error(response.message || '请求失败')
+    throw new Error(response.message || translate('common.requestFailed'))
   }
   return response.data
 }

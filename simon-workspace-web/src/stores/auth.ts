@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { AUTH_TOKEN_STORAGE_KEY, http } from '../api/http'
+import { translate } from '../i18n'
 
 interface ApiResponse<T> {
   code: number
@@ -50,7 +51,7 @@ export const useAuthStore = defineStore('auth', {
     async login(username: string, password: string) {
       const response = await http.post<ApiResponse<LoginData>>('/auth/login', { username, password })
       if (response.data.code !== 0) {
-        throw new Error(response.data.message || '登录失败')
+        throw new Error(response.data.message || translate('login.failed'))
       }
 
       this.token = response.data.data.token

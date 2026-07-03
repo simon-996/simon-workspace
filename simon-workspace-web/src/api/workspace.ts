@@ -1,4 +1,5 @@
 import { http } from './http'
+import { translate } from '../i18n'
 
 export interface ApiResponse<T> {
   code: number
@@ -241,7 +242,7 @@ export interface UpdateUserRolesPayload {
 
 function unwrap<T>(response: ApiResponse<T>) {
   if (response.code !== 0) {
-    throw new Error(response.message || '请求失败')
+    throw new Error(response.message || translate('common.requestFailed'))
   }
   return response.data
 }

@@ -35,7 +35,7 @@ async function loadSite() {
   try {
     site.value = await fetchPublicSiteConfig()
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '公开配置加载失败'
+    error.value = err instanceof Error ? err.message : t('home.configLoadFailed')
   }
 }
 </script>

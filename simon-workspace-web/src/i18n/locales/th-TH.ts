@@ -1,6 +1,7 @@
 export default {
   common: {
     language: 'ภาษา',
+    requestFailed: 'คำขอล้มเหลว',
     actions: {
       cancel: 'ยกเลิก',
       confirm: 'ยืนยัน',
@@ -45,6 +46,7 @@ export default {
     notesAndEssays: 'บันทึกและบทความ',
     workInPublic: 'ผลงานสาธารณะ',
     loadFallback: 'กำลังแสดงเนื้อหาเริ่มต้น',
+    configLoadFailed: 'โหลดการตั้งค่าสาธารณะไม่สำเร็จ',
   },
   login: {
     eyebrow: '// เวิร์กสเปซปลอดภัย',
@@ -350,6 +352,7 @@ export default {
         emptyText: 'เพิ่มฟิลด์แล้วบันทึกลงเทมเพลต',
         fieldKey: 'คีย์ฟิลด์',
         fieldLabel: 'ชื่อที่แสดง',
+        fieldLabelPlaceholder: 'ชื่อหลักสูตร',
         fieldType: 'ประเภท',
         sortOrder: 'ลำดับ',
         defaultValue: 'ค่าเริ่มต้น',

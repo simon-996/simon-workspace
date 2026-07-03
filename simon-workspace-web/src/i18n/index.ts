@@ -19,3 +19,7 @@ export function setAppLanguage(language: AppLanguage) {
   i18n.global.locale.value = language
   saveLanguage(language)
 }
+
+export function translate(key: string, named?: Record<string, string | number>) {
+  return i18n.global.t(key, named ?? {})
+}

@@ -1,6 +1,7 @@
 export default {
   common: {
     language: '语言',
+    requestFailed: '请求失败',
     actions: {
       cancel: '取消',
       confirm: '确认',
@@ -45,6 +46,7 @@ export default {
     notesAndEssays: '笔记和文章',
     workInPublic: '公开项目',
     loadFallback: '当前显示默认内容。',
+    configLoadFailed: '公开配置加载失败',
   },
   login: {
     eyebrow: '// 安全工作台',
@@ -350,6 +352,7 @@ export default {
         emptyText: '新增字段后保存到模板。',
         fieldKey: '字段键',
         fieldLabel: '显示名',
+        fieldLabelPlaceholder: '课程名称',
         fieldType: '类型',
         sortOrder: '排序',
         defaultValue: '默认值',

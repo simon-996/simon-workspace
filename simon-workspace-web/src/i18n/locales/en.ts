@@ -1,6 +1,7 @@
 export default {
   common: {
     language: 'Language',
+    requestFailed: 'Request failed',
     actions: {
       cancel: 'Cancel',
       confirm: 'Confirm',
@@ -45,6 +46,7 @@ export default {
     notesAndEssays: 'Notes and essays',
     workInPublic: 'Work in public',
     loadFallback: 'Showing default content for now.',
+    configLoadFailed: 'Failed to load public configuration',
   },
   login: {
     eyebrow: '// Secure workspace',
@@ -350,6 +352,7 @@ export default {
         emptyText: 'Add fields, then save them to the template.',
         fieldKey: 'Field key',
         fieldLabel: 'Display name',
+        fieldLabelPlaceholder: 'Course name',
         fieldType: 'Type',
         sortOrder: 'Order',
         defaultValue: 'Default value',
