@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NIcon, NInput, useMessage } from 'naive-ui'
 import { ArrowRight, Command, Terminal2 } from '@vicons/tabler'
 
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import { useAuthStore } from '../stores/auth'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
@@ -20,7 +23,7 @@ const submitting = ref(false)
 
 async function submitLogin() {
   if (!form.username.trim() || !form.password) {
-    message.warning('请输入用户名和密码')
+    message.warning(t('login.missingCredentials'))
     return
   }
 
@@ -30,7 +33,7 @@ async function submitLogin() {
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/workspace'
     await router.replace(redirect)
   } catch (error) {
-    message.error(error instanceof Error ? error.message : '登录失败')
+    message.error(error instanceof Error ? error.message : t('login.failed'))
   } finally {
     submitting.value = false
   }
@@ -39,23 +42,27 @@ async function submitLogin() {
 
 <template>
   <main class="login-page">
+    <div class="login-language">
+      <LanguageSwitcher />
+    </div>
+
     <section class="login-shell">
       <div class="login-copy">
         <router-link class="brand" to="/"><span>&gt;_</span> Simon Workspace</router-link>
-        <p class="eyebrow">// Secure workspace</p>
-        <h1>Sign in to continue.</h1>
-        <p>Courses, templates, generated files, and teaching records stay behind your workspace token.</p>
+        <p class="eyebrow">{{ t('login.eyebrow') }}</p>
+        <h1>{{ t('login.title') }}</h1>
+        <p>{{ t('login.subtitle') }}</p>
       </div>
 
       <form class="login-panel" @submit.prevent="submitLogin">
         <div class="panel-header">
-          <p>Authentication</p>
-          <span>Token session</span>
+          <p>{{ t('login.panelTitle') }}</p>
+          <span>{{ t('login.session') }}</span>
         </div>
 
         <label>
-          <span>Username</span>
-          <n-input v-model:value="form.username" size="large" placeholder="simon" clearable>
+          <span>{{ t('login.username') }}</span>
+          <n-input v-model:value="form.username" size="large" :placeholder="t('login.usernamePlaceholder')" clearable>
             <template #prefix>
               <n-icon :component="Command" />
             </template>
@@ -63,11 +70,11 @@ async function submitLogin() {
         </label>
 
         <label>
-          <span>Password</span>
+          <span>{{ t('login.password') }}</span>
           <n-input
             v-model:value="form.password"
             size="large"
-            placeholder="Password"
+            :placeholder="t('login.passwordPlaceholder')"
             type="password"
             show-password-on="click"
             @keyup.enter="submitLogin"
@@ -79,7 +86,7 @@ async function submitLogin() {
         </label>
 
         <n-button class="login-button" type="primary" size="large" attr-type="submit" :loading="submitting">
-          <n-icon :component="ArrowRight" /> Enter Workspace
+          <n-icon :component="ArrowRight" /> {{ t('login.submit') }}
         </n-button>
       </form>
     </section>
@@ -88,6 +95,7 @@ async function submitLogin() {
 
 <style scoped>
 .login-page {
+  position: relative;
   min-height: 100dvh;
   background:
     linear-gradient(90deg, rgba(62, 198, 255, 0.08) 1px, transparent 1px),
@@ -95,6 +103,13 @@ async function submitLogin() {
     #061018;
   background-size: 120px 120px;
   color: #f6fbff;
+}
+
+.login-language {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  z-index: 2;
 }
 
 .login-shell {

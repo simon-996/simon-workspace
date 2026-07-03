@@ -1,19 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
 import {
   evaluateTerminalCommand,
-  terminalCommands,
+  getTerminalCommands,
   type TerminalCommand,
   type TerminalCommandResult,
 } from './terminalCommands'
 
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const prompt = ref('help')
-const lines = ref<string[]>(['type help, or run a command below'])
+const initialLine = computed(() => t('terminal.initialLine'))
+const lines = ref<string[]>([initialLine.value])
 
 const commandContext = computed(() => ({
   isAuthenticated: auth.isAuthenticated && Boolean(auth.user),
@@ -21,18 +24,24 @@ const commandContext = computed(() => ({
 }))
 
 const commandRows = computed(() =>
-  terminalCommands.map((command) => ({
+  getTerminalCommands(t).map((command) => ({
     ...command,
     state: commandState(command),
   })),
 )
+
+watch(initialLine, (value, oldValue) => {
+  if (lines.value.length === 1 && lines.value[0] === oldValue) {
+    lines.value = [value]
+  }
+})
 
 onMounted(() => {
   void auth.restore()
 })
 
 async function execute(command = prompt.value) {
-  const result = evaluateTerminalCommand(command, commandContext.value)
+  const result = evaluateTerminalCommand(command, commandContext.value, t)
   writeResult(result)
 
   if (result.status === 'run' && result.to) {
@@ -72,10 +81,10 @@ function commandState(command: TerminalCommand) {
 </script>
 
 <template>
-  <section class="terminal" aria-label="Permission aware terminal">
+  <section class="terminal" :aria-label="t('terminal.aria')">
     <div class="terminal-bar">
       <strong>simon.dev</strong>
-      <span>{{ commandContext.isAuthenticated ? 'authenticated' : 'guest' }}</span>
+      <span>{{ commandContext.isAuthenticated ? t('terminal.authenticated') : t('terminal.guest') }}</span>
     </div>
 
     <div class="terminal-body">
@@ -100,7 +109,7 @@ function commandState(command: TerminalCommand) {
 
       <form class="prompt-line" @submit.prevent="execute()">
         <span>simon@home:~$</span>
-        <input v-model="prompt" aria-label="Terminal command" autocomplete="off" spellcheck="false">
+        <input v-model="prompt" :aria-label="t('terminal.inputAria')" autocomplete="off" spellcheck="false">
       </form>
     </div>
   </section>

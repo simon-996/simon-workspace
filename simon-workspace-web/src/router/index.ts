@@ -35,7 +35,7 @@ export const router = createRouter({
           name: 'workspace',
           component: WorkspaceHomeView,
           meta: {
-            title: '工作台总览',
+            titleKey: 'workspace.pages.overview',
             permission: 'workspace:view',
           },
         },
@@ -44,7 +44,7 @@ export const router = createRouter({
           name: 'workspace-courses',
           component: CourseManagementView,
           meta: {
-            title: '课程管理',
+            titleKey: 'workspace.pages.courses',
             permission: 'course:manage',
           },
         },
@@ -53,7 +53,7 @@ export const router = createRouter({
           name: 'workspace-classes',
           component: ClassManagementView,
           meta: {
-            title: '班级管理',
+            titleKey: 'workspace.pages.classes',
             permission: 'class:manage',
           },
         },
@@ -62,7 +62,7 @@ export const router = createRouter({
           name: 'workspace-semesters',
           component: SemesterManagementView,
           meta: {
-            title: '学期管理',
+            titleKey: 'workspace.pages.semesters',
             permission: 'semester:manage',
           },
         },
@@ -71,7 +71,7 @@ export const router = createRouter({
           name: 'workspace-templates',
           component: TemplateManagementView,
           meta: {
-            title: '模板管理',
+            titleKey: 'workspace.pages.templates',
             permission: 'template:manage',
           },
         },
@@ -80,7 +80,7 @@ export const router = createRouter({
           name: 'workspace-files',
           component: FileCenterView,
           meta: {
-            title: '文件中心',
+            titleKey: 'workspace.pages.files',
             permission: 'file:manage',
           },
         },
@@ -89,7 +89,7 @@ export const router = createRouter({
           name: 'workspace-history',
           component: GenerationHistoryView,
           meta: {
-            title: '生成记录',
+            titleKey: 'workspace.pages.history',
             permission: 'generation:history',
           },
         },
@@ -98,7 +98,7 @@ export const router = createRouter({
           name: 'workspace-security',
           component: SecurityManagementView,
           meta: {
-            title: '权限管理',
+            titleKey: 'workspace.pages.security',
             permission: 'user:manage',
           },
         },
@@ -107,7 +107,7 @@ export const router = createRouter({
           name: 'workspace-site',
           component: SiteConfigView,
           meta: {
-            title: '站点配置',
+            titleKey: 'workspace.pages.site',
             permission: 'site:config',
           },
         },

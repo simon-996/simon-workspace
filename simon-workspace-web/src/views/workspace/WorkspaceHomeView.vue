@@ -1,35 +1,38 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { NIcon } from 'naive-ui'
 import { Book, Calendar, CircleCheck, Files, History, Template } from '@vicons/tabler'
 
+const { t } = useI18n()
+
 const modules = [
-  { label: '课程管理', value: 'API Ready', icon: Book },
-  { label: '班级管理', value: 'API Ready', icon: CircleCheck },
-  { label: '学期周历', value: 'API Ready', icon: Calendar },
-  { label: '模板字段', value: 'API Ready', icon: Template },
-  { label: '文件中心', value: 'API Ready', icon: Files },
-  { label: '生成记录', value: 'API Ready', icon: History },
+  { labelKey: 'workspace.home.modules.courses', valueKey: 'workspace.home.apiReady', icon: Book },
+  { labelKey: 'workspace.home.modules.classes', valueKey: 'workspace.home.apiReady', icon: CircleCheck },
+  { labelKey: 'workspace.home.modules.semesters', valueKey: 'workspace.home.apiReady', icon: Calendar },
+  { labelKey: 'workspace.home.modules.templates', valueKey: 'workspace.home.apiReady', icon: Template },
+  { labelKey: 'workspace.home.modules.files', valueKey: 'workspace.home.apiReady', icon: Files },
+  { labelKey: 'workspace.home.modules.history', valueKey: 'workspace.home.apiReady', icon: History },
 ]
 </script>
 
 <template>
   <section class="workspace-home">
     <div class="status-grid">
-      <article v-for="module in modules" :key="module.label" class="status-card">
+      <article v-for="module in modules" :key="module.labelKey" class="status-card">
         <n-icon :component="module.icon" />
         <div>
-          <span>{{ module.value }}</span>
-          <h2>{{ module.label }}</h2>
+          <span>{{ t(module.valueKey) }}</span>
+          <h2>{{ t(module.labelKey) }}</h2>
         </div>
       </article>
     </div>
 
     <section class="home-band">
       <div>
-        <span>Phase 03</span>
-        <h2>基础资料与生成资源入口</h2>
+        <span>{{ t('workspace.home.phase') }}</span>
+        <h2>{{ t('workspace.home.title') }}</h2>
       </div>
-      <p>后端核心接口已经分模块落地，下一步进入课程、班级、学期、模板、文件和记录的前端维护页。</p>
+      <p>{{ t('workspace.home.description') }}</p>
     </section>
   </section>
 </template>

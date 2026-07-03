@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { NButton, NIcon } from 'naive-ui'
 import {
@@ -16,26 +17,31 @@ import {
   Users,
 } from '@vicons/tabler'
 
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import { useAuthStore } from '../stores/auth'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
 const navItems = [
-  { to: '/workspace', label: '总览', icon: CircleCheck, permission: 'workspace:view' },
-  { to: '/workspace/courses', label: '课程', icon: Book, permission: 'course:manage' },
-  { to: '/workspace/classes', label: '班级', icon: FileText, permission: 'class:manage' },
-  { to: '/workspace/semesters', label: '学期', icon: Calendar, permission: 'semester:manage' },
-  { to: '/workspace/templates', label: '模板', icon: Template, permission: 'template:manage' },
-  { to: '/workspace/files', label: '文件', icon: Files, permission: 'file:manage' },
-  { to: '/workspace/history', label: '记录', icon: History, permission: 'generation:history' },
-  { to: '/workspace/security', label: '权限', icon: Users, permission: 'user:manage' },
-  { to: '/workspace/site', label: '站点', icon: Settings, permission: 'site:config' },
+  { to: '/workspace', labelKey: 'workspace.nav.overview', icon: CircleCheck, permission: 'workspace:view' },
+  { to: '/workspace/courses', labelKey: 'workspace.nav.courses', icon: Book, permission: 'course:manage' },
+  { to: '/workspace/classes', labelKey: 'workspace.nav.classes', icon: FileText, permission: 'class:manage' },
+  { to: '/workspace/semesters', labelKey: 'workspace.nav.semesters', icon: Calendar, permission: 'semester:manage' },
+  { to: '/workspace/templates', labelKey: 'workspace.nav.templates', icon: Template, permission: 'template:manage' },
+  { to: '/workspace/files', labelKey: 'workspace.nav.files', icon: Files, permission: 'file:manage' },
+  { to: '/workspace/history', labelKey: 'workspace.nav.history', icon: History, permission: 'generation:history' },
+  { to: '/workspace/security', labelKey: 'workspace.nav.security', icon: Users, permission: 'user:manage' },
+  { to: '/workspace/site', labelKey: 'workspace.nav.site', icon: Settings, permission: 'site:config' },
 ]
 
 const visibleNavItems = computed(() => navItems.filter((item) => auth.hasPermission(item.permission)))
-const pageTitle = computed(() => String(route.meta.title ?? '工作台'))
+const pageTitle = computed(() => {
+  const titleKey = typeof route.meta.titleKey === 'string' ? route.meta.titleKey : 'workspace.title'
+  return t(titleKey)
+})
 
 async function logout() {
   await auth.logout()
@@ -45,7 +51,7 @@ async function logout() {
 
 <template>
   <main class="workspace-shell">
-    <aside class="workspace-sider" aria-label="工作台导航">
+    <aside class="workspace-sider" :aria-label="t('workspace.aria')">
       <RouterLink class="side-brand" to="/workspace">
         <span class="brand-mark">S</span>
         <span>Simon Workspace</span>
@@ -54,7 +60,7 @@ async function logout() {
       <nav class="side-nav">
         <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to" class="nav-link">
           <n-icon :component="item.icon" />
-          <span>{{ item.label }}</span>
+          <span>{{ t(item.labelKey) }}</span>
         </RouterLink>
       </nav>
     </aside>
@@ -62,11 +68,12 @@ async function logout() {
     <section class="workspace-main">
       <header class="workspace-header">
         <div>
-          <p class="header-kicker">Workspace</p>
+          <p class="header-kicker">{{ t('workspace.kicker') }}</p>
           <h1>{{ pageTitle }}</h1>
         </div>
 
         <div class="user-panel">
+          <LanguageSwitcher />
           <span class="user-name">
             <n-icon :component="UserCircle" />
             {{ auth.displayName }}
@@ -75,7 +82,7 @@ async function logout() {
             <template #icon>
               <n-icon :component="Logout" />
             </template>
-            退出
+            {{ t('workspace.logout') }}
           </n-button>
         </div>
       </header>
@@ -83,10 +90,10 @@ async function logout() {
       <RouterView />
     </section>
 
-    <nav class="mobile-tabs" aria-label="移动端导航">
+    <nav class="mobile-tabs" :aria-label="t('workspace.mobileAria')">
       <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to">
         <n-icon :component="item.icon" />
-        <span>{{ item.label }}</span>
+        <span>{{ t(item.labelKey) }}</span>
       </RouterLink>
     </nav>
   </main>

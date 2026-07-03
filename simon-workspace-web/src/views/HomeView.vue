@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { NButton, NIcon } from 'naive-ui'
 import { Menu2 } from '@vicons/tabler'
 
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import TerminalPanel from '../components/TerminalPanel.vue'
 import { fetchPublicSiteConfig, type SiteConfig } from '../api/site'
 
+const { t } = useI18n()
 const navOpen = ref(false)
 const error = ref('')
 const site = ref<SiteConfig>({
@@ -39,50 +42,53 @@ async function loadSite() {
 
 <template>
   <main class="home-page">
-    <nav class="top-nav">
+    <nav class="top-nav" :aria-label="t('home.navAria')">
       <a class="brand" href="/">
         {{ site.siteTitle }}
       </a>
-      <button class="menu-button" type="button" aria-label="Toggle navigation" @click="navOpen = !navOpen">
-        <n-icon :component="Menu2" />
-      </button>
-      <div class="nav-links" :class="{ open: navOpen }">
-        <a v-if="site.profileVisible" href="#about">About</a>
-        <a v-if="site.blogVisible" href="#blog">Blog</a>
-        <a v-if="site.projectsVisible" href="#projects">Projects</a>
-        <router-link to="/login">Login</router-link>
-        <router-link v-if="site.workspaceEntryVisible" to="/workspace">Workspace</router-link>
+      <div class="nav-controls">
+        <div class="nav-links" :class="{ open: navOpen }">
+          <a v-if="site.profileVisible" href="#about">{{ t('home.about') }}</a>
+          <a v-if="site.blogVisible" href="#blog">{{ t('home.blog') }}</a>
+          <a v-if="site.projectsVisible" href="#projects">{{ t('home.projects') }}</a>
+          <router-link to="/login">{{ t('home.login') }}</router-link>
+          <router-link v-if="site.workspaceEntryVisible" to="/workspace">{{ t('workspace.title') }}</router-link>
+        </div>
+        <LanguageSwitcher />
+        <button class="menu-button" type="button" aria-label="Toggle navigation" @click="navOpen = !navOpen">
+          <n-icon :component="Menu2" />
+        </button>
       </div>
     </nav>
 
     <section class="hero-section">
-      <section class="intro-column" aria-label="个人主页">
+      <section class="intro-column" :aria-label="t('home.pageAria')">
         <h1>{{ site.ownerName }}</h1>
 
-        <div class="link-row" aria-label="主要入口">
-          <n-button v-if="site.blogVisible" text tag="a" href="#blog">Blog</n-button>
-          <n-button v-if="site.projectsVisible" text tag="a" href="#projects">Projects</n-button>
-          <n-button text tag="router-link" to="/login">Login</n-button>
+        <div class="link-row" :aria-label="t('home.linksAria')">
+          <n-button v-if="site.blogVisible" text tag="a" href="#blog">{{ t('home.blog') }}</n-button>
+          <n-button v-if="site.projectsVisible" text tag="a" href="#projects">{{ t('home.projects') }}</n-button>
+          <n-button text tag="router-link" to="/login">{{ t('home.login') }}</n-button>
         </div>
 
-        <p v-if="error" class="load-note">{{ error }}，当前显示默认内容。</p>
+        <p v-if="error" class="load-note">{{ error }} {{ t('home.loadFallback') }}</p>
       </section>
 
       <TerminalPanel />
     </section>
 
-    <section class="quiet-links" aria-label="公开内容">
+    <section class="quiet-links" :aria-label="t('home.publicContentAria')">
       <a v-if="site.profileVisible" id="about" href="#about">
-        <span>About</span>
+        <span>{{ t('home.about') }}</span>
         <strong>{{ site.ownerName }}</strong>
       </a>
       <a v-if="site.blogVisible" id="blog" href="#blog">
-        <span>Blog</span>
-        <strong>Notes and essays</strong>
+        <span>{{ t('home.blog') }}</span>
+        <strong>{{ t('home.notesAndEssays') }}</strong>
       </a>
       <a v-if="site.projectsVisible" id="projects" href="#projects">
-        <span>Projects</span>
-        <strong>Work in public</strong>
+        <span>{{ t('home.projects') }}</span>
+        <strong>{{ t('home.workInPublic') }}</strong>
       </a>
     </section>
   </main>
@@ -122,7 +128,16 @@ async function loadSite() {
   gap: 22px;
 }
 
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
   color: #667583;
   font-size: 13px;
   font-weight: 800;
@@ -243,6 +258,7 @@ h1 {
     left: 0;
     z-index: 2;
     display: none;
+    align-items: stretch;
     border: 1px solid #d8e0e7;
     border-radius: 8px;
     background: #ffffff;
