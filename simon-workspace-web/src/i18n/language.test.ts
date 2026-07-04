@@ -116,6 +116,8 @@ describe('language helpers', () => {
       expect(account.tabs.profile.trim()).not.toBe('')
       expect(account.tabs.avatar.trim()).not.toBe('')
       expect(account.tabs.password.trim()).not.toBe('')
+      expect(account.avatar.current.trim()).not.toBe('')
+      expect(account.avatar.preview.trim()).not.toBe('')
       expect(account.password.mismatch.trim()).not.toBe('')
     }
   })

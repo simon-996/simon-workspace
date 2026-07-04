@@ -226,7 +226,7 @@ Expected: `master -> master`.
 - Delete: `simon-workspace-web/src/utils/avatarCrop.ts`
 - Delete: `simon-workspace-web/src/utils/avatarCrop.test.ts`
 
-- [ ] **Step 1: Write failing account center refinement tests**
+- [x] **Step 1: Write failing account center refinement tests**
 
 Tests prove:
 - The avatar flow imports `vue-advanced-cropper` and no longer uses manual sliders.
@@ -236,11 +236,11 @@ Tests prove:
 Run: `npm run test -- src/components/AccountCenterModal.test.ts`
 Expected: FAIL before the implementation is updated.
 
-- [ ] **Step 2: Install and wire a mature cropper**
+- [x] **Step 2: Install and wire a mature cropper**
 
 Add `vue-advanced-cropper`, render a square cropper with preview, and export the cropper canvas to a WebP file before upload.
 
-- [ ] **Step 3: Redesign the PC account center layout**
+- [x] **Step 3: Redesign the PC account center layout**
 
 Use a compact two-column account center on desktop:
 - left summary with avatar, display name, username, and roles;
@@ -249,11 +249,11 @@ Use a compact two-column account center on desktop:
 
 Keep the mobile layout single-column and comfortable to use.
 
-- [ ] **Step 4: Update localized copy**
+- [x] **Step 4: Update localized copy**
 
 Remove obsolete manual crop slider labels and add concise preview/cropper copy in English, Chinese, and Thai.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run:
 - `npm run test -- src/components/AccountCenterModal.test.ts src/i18n/language.test.ts`
