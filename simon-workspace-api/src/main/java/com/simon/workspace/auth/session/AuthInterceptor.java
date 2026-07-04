@@ -7,6 +7,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simon.workspace.auth.AuthAccountService;
 import com.simon.workspace.common.ApiResponse;
+import com.simon.workspace.common.error.ErrorCode;
+import com.simon.workspace.common.error.ErrorTraceId;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpMethod;
@@ -93,7 +95,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            objectMapper.writeValue(response.getWriter(), ApiResponse.fail("未登录或登录已失效"));
+            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.AUTH_UNAUTHORIZED, ErrorTraceId.next()));
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to write unauthorized response", exception);
         }
@@ -104,7 +106,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            objectMapper.writeValue(response.getWriter(), ApiResponse.fail("无权限访问该功能"));
+            objectMapper.writeValue(response.getWriter(), ApiResponse.fail(ErrorCode.AUTH_FORBIDDEN, ErrorTraceId.next()));
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to write forbidden response", exception);
         }

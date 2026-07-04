@@ -5,6 +5,8 @@ import com.simon.workspace.auth.dto.LoginRequest;
 import com.simon.workspace.auth.dto.LoginResponse;
 import com.simon.workspace.auth.model.AuthUser;
 import com.simon.workspace.auth.password.PasswordHashVerifier;
+import com.simon.workspace.common.error.BusinessException;
+import com.simon.workspace.common.error.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -40,18 +42,18 @@ public class AuthService {
 
         if (user.isEmpty()) {
             recordLogin(null, username, httpRequest, LOGIN_FAILED, "USER_NOT_FOUND");
-            throw new IllegalArgumentException("用户名或密码错误");
+            throw new BusinessException(ErrorCode.AUTH_BAD_CREDENTIALS);
         }
 
         AuthUser authUser = user.get();
         if (!"ENABLED".equalsIgnoreCase(authUser.status())) {
             recordLogin(authUser.id(), username, httpRequest, LOGIN_FAILED, "USER_DISABLED");
-            throw new IllegalArgumentException("账号不可用");
+            throw new BusinessException(ErrorCode.AUTH_ACCOUNT_DISABLED);
         }
 
         if (!passwordHashVerifier.matches(request.password(), authUser.passwordHash())) {
             recordLogin(authUser.id(), username, httpRequest, LOGIN_FAILED, "BAD_CREDENTIALS");
-            throw new IllegalArgumentException("用户名或密码错误");
+            throw new BusinessException(ErrorCode.AUTH_BAD_CREDENTIALS);
         }
 
         jdbcTemplate.update("UPDATE `user` SET last_login_time = NOW() WHERE id = ?", authUser.id());

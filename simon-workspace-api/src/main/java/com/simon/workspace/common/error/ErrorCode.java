@@ -6,6 +6,7 @@ public enum ErrorCode {
 
     VALIDATION_FAILED(40001, HttpStatus.BAD_REQUEST, "Validation failed"),
     BAD_REQUEST(40002, HttpStatus.BAD_REQUEST, "Bad request"),
+    VALIDATION_FIELD_INVALID(40003, HttpStatus.BAD_REQUEST, "Invalid field"),
     AUTH_UNAUTHORIZED(40101, HttpStatus.UNAUTHORIZED, "Unauthorized"),
     AUTH_BAD_CREDENTIALS(40102, HttpStatus.UNAUTHORIZED, "Invalid username or password"),
     AUTH_ACCOUNT_DISABLED(40103, HttpStatus.FORBIDDEN, "Account disabled"),
