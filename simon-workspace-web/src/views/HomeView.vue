@@ -16,6 +16,7 @@ const viewport = ref({ width: 1200, height: 800 })
 const site = ref<SiteConfig | null>(null)
 const siteLoadFailed = ref(false)
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
+const introKicker = computed(() => t('home.intro.kicker').trim())
 
 let ticking = false
 let animationFrameId = 0
@@ -129,7 +130,7 @@ function updateViewport() {
       <section class="hero-section">
         <section id="about" class="intro-column" :aria-label="t('home.pageAria')">
           <template v-if="site">
-            <p class="intro-kicker">{{ t('home.intro.kicker') }}</p>
+            <p v-if="introKicker" class="intro-kicker">{{ introKicker }}</p>
             <h1>{{ site.ownerName }}</h1>
             <p class="intro-short">{{ t('home.intro.shortLine') }}</p>
 
@@ -221,6 +222,8 @@ function updateViewport() {
   --details-opacity: 0;
   --details-y: 20px;
   --details-scale: 1;
+  --intro-details-gap: 28px;
+  --intro-details-lift: clamp(96px, 10vw, 124px);
   --brief-opacity: 1;
   background: #f7f8f8;
   color: #17212b;
@@ -426,7 +429,7 @@ h1 {
 
 .intro-skeleton-details {
   position: absolute;
-  top: calc(100% - 130px);
+  top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift));
   left: 0;
   display: grid;
   gap: 10px;
@@ -475,7 +478,7 @@ h1 {
 
 .intro-details {
   position: absolute;
-  top: calc(100% - 130px);
+  top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift));
   left: 0;
   display: grid;
   gap: 10px;
@@ -607,6 +610,11 @@ h1 {
 }
 
 @media (max-width: 900px) {
+  .home-page {
+    --intro-details-gap: 24px;
+    --intro-details-lift: 78px;
+  }
+
   .top-nav {
     width: min(100% - 32px, 560px);
   }
@@ -714,12 +722,28 @@ h1 {
     transform-origin: center top;
   }
 
+  .contact-link {
+    justify-self: center;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .contact-link strong {
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
   .tech-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
+  .home-page {
+    --intro-details-gap: 20px;
+    --intro-details-lift: 58px;
+  }
+
   .top-nav {
     padding-top: 20px;
   }
@@ -748,12 +772,10 @@ h1 {
   }
 
   .intro-details {
-    top: calc(100% + 20px);
     gap: 10px;
   }
 
   .intro-skeleton-details {
-    top: calc(100% + 20px);
     gap: 10px;
   }
 
