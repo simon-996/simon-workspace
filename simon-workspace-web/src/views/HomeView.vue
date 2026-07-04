@@ -17,6 +17,7 @@ const site = ref<SiteConfig | null>(null)
 const siteLoadFailed = ref(false)
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
 const introKicker = computed(() => t('home.intro.kicker').trim())
+const contactLabel = computed(() => t('home.intro.contactLabel').trim())
 
 let ticking = false
 let animationFrameId = 0
@@ -139,7 +140,7 @@ function updateViewport() {
               <p>{{ t('home.intro.body') }}</p>
               <p>{{ t('home.intro.philosophy') }}</p>
               <a class="contact-link" href="mailto:simon996chen@outlook.com">
-                <span>{{ t('home.intro.contactLabel') }}</span>
+                <span v-if="contactLabel">{{ contactLabel }}</span>
                 <strong>{{ t('home.intro.contactEmail') }}</strong>
               </a>
               <div class="tech-grid" :aria-label="t('home.intro.techAria')">

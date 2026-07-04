@@ -20,4 +20,10 @@ describe('HomeView profile layout', () => {
     expect(homeSource).toContain('justify-self: center;')
     expect(homeSource).toContain('text-align: center;')
   })
+
+  it('omits the Chinese contact label when it is empty', () => {
+    expect(zhCNSource).not.toContain("contactLabel: '邮箱'")
+    expect(homeSource).toContain('const contactLabel = computed')
+    expect(homeSource).toContain('v-if="contactLabel"')
+  })
 })
