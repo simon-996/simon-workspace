@@ -6,6 +6,8 @@ import {
   dateThTH,
   dateZhCN,
   enUS,
+  NConfigProvider,
+  NMessageProvider,
   thTH,
   zhCN,
 } from 'naive-ui'
@@ -26,9 +28,9 @@ const naiveDateLocale = computed(() => {
 </script>
 
 <template>
-  <n-config-provider :locale="naiveLocale" :date-locale="naiveDateLocale">
-    <n-message-provider>
+  <NConfigProvider :locale="naiveLocale" :date-locale="naiveDateLocale">
+    <NMessageProvider>
       <router-view />
-    </n-message-provider>
-  </n-config-provider>
+    </NMessageProvider>
+  </NConfigProvider>
 </template>
