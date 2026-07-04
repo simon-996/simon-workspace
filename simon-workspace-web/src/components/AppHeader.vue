@@ -5,6 +5,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { NButton, NDropdown, NIcon } from 'naive-ui'
 import { ChevronDown, Menu2, UserCircle } from '@vicons/tabler'
 
+import AccountCenterModal from './AccountCenterModal.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { usePublicSiteConfig } from '../composables/usePublicSiteConfig'
 import { useAuthStore } from '../stores/auth'
@@ -15,6 +16,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const navOpen = ref(false)
+const accountCenterOpen = ref(false)
 const { site, loading, loadSite } = usePublicSiteConfig()
 
 onMounted(() => {
@@ -45,9 +47,8 @@ const accountLabel = computed(() =>
 )
 const accountOptions = computed(() => [
   {
-    label: t('workspace.title'),
-    key: 'workspace',
-    disabled: route.path === '/workspace',
+    label: t('account.menu.profile'),
+    key: 'profile',
   },
   {
     label: t('workspace.logout'),
@@ -59,10 +60,8 @@ async function selectAccountAction(key: string | number) {
   const action = String(key)
   navOpen.value = false
 
-  if (action === 'workspace') {
-    if (route.path !== '/workspace') {
-      await router.push('/workspace')
-    }
+  if (action === 'profile') {
+    accountCenterOpen.value = true
     return
   }
 
@@ -128,6 +127,8 @@ async function selectAccountAction(key: string | number) {
       </div>
     </div>
   </header>
+
+  <AccountCenterModal v-model:show="accountCenterOpen" />
 </template>
 
 <style scoped>

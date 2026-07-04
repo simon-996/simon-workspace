@@ -105,4 +105,18 @@ describe('language helpers', () => {
       expect(messages[locale].common.account.trim()).not.toBe('')
     }
   })
+
+  it('keeps account center labels translated in every locale', () => {
+    for (const locale of Object.keys(messages)) {
+      if (!isAppLanguage(locale)) {
+        throw new Error(`Unsupported test locale: ${locale}`)
+      }
+      const account = messages[locale].account
+      expect(account.title.trim()).not.toBe('')
+      expect(account.tabs.profile.trim()).not.toBe('')
+      expect(account.tabs.avatar.trim()).not.toBe('')
+      expect(account.tabs.password.trim()).not.toBe('')
+      expect(account.password.mismatch.trim()).not.toBe('')
+    }
+  })
 })

@@ -100,6 +100,38 @@ export default {
     missingCredentials: 'Please enter username and password',
     failed: 'Login failed',
   },
+  account: {
+    title: 'Account',
+    menu: {
+      profile: 'Profile',
+    },
+    tabs: {
+      profile: 'Profile',
+      avatar: 'Avatar',
+      password: 'Password',
+    },
+    profile: {
+      username: 'Username',
+      nickname: 'Nickname',
+      email: 'Email',
+      avatarUrl: 'Avatar URL',
+      save: 'Save Profile',
+      saved: 'Profile saved',
+    },
+    avatar: {
+      upload: 'Upload Avatar',
+      uploaded: 'Avatar updated',
+      hint: 'Choose an image first. Cropping will be available in this account center before final save.',
+    },
+    password: {
+      current: 'Current password',
+      new: 'New password',
+      confirm: 'Confirm password',
+      mismatch: 'The two passwords do not match.',
+      save: 'Save Password',
+      saved: 'Password updated',
+    },
+  },
   terminal: {
     aria: 'Permission aware terminal',
     authenticated: 'authenticated',

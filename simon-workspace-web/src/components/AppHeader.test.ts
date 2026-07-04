@@ -26,14 +26,21 @@ describe('AppHeader', () => {
     expect(source).toContain('void auth.restore()')
   })
 
-  it('renders an authenticated account dropdown with workspace and logout actions', () => {
+  it('renders an authenticated account dropdown with profile and logout actions', () => {
     expect(source).toContain('NDropdown')
     expect(source).toContain('v-if="auth.isAuthenticated"')
     expect(source).toContain('accountLabel')
     expect(source).toContain('accountOptions')
-    expect(source).toContain("key: 'workspace'")
+    expect(source).toContain("key: 'profile'")
+    expect(source).not.toContain("key: 'workspace'")
     expect(source).toContain("key: 'logout'")
     expect(source).toContain('selectAccountAction')
+    expect(source).toContain('accountCenterOpen.value = true')
     expect(source).toContain('await auth.logout()')
+  })
+
+  it('renders the account center modal from the shared header', () => {
+    expect(source).toContain('AccountCenterModal')
+    expect(source).toContain('v-model:show="accountCenterOpen"')
   })
 })

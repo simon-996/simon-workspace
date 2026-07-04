@@ -100,6 +100,38 @@ export default {
     missingCredentials: '请输入用户名和密码',
     failed: '登录失败',
   },
+  account: {
+    title: '个人信息',
+    menu: {
+      profile: '个人信息',
+    },
+    tabs: {
+      profile: '资料',
+      avatar: '头像',
+      password: '密码',
+    },
+    profile: {
+      username: '用户名',
+      nickname: '昵称',
+      email: '邮箱',
+      avatarUrl: '头像地址',
+      save: '保存资料',
+      saved: '资料已保存',
+    },
+    avatar: {
+      upload: '上传头像',
+      uploaded: '头像已更新',
+      hint: '先选择图片，裁剪功能会在这个账号中心里完成后再保存。',
+    },
+    password: {
+      current: '当前密码',
+      new: '新密码',
+      confirm: '确认新密码',
+      mismatch: '两次输入的密码不一致。',
+      save: '保存密码',
+      saved: '密码已更新',
+    },
+  },
   terminal: {
     aria: '权限感知终端',
     authenticated: '已登录',
