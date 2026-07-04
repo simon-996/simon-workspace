@@ -1,20 +1,16 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NIcon } from 'naive-ui'
-import { Menu2 } from '@vicons/tabler'
 
-import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+import AppHeader from '../components/AppHeader.vue'
 import TerminalPanel from '../components/TerminalPanel.vue'
-import { fetchPublicSiteConfig, type SiteConfig } from '../api/site'
+import { usePublicSiteConfig } from '../composables/usePublicSiteConfig'
 import { buildHomeScrollStyle, getHomeScrollProgress } from '../utils/homeScroll'
 
 const { t } = useI18n()
-const navOpen = ref(false)
 const scrollProgress = ref(0)
 const viewport = ref({ width: 1200, height: 800 })
-const site = ref<SiteConfig | null>(null)
-const siteLoadFailed = ref(false)
+const { site, failed: siteLoadFailed, loadSite } = usePublicSiteConfig()
 const defaultContactEmail = 'simon996chen@outlook.com'
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
 const introKicker = computed(() => t('home.intro.kicker').trim())
@@ -41,15 +37,6 @@ onBeforeUnmount(() => {
     window.cancelAnimationFrame(animationFrameId)
   }
 })
-
-async function loadSite() {
-  siteLoadFailed.value = false
-  try {
-    site.value = await fetchPublicSiteConfig()
-  } catch {
-    siteLoadFailed.value = true
-  }
-}
 
 function requestScrollProgress() {
   if (ticking) {
@@ -106,30 +93,7 @@ function updateViewport() {
 <template>
   <main class="home-page" :style="homeStyle">
     <section class="home-scene">
-      <nav class="top-nav" :aria-label="t('home.navAria')">
-        <a class="brand" href="/">
-          <span v-if="site">{{ site.siteTitle }}</span>
-          <span v-else class="skeleton-line brand-skeleton" aria-hidden="true"></span>
-        </a>
-        <div class="nav-controls">
-          <div v-if="site" class="nav-links" :class="{ open: navOpen }">
-            <a v-if="site.profileVisible" href="#about">{{ t('home.about') }}</a>
-            <a v-if="site.blogVisible" href="#blog">{{ t('home.blog') }}</a>
-            <a v-if="site.projectsVisible" href="#projects">{{ t('home.projects') }}</a>
-            <router-link to="/login">{{ t('home.login') }}</router-link>
-            <router-link v-if="site.workspaceEntryVisible" to="/workspace">{{ t('workspace.title') }}</router-link>
-          </div>
-          <div v-else class="nav-links nav-links-loading" :class="{ open: navOpen }" aria-hidden="true">
-            <span class="skeleton-line nav-skeleton"></span>
-            <span class="skeleton-line nav-skeleton short"></span>
-            <span class="skeleton-line nav-skeleton"></span>
-          </div>
-          <LanguageSwitcher />
-          <button class="menu-button" type="button" :aria-label="t('home.menuAria')" @click="navOpen = !navOpen">
-            <n-icon :component="Menu2" />
-          </button>
-        </div>
-      </nav>
+      <AppHeader />
 
       <section class="hero-section">
         <section id="about" class="intro-column" :aria-label="t('home.pageAria')">
@@ -247,49 +211,6 @@ function updateViewport() {
     linear-gradient(180deg, #fbfcfc 0%, #f7f8f8 58%, #eef3f5 100%);
 }
 
-.top-nav {
-  position: relative;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: min(1120px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 28px 0 18px;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: #17212b;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.nav-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  color: #667583;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.nav-links a {
-  transition: color 180ms ease;
-}
-
-.nav-links a:hover {
-  color: #1b83a8;
-}
-
 .skeleton-line {
   display: block;
   border-radius: 999px;
@@ -301,35 +222,6 @@ function updateViewport() {
   );
   background-size: 220% 100%;
   animation: skeleton-breathe 2.6s ease-in-out infinite;
-}
-
-.brand-skeleton {
-  width: 136px;
-  height: 16px;
-}
-
-.nav-links-loading {
-  pointer-events: none;
-}
-
-.nav-skeleton {
-  width: 56px;
-  height: 13px;
-}
-
-.nav-skeleton.short {
-  width: 42px;
-}
-
-.menu-button {
-  display: none;
-  border: 1px solid #d8e0e7;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #17212b;
-  cursor: pointer;
-  font-size: 22px;
-  padding: 8px 10px;
 }
 
 .hero-section {
@@ -619,33 +511,6 @@ h1 {
     --intro-details-lift: 78px;
   }
 
-  .top-nav {
-    width: min(100% - 32px, 560px);
-  }
-
-  .menu-button {
-    display: inline-flex;
-  }
-
-  .nav-links {
-    position: absolute;
-    top: 76px;
-    right: 0;
-    left: 0;
-    z-index: 2;
-    display: none;
-    align-items: stretch;
-    border: 1px solid #d8e0e7;
-    border-radius: 8px;
-    background: #ffffff;
-    padding: 16px;
-  }
-
-  .nav-links.open {
-    display: grid;
-    gap: 14px;
-  }
-
   .hero-section {
     width: min(100% - 32px, 560px);
   }
@@ -746,21 +611,6 @@ h1 {
   .home-page {
     --intro-details-gap: 20px;
     --intro-details-lift: 58px;
-  }
-
-  .top-nav {
-    padding-top: 20px;
-  }
-
-  .brand {
-    max-width: 42vw;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .nav-controls {
-    gap: 8px;
   }
 
   .hero-section {

@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { NButton, NIcon, NInput, useMessage } from 'naive-ui'
 import { ArrowRight, Command, Terminal2 } from '@vicons/tabler'
 
-import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+import AppHeader from '../components/AppHeader.vue'
 import { useAuthStore } from '../stores/auth'
 
 const { t } = useI18n()
@@ -42,13 +42,10 @@ async function submitLogin() {
 
 <template>
   <main class="login-page">
-    <div class="login-language">
-      <LanguageSwitcher />
-    </div>
+    <AppHeader />
 
     <section class="login-shell">
       <div class="login-copy">
-        <router-link class="brand" to="/"><span>S</span> Simon</router-link>
         <p class="eyebrow">{{ t('login.eyebrow') }}</p>
         <h1>{{ t('login.title') }}</h1>
         <p>{{ t('login.subtitle') }}</p>
@@ -96,6 +93,8 @@ async function submitLogin() {
 <style scoped>
 .login-page {
   position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-height: 100dvh;
   background:
     radial-gradient(circle at 80% 22%, rgba(22, 112, 143, 0.08), transparent 28%),
@@ -116,52 +115,21 @@ async function submitLogin() {
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 70%);
 }
 
-.login-language {
-  position: absolute;
-  top: 22px;
-  right: 24px;
-  z-index: 2;
-}
-
 .login-shell {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(340px, 420px);
   align-items: center;
   gap: clamp(36px, 7vw, 92px);
   width: min(1080px, calc(100% - 48px));
-  min-height: 100dvh;
+  min-height: calc(100dvh - 74px);
   margin: 0 auto;
   padding: 48px 0;
   position: relative;
   z-index: 1;
 }
 
-.brand {
-  align-items: center;
-  display: inline-flex;
-  gap: 12px;
-  color: #17212b;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.brand span {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid #dfe7eb;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #16708f;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 14px;
-  font-weight: 800;
-}
-
 .eyebrow {
-  margin: 78px 0 18px;
+  margin: 0 0 18px;
   color: #16708f;
   font-family: "JetBrains Mono", Consolas, monospace;
   font-size: 12px;
@@ -260,7 +228,7 @@ label {
   }
 
   .eyebrow {
-    margin-top: 54px;
+    margin-top: 18px;
   }
 
   .login-panel {

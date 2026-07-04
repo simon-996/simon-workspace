@@ -17,7 +17,7 @@ import {
   Users,
 } from '@vicons/tabler'
 
-import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+import AppHeader from '../components/AppHeader.vue'
 import { useAuthStore } from '../stores/auth'
 
 const { t } = useI18n()
@@ -51,42 +51,40 @@ async function logout() {
 
 <template>
   <main class="workspace-shell">
-    <aside class="workspace-sider" :aria-label="t('workspace.aria')">
-      <RouterLink class="side-brand" to="/workspace">
-        <span class="brand-mark">S</span>
-        <span>Simon</span>
-      </RouterLink>
+    <AppHeader />
 
-      <nav class="side-nav">
-        <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to" class="nav-link">
-          <n-icon :component="item.icon" />
-          <span>{{ t(item.labelKey) }}</span>
-        </RouterLink>
-      </nav>
-    </aside>
+    <section class="workspace-body">
+      <aside class="workspace-sider" :aria-label="t('workspace.aria')">
+        <nav class="side-nav">
+          <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to" class="nav-link">
+            <n-icon :component="item.icon" />
+            <span>{{ t(item.labelKey) }}</span>
+          </RouterLink>
+        </nav>
+      </aside>
 
-    <section class="workspace-main">
-      <header class="workspace-header">
-        <div>
-          <h1>{{ pageTitle }}</h1>
-        </div>
+      <section class="workspace-main">
+        <header class="workspace-header">
+          <div>
+            <h1>{{ pageTitle }}</h1>
+          </div>
 
-        <div class="user-panel">
-          <LanguageSwitcher />
-          <span class="user-name">
-            <n-icon :component="UserCircle" />
-            {{ auth.displayName }}
-          </span>
-          <n-button tertiary size="small" class="logout-button" @click="logout">
-            <template #icon>
-              <n-icon :component="Logout" />
-            </template>
-            {{ t('workspace.logout') }}
-          </n-button>
-        </div>
-      </header>
+          <div class="user-panel">
+            <span class="user-name">
+              <n-icon :component="UserCircle" />
+              {{ auth.displayName }}
+            </span>
+            <n-button tertiary size="small" class="logout-button" @click="logout">
+              <template #icon>
+                <n-icon :component="Logout" />
+              </template>
+              {{ t('workspace.logout') }}
+            </n-button>
+          </div>
+        </header>
 
-      <RouterView />
+        <RouterView />
+      </section>
     </section>
 
     <nav class="mobile-tabs" :aria-label="t('workspace.mobileAria')">
@@ -100,8 +98,6 @@ async function logout() {
 
 <style scoped>
 .workspace-shell {
-  display: grid;
-  grid-template-columns: 236px minmax(0, 1fr);
   min-height: 100dvh;
   background:
     radial-gradient(circle at 88% 8%, rgba(22, 112, 143, 0.08), transparent 28%),
@@ -109,51 +105,29 @@ async function logout() {
   color: #17212b;
 }
 
+.workspace-body {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  min-height: calc(100dvh - 74px);
+}
+
 .workspace-sider {
   position: sticky;
-  top: 0;
+  top: 74px;
   align-self: start;
   display: grid;
-  grid-template-rows: auto 1fr;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 74px);
   border-right: 1px solid rgba(223, 231, 235, 0.9);
   background: rgba(255, 255, 255, 0.72);
   color: #17212b;
   backdrop-filter: blur(24px);
 }
 
-.side-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 78px;
-  padding: 0 20px;
-  border-bottom: 1px solid rgba(223, 231, 235, 0.86);
-  color: #17212b;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #dfe7eb;
-  background: #f7fbfc;
-  color: #16708f;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 14px;
-  font-weight: 800;
-}
-
 .side-nav {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 14px 10px;
+  padding: 18px 10px;
 }
 
 .nav-link {
@@ -191,7 +165,7 @@ async function logout() {
 
 .workspace-header {
   position: sticky;
-  top: 0;
+  top: 86px;
   z-index: 8;
   display: flex;
   align-items: center;
@@ -249,8 +223,12 @@ h1 {
 
 @media (max-width: 860px) {
   .workspace-shell {
-    grid-template-columns: 1fr;
     padding-bottom: 70px;
+  }
+
+  .workspace-body {
+    grid-template-columns: 1fr;
+    min-height: auto;
   }
 
   .workspace-sider {
@@ -264,6 +242,7 @@ h1 {
   .workspace-header {
     align-items: flex-start;
     flex-direction: column;
+    top: 76px;
     margin-top: 0;
     padding: 14px;
   }

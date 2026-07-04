@@ -4,7 +4,7 @@ import source from './HomeView.vue?raw'
 
 describe('HomeView loading state', () => {
   it('does not render a hard-coded owner before public site config loads', () => {
-    expect(source).toContain('const site = ref<SiteConfig | null>(null)')
+    expect(source).toContain('usePublicSiteConfig')
     expect(source).not.toContain("ownerName: 'Chen Ximeng'")
     expect(source).not.toContain("ownerName: 'Simon'")
   })
@@ -13,6 +13,6 @@ describe('HomeView loading state', () => {
     expect(source).toContain('v-if="site"')
     expect(source).toContain('v-else')
     expect(source).toContain('intro-skeleton')
-    expect(source).toContain('brand-skeleton')
+    expect(source).toContain('AppHeader')
   })
 })
