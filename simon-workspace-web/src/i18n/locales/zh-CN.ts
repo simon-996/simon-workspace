@@ -119,9 +119,13 @@ export default {
       saved: '资料已保存',
     },
     avatar: {
-      upload: '上传头像',
+      choose: '选择图片',
+      upload: '保存头像',
       uploaded: '头像已更新',
-      hint: '先选择图片，裁剪功能会在这个账号中心里完成后再保存。',
+      hint: '选择图片后调整方形裁剪区域，再保存头像。',
+      positionX: '横向',
+      positionY: '纵向',
+      size: '大小',
     },
     password: {
       current: '当前密码',

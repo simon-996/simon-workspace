@@ -1,9 +1,27 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useMessage, NAlert, NAvatar, NButton, NForm, NFormItem, NInput, NModal, NTabPane, NTabs } from 'naive-ui'
+import {
+  useMessage,
+  NAlert,
+  NAvatar,
+  NButton,
+  NForm,
+  NFormItem,
+  NInput,
+  NModal,
+  NSlider,
+  NTabPane,
+  NTabs,
+} from 'naive-ui'
 
 import { useAuthStore } from '../stores/auth'
+import {
+  clampAvatarCrop,
+  createCenteredAvatarCrop,
+  cropImageFileToAvatar,
+  type AvatarCropState,
+} from '../utils/avatarCrop'
 
 const props = defineProps<{
   show: boolean
@@ -20,6 +38,15 @@ const avatarFileInput = ref<HTMLInputElement | null>(null)
 const savingProfile = ref(false)
 const savingPassword = ref(false)
 const uploadingAvatar = ref(false)
+const selectedAvatarFile = ref<File | null>(null)
+const selectedAvatarUrl = ref('')
+const avatarCrop = reactive<AvatarCropState>({
+  x: 0,
+  y: 0,
+  size: 1,
+  imageWidth: 1,
+  imageHeight: 1,
+})
 
 const visible = computed({
   get: () => props.show,
@@ -42,6 +69,9 @@ const avatarPreview = computed(() => profileForm.avatarUrl || auth.user?.avatarU
 const accountInitial = computed(() =>
   (auth.user?.nickname?.trim() || auth.user?.username?.trim() || '?').slice(0, 1).toUpperCase(),
 )
+const avatarCropSizeMax = computed(() => Math.min(avatarCrop.imageWidth, avatarCrop.imageHeight))
+const avatarCropXMax = computed(() => Math.max(0, avatarCrop.imageWidth - avatarCrop.size))
+const avatarCropYMax = computed(() => Math.max(0, avatarCrop.imageHeight - avatarCrop.size))
 const passwordMismatch = computed(() =>
   Boolean(passwordForm.confirmPassword) && passwordForm.newPassword !== passwordForm.confirmPassword,
 )
@@ -61,6 +91,10 @@ watch(
   },
   { immediate: true },
 )
+
+onBeforeUnmount(() => {
+  revokeSelectedAvatarUrl()
+})
 
 function hydrateProfileForm() {
   profileForm.nickname = auth.user?.nickname || ''
@@ -117,9 +151,23 @@ async function selectAvatarFile(event: Event) {
     return
   }
 
+  revokeSelectedAvatarUrl()
+  selectedAvatarFile.value = file
+  selectedAvatarUrl.value = URL.createObjectURL(file)
+  const imageSize = await loadImageSize(selectedAvatarUrl.value)
+  setAvatarCrop(createCenteredAvatarCrop(imageSize.width, imageSize.height))
+  input.value = ''
+}
+
+async function uploadCroppedAvatar() {
+  if (!selectedAvatarFile.value) {
+    return
+  }
+
   uploadingAvatar.value = true
   try {
-    const resource = await auth.uploadAvatar(file)
+    const croppedFile = await cropImageFileToAvatar(selectedAvatarFile.value, avatarCrop)
+    const resource = await auth.uploadAvatar(croppedFile)
     const avatarUrl = resource.publicUrl || (resource.id ? `/api/files/${resource.id}/download` : '')
     if (avatarUrl) {
       profileForm.avatarUrl = avatarUrl
@@ -132,7 +180,30 @@ async function selectAvatarFile(event: Event) {
     }
   } finally {
     uploadingAvatar.value = false
-    input.value = ''
+  }
+}
+
+function clampCurrentCrop() {
+  setAvatarCrop(clampAvatarCrop(avatarCrop))
+}
+
+function setAvatarCrop(next: AvatarCropState) {
+  Object.assign(avatarCrop, next)
+}
+
+function loadImageSize(url: string) {
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight })
+    image.onerror = () => reject(new Error('Avatar image could not be loaded'))
+    image.src = url
+  })
+}
+
+function revokeSelectedAvatarUrl() {
+  if (selectedAvatarUrl.value) {
+    URL.revokeObjectURL(selectedAvatarUrl.value)
+    selectedAvatarUrl.value = ''
   }
 }
 </script>
@@ -167,6 +238,25 @@ async function selectAvatarFile(event: Event) {
           <n-avatar round :size="88" :src="avatarPreview || undefined">
             {{ accountInitial }}
           </n-avatar>
+          <div v-if="selectedAvatarUrl" class="avatar-crop-panel">
+            <div class="avatar-crop-preview">
+              <img :src="selectedAvatarUrl" alt="">
+            </div>
+            <div class="avatar-crop-controls">
+              <label>
+                <span>{{ t('account.avatar.positionX') }}</span>
+                <n-slider v-model:value="avatarCrop.x" :min="0" :max="avatarCropXMax" @update:value="clampCurrentCrop" />
+              </label>
+              <label>
+                <span>{{ t('account.avatar.positionY') }}</span>
+                <n-slider v-model:value="avatarCrop.y" :min="0" :max="avatarCropYMax" @update:value="clampCurrentCrop" />
+              </label>
+              <label>
+                <span>{{ t('account.avatar.size') }}</span>
+                <n-slider v-model:value="avatarCrop.size" :min="1" :max="avatarCropSizeMax" @update:value="clampCurrentCrop" />
+              </label>
+            </div>
+          </div>
           <input
             ref="avatarFileInput"
             class="avatar-file-input"
@@ -174,9 +264,14 @@ async function selectAvatarFile(event: Event) {
             accept="image/*"
             @change="selectAvatarFile"
           >
-          <n-button secondary :loading="uploadingAvatar" @click="openAvatarPicker">
-            {{ t('account.avatar.upload') }}
-          </n-button>
+          <div class="avatar-actions">
+            <n-button secondary @click="openAvatarPicker">
+              {{ t('account.avatar.choose') }}
+            </n-button>
+            <n-button type="primary" :disabled="!selectedAvatarFile" :loading="uploadingAvatar" @click="uploadCroppedAvatar">
+              {{ t('account.avatar.upload') }}
+            </n-button>
+          </div>
           <p>{{ t('account.avatar.hint') }}</p>
         </section>
       </n-tab-pane>
@@ -240,6 +335,50 @@ async function selectAvatarFile(event: Event) {
   gap: 14px;
   padding: 24px 0 8px;
   text-align: center;
+}
+
+.avatar-crop-panel {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+}
+
+.avatar-crop-preview {
+  overflow: hidden;
+  width: min(260px, 70vw);
+  aspect-ratio: 1;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  background: #f7f8f8;
+}
+
+.avatar-crop-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.avatar-crop-controls {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.avatar-crop-controls label {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  color: #667583;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
 .avatar-panel p {

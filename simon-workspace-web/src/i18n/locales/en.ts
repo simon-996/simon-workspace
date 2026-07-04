@@ -119,9 +119,13 @@ export default {
       saved: 'Profile saved',
     },
     avatar: {
-      upload: 'Upload Avatar',
+      choose: 'Choose Image',
+      upload: 'Save Avatar',
       uploaded: 'Avatar updated',
-      hint: 'Choose an image first. Cropping will be available in this account center before final save.',
+      hint: 'Choose an image, adjust the square crop, then save the avatar.',
+      positionX: 'X',
+      positionY: 'Y',
+      size: 'Size',
     },
     password: {
       current: 'Current password',
