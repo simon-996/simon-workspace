@@ -4,43 +4,42 @@ import com.simon.workspace.auth.session.AuthContextHolder;
 import com.simon.workspace.file.dto.FileResourceResponse;
 import com.simon.workspace.file.model.FileDownload;
 import com.simon.workspace.file.model.FileResource;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import com.simon.workspace.storage.StorageObjectDownload;
+import com.simon.workspace.storage.StorageProviderRegistry;
+import com.simon.workspace.storage.StorageProviderStateService;
+import com.simon.workspace.storage.StorageVisibility;
+import com.simon.workspace.storage.StoredObject;
+import com.simon.workspace.storage.WorkspaceStorageProvider;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
 public class FileResourceService {
 
     private final JdbcTemplate jdbcTemplate;
-    private final Path storageRoot;
+    private final StorageProviderStateService storageProviderStateService;
+    private final StorageProviderRegistry storageProviderRegistry;
 
     public FileResourceService(
             JdbcTemplate jdbcTemplate,
-            @Value("${app.file-storage.root:./data/files}") String storageRoot
+            StorageProviderStateService storageProviderStateService,
+            StorageProviderRegistry storageProviderRegistry
     ) {
         this.jdbcTemplate = jdbcTemplate;
-        this.storageRoot = Paths.get(storageRoot).toAbsolutePath().normalize();
+        this.storageProviderStateService = storageProviderStateService;
+        this.storageProviderRegistry = storageProviderRegistry;
     }
 
     public List<FileResourceResponse> list(String keyword) {
@@ -78,24 +77,14 @@ public class FileResourceService {
 
     public FileDownload download(long id) {
         FileResource fileResource = findOwnedRequired(id);
-        Path path = resolveStoragePath(fileResource.storagePath());
-        if (!Files.isRegularFile(path)) {
-            throw new IllegalArgumentException("文件不存在或已被移除");
-        }
-
-        try {
-            Resource resource = new UrlResource(path.toUri());
-            return new FileDownload(
-                    resource,
-                    fileResource.originalFilename(),
-                    fileResource.contentType(),
-                    Files.size(path)
-            );
-        } catch (MalformedURLException exception) {
-            throw new IllegalStateException("文件路径不合法", exception);
-        } catch (IOException exception) {
-            throw new IllegalStateException("读取文件失败", exception);
-        }
+        WorkspaceStorageProvider provider = storageProviderRegistry.provider(fileResource.storageProvider());
+        StorageObjectDownload object = provider.download(objectKeyOf(fileResource));
+        return new FileDownload(
+                object.resource(),
+                fileResource.originalFilename(),
+                fileResource.contentType(),
+                object.fileSize() > 0 ? object.fileSize() : fileResource.fileSize()
+        );
     }
 
     @Transactional
@@ -119,12 +108,48 @@ public class FileResourceService {
             String originalFilename,
             String contentType
     ) {
+        return saveResource(ownerUserId, sourceType, inputStream, originalFilename, contentType, StorageVisibility.PRIVATE);
+    }
+
+    @Transactional
+    public FileResourceResponse upload(MultipartFile file, String sourceType, String visibility) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("文件内容不能为空");
+        }
+
+        try (InputStream inputStream = file.getInputStream()) {
+            return saveResource(
+                    AuthContextHolder.requireUser().id(),
+                    sourceType,
+                    inputStream,
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    normalizeVisibility(visibility)
+            );
+        } catch (Exception exception) {
+            if (exception instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+            throw new IllegalStateException("上传文件失败", exception);
+        }
+    }
+
+    @Transactional
+    public FileResourceResponse saveResource(
+            long ownerUserId,
+            String sourceType,
+            InputStream inputStream,
+            String originalFilename,
+            String contentType,
+            StorageVisibility visibility
+    ) {
         if (inputStream == null) {
             throw new IllegalArgumentException("文件内容不能为空");
         }
 
         String safeFilename = sanitizeOriginalFilename(originalFilename);
-        StoredFile storedFile = storeFile(inputStream, safeFilename);
+        WorkspaceStorageProvider provider = storageProviderStateService.activeProvider();
+        StoredObject storedObject = provider.store(inputStream, safeFilename, contentType, visibility);
 
         try {
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -132,27 +157,32 @@ public class FileResourceService {
                 PreparedStatement statement = connection.prepareStatement("""
                                 INSERT INTO file_resource (
                                     owner_user_id, source_type, original_filename, storage_path,
+                                    storage_provider, object_key, visibility, public_url,
                                     file_size, content_type, file_extension, status
                                 )
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                 """,
                         Statement.RETURN_GENERATED_KEYS
                 );
                 statement.setLong(1, ownerUserId);
                 statement.setString(2, normalizeSourceType(sourceType));
                 statement.setString(3, safeFilename);
-                statement.setString(4, storedFile.storagePath());
-                statement.setLong(5, storedFile.fileSize());
-                statement.setString(6, blankToNull(contentType));
-                statement.setString(7, extensionNameOf(safeFilename));
-                statement.setString(8, "ACTIVE");
+                statement.setString(4, storedObject.storagePath());
+                statement.setString(5, storedObject.providerCode());
+                statement.setString(6, storedObject.objectKey());
+                statement.setString(7, visibility.name());
+                statement.setString(8, visibility == StorageVisibility.PUBLIC ? storedObject.publicUrl() : null);
+                statement.setLong(9, storedObject.fileSize());
+                statement.setString(10, blankToNull(contentType));
+                statement.setString(11, extensionNameOf(safeFilename));
+                statement.setString(12, "ACTIVE");
                 return statement;
             }, keyHolder);
 
             long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
             return FileResourceResponse.from(findRequired(id));
         } catch (RuntimeException exception) {
-            deleteStoredFileQuietly(storedFile.storagePath());
+            deleteStoredObjectQuietly(storedObject);
             throw exception;
         }
     }
@@ -183,47 +213,10 @@ public class FileResourceService {
         ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("文件不存在"));
     }
 
-    private StoredFile storeFile(InputStream inputStream, String originalFilename) {
-        LocalDate today = LocalDate.now();
-        Path targetDirectory = storageRoot
-                .resolve("files")
-                .resolve(String.valueOf(today.getYear()))
-                .resolve(String.format("%02d", today.getMonthValue()))
-                .normalize();
-
-        if (!targetDirectory.startsWith(storageRoot)) {
-            throw new IllegalStateException("文件存储目录不合法");
-        }
-
-        String storedFilename = UUID.randomUUID() + extensionWithDotOf(originalFilename);
-        Path targetPath = targetDirectory.resolve(storedFilename).normalize();
-        if (!targetPath.startsWith(targetDirectory)) {
-            throw new IllegalStateException("文件存储路径不合法");
-        }
-
+    private void deleteStoredObjectQuietly(StoredObject storedObject) {
         try {
-            Files.createDirectories(targetDirectory);
-            long fileSize = Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            String storagePath = storageRoot.relativize(targetPath).toString().replace('\\', '/');
-            return new StoredFile(storagePath, fileSize);
-        } catch (IOException exception) {
-            throw new IllegalStateException("保存文件失败", exception);
-        }
-    }
-
-    private Path resolveStoragePath(String storagePath) {
-        Path path = storageRoot.resolve(storagePath).normalize();
-        if (!path.startsWith(storageRoot)) {
-            throw new IllegalStateException("文件路径不合法");
-        }
-        return path;
-    }
-
-    private void deleteStoredFileQuietly(String storedPath) {
-        try {
-            Path path = resolveStoragePath(storedPath);
-            Files.deleteIfExists(path);
-        } catch (IOException | RuntimeException ignored) {
+            storageProviderRegistry.provider(storedObject.providerCode()).delete(storedObject.objectKey());
+        } catch (RuntimeException ignored) {
             // Metadata rollback is more important than cleanup; orphan cleanup can run separately.
         }
     }
@@ -239,6 +232,22 @@ public class FileResourceService {
             throw new IllegalArgumentException("文件来源类型不合法");
         }
         return normalized;
+    }
+
+    private StorageVisibility normalizeVisibility(String visibility) {
+        if (!StringUtils.hasText(visibility)) {
+            return StorageVisibility.PRIVATE;
+        }
+
+        String normalized = visibility.trim().toUpperCase(Locale.ROOT);
+        if (!"PUBLIC".equals(normalized) && !"PRIVATE".equals(normalized)) {
+            throw new IllegalArgumentException("文件可见性不合法");
+        }
+        return StorageVisibility.valueOf(normalized);
+    }
+
+    private String objectKeyOf(FileResource fileResource) {
+        return StringUtils.hasText(fileResource.objectKey()) ? fileResource.objectKey() : fileResource.storagePath();
     }
 
     private String sanitizeOriginalFilename(String originalFilename) {
@@ -271,6 +280,4 @@ public class FileResourceService {
         return StringUtils.hasText(value) ? value.trim() : null;
     }
 
-    private record StoredFile(String storagePath, long fileSize) {
-    }
 }

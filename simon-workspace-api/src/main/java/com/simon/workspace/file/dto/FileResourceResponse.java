@@ -9,10 +9,15 @@ public record FileResourceResponse(
         String ownerUserId,
         String sourceType,
         String originalFilename,
+        String storageProvider,
+        String objectKey,
+        String visibility,
+        String publicUrl,
         Long fileSize,
         String contentType,
         String fileExtension,
         String status,
+        LocalDateTime orphanedTime,
         LocalDateTime createdTime,
         LocalDateTime updatedTime
 ) {
@@ -22,10 +27,15 @@ public record FileResourceResponse(
                 String.valueOf(fileResource.ownerUserId()),
                 fileResource.sourceType(),
                 fileResource.originalFilename(),
+                fileResource.storageProvider(),
+                fileResource.objectKey(),
+                fileResource.visibility(),
+                fileResource.publicUrl(),
                 fileResource.fileSize(),
                 fileResource.contentType(),
                 fileResource.fileExtension(),
                 fileResource.status(),
+                fileResource.orphanedTime(),
                 fileResource.createdTime(),
                 fileResource.updatedTime()
         );

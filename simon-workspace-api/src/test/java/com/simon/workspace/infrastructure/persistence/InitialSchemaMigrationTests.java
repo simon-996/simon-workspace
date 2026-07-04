@@ -22,6 +22,22 @@ class InitialSchemaMigrationTests {
         assertThat(migration).contains("CREATE TABLE IF NOT EXISTS `login_log`");
     }
 
+    @Test
+    void storageMigrationTracksProvidersAndFileReferences() throws IOException {
+        String migration = readMigration("db/migration/V11__storage_providers_and_file_references.sql");
+
+        assertThat(migration).contains("CREATE TABLE IF NOT EXISTS `storage_provider_state`");
+        assertThat(migration).contains("CREATE TABLE IF NOT EXISTS `file_reference`");
+        assertThat(migration).contains("ADD COLUMN `storage_provider`");
+        assertThat(migration).contains("ADD COLUMN `object_key`");
+        assertThat(migration).contains("ADD COLUMN `visibility`");
+        assertThat(migration).contains("ADD COLUMN `orphaned_time`");
+        assertThat(migration).contains("'LOCAL'");
+        assertThat(migration).contains("'TENCENT_COS'");
+        assertThat(migration).contains("'ALIYUN_OSS'");
+        assertThat(migration).contains("'CLOUDFLARE_R2'");
+    }
+
     private String readMigration(String path) throws IOException {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path)) {
             assertThat(inputStream)

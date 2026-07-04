@@ -8,10 +8,15 @@ public record FileResource(
         String sourceType,
         String originalFilename,
         String storagePath,
+        String storageProvider,
+        String objectKey,
+        String visibility,
+        String publicUrl,
         long fileSize,
         String contentType,
         String fileExtension,
         String status,
+        LocalDateTime orphanedTime,
         LocalDateTime createdTime,
         LocalDateTime updatedTime
 ) {
