@@ -22,6 +22,7 @@
 - [x] 创建 Docker Compose 和 Jenkinsfile 初版。
 - [x] 拆分本地 dev 与线上 prod 配置。
 - [x] 前端支持 `VITE_API_BASE_URL` 配置。
+- [x] 线上 Sa-Token、Redis 会话配置接入 `application-prod.yml`、Compose 和 `.env.example`。
 
 ## 待完成 Todo
 
@@ -63,9 +64,9 @@
 
 ## 验收 Todo
 
-- [ ] `mvn -f simon-workspace-api/pom.xml test` 通过。
+- [x] `mvn -f simon-workspace-api/pom.xml test` 通过。2026-07-04 已验证。
 - [x] `npm run build --prefix simon-workspace-web` 通过。2026-07-04 已验证。
-- [ ] `docker compose --env-file deploy/.env -f deploy/docker-compose.yml config` 通过。
+- [x] `docker compose --env-file deploy/.env.example -f deploy/docker-compose.yml config` 通过。2026-07-04 已验证。
 - [ ] README 中的本地启动、部署、环境变量说明与代码一致。
 
 ## 进度记录
@@ -75,4 +76,5 @@
 - 前端构建通过。
 - 全局主题、语言切换和视觉变量已统一。
 - 文档从乱码状态整理为 UTF-8 可维护版本。
+- 线上认证配置补充 Sa-Token + Redis 会话环境变量。
 ```
