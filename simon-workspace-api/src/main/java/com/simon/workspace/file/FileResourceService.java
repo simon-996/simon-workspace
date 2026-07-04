@@ -228,7 +228,8 @@ public class FileResourceService {
 
         String normalized = sourceType.trim().toUpperCase(Locale.ROOT);
         if (!"UPLOAD".equals(normalized) && !"GENERATED".equals(normalized)
-                && !"TEMPLATE".equals(normalized) && !"OTHER".equals(normalized)) {
+                && !"TEMPLATE".equals(normalized) && !"AVATAR".equals(normalized)
+                && !"OTHER".equals(normalized)) {
             throw new IllegalArgumentException("文件来源类型不合法");
         }
         return normalized;
