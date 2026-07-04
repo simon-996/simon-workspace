@@ -17,6 +17,7 @@ const introKicker = computed(() => t('home.intro.kicker').trim())
 const contactLabel = computed(() => t('home.intro.contactLabel').trim())
 const contactEmail = computed(() => site.value?.contactEmail?.trim() || defaultContactEmail)
 const contactHref = computed(() => `mailto:${contactEmail.value}`)
+const detailsInteractive = computed(() => scrollProgress.value > 0.58)
 
 let ticking = false
 let animationFrameId = 0
@@ -91,7 +92,7 @@ function updateViewport() {
 </script>
 
 <template>
-  <main class="home-page" :style="homeStyle">
+  <main class="home-page" :class="{ 'details-active': detailsInteractive }" :style="homeStyle">
     <section class="home-scene">
       <AppHeader />
 
@@ -157,7 +158,7 @@ function updateViewport() {
         </section>
 
         <div class="terminal-stage">
-          <TerminalPanel v-if="site" />
+          <TerminalPanel v-if="site" auto-focus />
           <div v-else class="terminal-skeleton" aria-hidden="true">
             <div class="terminal-skeleton-header">
               <span class="skeleton-line terminal-title"></span>
@@ -331,6 +332,7 @@ h1 {
   gap: 10px;
   width: min(820px, 80vw);
   opacity: var(--details-opacity);
+  pointer-events: none;
   transform: translate3d(0, var(--details-y), 0) scale(var(--details-scale));
   transform-origin: left top;
   will-change: opacity, transform;
@@ -380,9 +382,14 @@ h1 {
   gap: 10px;
   width: min(820px, 80vw);
   opacity: var(--details-opacity);
+  pointer-events: none;
   transform: translate3d(0, var(--details-y), 0) scale(var(--details-scale));
   transform-origin: left top;
   will-change: opacity, transform;
+}
+
+.home-page.details-active .intro-details {
+  pointer-events: auto;
 }
 
 .intro-details p {

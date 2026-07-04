@@ -34,4 +34,15 @@ describe('HomeView profile layout', () => {
     expect(homeSource).toContain('{{ contactEmail }}')
     expect(homeSource).not.toContain("t('home.intro.contactEmail')")
   })
+
+  it('keeps hidden profile details from intercepting terminal input', () => {
+    expect(homeSource).toContain(":class=\"{ 'details-active': detailsInteractive }\"")
+    expect(homeSource).toContain('pointer-events: none;')
+    expect(homeSource).toContain('.home-page.details-active .intro-details')
+    expect(homeSource).toContain('pointer-events: auto;')
+  })
+
+  it('passes initial focus intent into the terminal panel', () => {
+    expect(homeSource).toContain('<TerminalPanel v-if="site" auto-focus />')
+  })
 })

@@ -11,10 +11,18 @@ import {
   type TerminalCommandResult,
 } from './terminalCommands'
 
+interface TerminalPanelProps {
+  autoFocus?: boolean
+}
+
+const props = withDefaults(defineProps<TerminalPanelProps>(), {
+  autoFocus: false,
+})
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const prompt = ref('help')
+const commandInput = ref<HTMLInputElement | null>(null)
 const initialLine = computed(() => t('terminal.initialLine'))
 const lines = ref<string[]>([initialLine.value])
 
@@ -38,6 +46,9 @@ watch(initialLine, (value, oldValue) => {
 
 onMounted(() => {
   void auth.restore()
+  if (props.autoFocus) {
+    window.requestAnimationFrame(focusInput)
+  }
 })
 
 async function execute(command = prompt.value) {
@@ -56,6 +67,7 @@ function writeResult(result: TerminalCommandResult) {
     result.message,
   ]
   prompt.value = ''
+  window.requestAnimationFrame(focusInput)
 }
 
 async function navigate(to: string) {
@@ -78,10 +90,14 @@ function commandState(command: TerminalCommand) {
   }
   return 'ready'
 }
+
+function focusInput() {
+  commandInput.value?.focus()
+}
 </script>
 
 <template>
-  <section class="terminal" :aria-label="t('terminal.aria')">
+  <section class="terminal" :aria-label="t('terminal.aria')" @pointerdown="focusInput">
     <div class="terminal-bar">
       <strong>simon.dev</strong>
       <span>{{ commandContext.isAuthenticated ? t('terminal.authenticated') : t('terminal.guest') }}</span>
@@ -109,7 +125,13 @@ function commandState(command: TerminalCommand) {
 
       <form class="prompt-line" @submit.prevent="execute()">
         <span>simon@home:~$</span>
-        <input v-model="prompt" :aria-label="t('terminal.inputAria')" autocomplete="off" spellcheck="false">
+        <input
+          ref="commandInput"
+          v-model="prompt"
+          :aria-label="t('terminal.inputAria')"
+          autocomplete="off"
+          spellcheck="false"
+        >
       </form>
     </div>
   </section>
