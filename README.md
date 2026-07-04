@@ -1,53 +1,71 @@
 # Simon Workspace
 
-Simon Workspace is a personal website and AI teaching workspace monorepo.
+Simon Workspace is a personal homepage and teaching workspace monorepo.
 
-It contains:
+访客看到的是简洁的个人主页；授权账号登录后进入课程、班级、学期、模板、文件、生成记录、权限和站点配置工作台。
 
-- `simon-workspace-api`: Spring Boot API service.
-- `simon-workspace-web`: Vue 3 frontend.
-- `deploy`: Docker Compose, Nginx, database, and deployment configuration.
-- `simon-workspace-doc.md`: product and architecture planning document.
+## Structure
+
+- `simon-workspace-api`: Spring Boot API.
+- `simon-workspace-web`: Vue 3 + Vite frontend.
+- `deploy`: Docker, Nginx, and deployment config.
+- `docs/design-style.md`: current visual style baseline.
+- `docs/roadmap`: phase Todo documents.
+- `simon-workspace-doc.md`: product and architecture summary.
 
 ## Development
 
-Backend:
+Backend tests:
 
 ```bash
 mvn -f simon-workspace-api/pom.xml test
 ```
 
-The API uses Flyway for database migrations. When running the API outside tests, provide a MySQL database through these environment variables:
-
-```text
-MYSQL_HOST
-MYSQL_PORT
-MYSQL_DATABASE
-MYSQL_USERNAME
-MYSQL_PASSWORD
-FLYWAY_ENABLED
-```
-
-Frontend:
+Frontend build:
 
 ```bash
 npm install --prefix simon-workspace-web
 npm run build --prefix simon-workspace-web
 ```
 
+## Runtime Config
+
+The API uses Flyway for database migrations. For local dev, use `application-dev.yml`. For production, provide MySQL and Redis through environment variables:
+
+```text
+MYSQL_URL
+MYSQL_USERNAME
+MYSQL_PASSWORD
+REDIS_HOST
+REDIS_PORT
+REDIS_PASSWORD
+FLYWAY_ENABLED
+```
+
+The frontend reads the backend address from:
+
+```text
+VITE_API_BASE_URL
+```
+
 ## Deployment Direction
 
-The project is organized as one Git repository with separate frontend and backend applications. Jenkins will build both apps, create Docker images, and deploy them with Docker Compose.
+The project is one Git repository with separate frontend and backend applications. Current production port plan:
 
-## Docker Compose
+```text
+Web: 9526
+API: 9527
+```
 
-Create an environment file from the example:
+MySQL and Redis are remote services and are not deployed by Docker Compose.
+
+Create an environment file:
 
 ```bash
 cp deploy/.env.example deploy/.env
 ```
 
-Start the local deployment stack:
+Start:
 
 ```bash
 docker compose --env-file deploy/.env -f deploy/docker-compose.yml up -d --build
@@ -59,3 +77,11 @@ Services:
 - API: `http://localhost:9527/api/health`
 - MySQL: remote service configured by `MYSQL_URL`
 - Redis: remote service configured by `REDIS_HOST`, `REDIS_PORT`, and `REDIS_PASSWORD`
+
+## Documentation
+
+Use these first:
+
+- [Design style](docs/design-style.md)
+- [Roadmap overview](docs/roadmap/00-overview.md)
+- [Product summary](simon-workspace-doc.md)
