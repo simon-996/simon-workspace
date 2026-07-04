@@ -32,6 +32,8 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!simon-workspace-web/.env.development
+!simon-workspace-web/.env.production
 deploy/.env
 !deploy/.env.example
 
