@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, useRoute } from 'vue-router'
-import { NIcon } from 'naive-ui'
-import { Menu2 } from '@vicons/tabler'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { NButton, NDropdown, NIcon } from 'naive-ui'
+import { ChevronDown, Menu2, UserCircle } from '@vicons/tabler'
 
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { usePublicSiteConfig } from '../composables/usePublicSiteConfig'
@@ -12,12 +12,14 @@ import { buildHeaderNavItems } from '../utils/appHeaderNav'
 
 const { t } = useI18n()
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const navOpen = ref(false)
 const { site, loading, loadSite } = usePublicSiteConfig()
 
 onMounted(() => {
   void loadSite()
+  void auth.restore()
 })
 
 watch(
@@ -38,6 +40,39 @@ const navItems = computed(() =>
   }),
 )
 const showSkeleton = computed(() => loading.value && !site.value)
+const accountLabel = computed(() =>
+  auth.user?.nickname?.trim() || auth.user?.username?.trim() || t('common.account'),
+)
+const accountOptions = computed(() => [
+  {
+    label: t('workspace.title'),
+    key: 'workspace',
+    disabled: route.path === '/workspace',
+  },
+  {
+    label: t('workspace.logout'),
+    key: 'logout',
+  },
+])
+
+async function selectAccountAction(key: string | number) {
+  const action = String(key)
+  navOpen.value = false
+
+  if (action === 'workspace') {
+    if (route.path !== '/workspace') {
+      await router.push('/workspace')
+    }
+    return
+  }
+
+  if (action === 'logout') {
+    await auth.logout()
+    if (route.path.startsWith('/workspace')) {
+      await router.replace('/')
+    }
+  }
+}
 </script>
 
 <template>
@@ -70,6 +105,21 @@ const showSkeleton = computed(() => loading.value && !site.value)
             <span class="header-skeleton nav-skeleton" aria-hidden="true"></span>
           </template>
         </nav>
+
+        <n-dropdown
+          v-if="auth.isAuthenticated"
+          trigger="click"
+          :options="accountOptions"
+          @select="selectAccountAction"
+        >
+          <n-button class="account-button" secondary size="small" :aria-label="t('common.account')">
+            <template #icon>
+              <n-icon :component="UserCircle" />
+            </template>
+            <span class="account-name">{{ accountLabel }}</span>
+            <n-icon class="account-chevron" :component="ChevronDown" />
+          </n-button>
+        </n-dropdown>
 
         <LanguageSwitcher />
         <button class="menu-button" type="button" :aria-label="t('home.menuAria')" @click="navOpen = !navOpen">
@@ -155,6 +205,34 @@ const showSkeleton = computed(() => loading.value && !site.value)
   cursor: default;
 }
 
+.account-button {
+  --n-border-radius: 8px !important;
+  max-width: 176px;
+  border-color: rgba(223, 231, 235, 0.92) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #536773 !important;
+  font-weight: 700;
+  backdrop-filter: blur(16px);
+}
+
+.account-button :deep(.n-button__content) {
+  min-width: 0;
+  gap: 7px;
+}
+
+.account-name {
+  display: block;
+  overflow: hidden;
+  max-width: 112px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-chevron {
+  flex: 0 0 auto;
+  font-size: 14px;
+}
+
 .header-skeleton {
   display: block;
   border-radius: 999px;
@@ -205,6 +283,10 @@ const showSkeleton = computed(() => loading.value && !site.value)
 
   .app-header-controls {
     gap: 8px;
+  }
+
+  .account-name {
+    max-width: 24vw;
   }
 
   .menu-button {

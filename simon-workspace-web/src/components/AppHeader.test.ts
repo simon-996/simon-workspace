@@ -20,4 +20,20 @@ describe('AppHeader', () => {
     expect(source).toContain('menu-button')
     expect(source).toContain('watch(')
   })
+
+  it('restores auth state so the shared header can show the current account', () => {
+    expect(source).toContain('useRouter')
+    expect(source).toContain('void auth.restore()')
+  })
+
+  it('renders an authenticated account dropdown with workspace and logout actions', () => {
+    expect(source).toContain('NDropdown')
+    expect(source).toContain('v-if="auth.isAuthenticated"')
+    expect(source).toContain('accountLabel')
+    expect(source).toContain('accountOptions')
+    expect(source).toContain("key: 'workspace'")
+    expect(source).toContain("key: 'logout'")
+    expect(source).toContain('selectAccountAction')
+    expect(source).toContain('await auth.logout()')
+  })
 })

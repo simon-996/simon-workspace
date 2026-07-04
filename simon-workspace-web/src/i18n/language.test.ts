@@ -96,4 +96,13 @@ describe('language helpers', () => {
       expect(placeholder).not.toBe('simon')
     }
   })
+
+  it('keeps the shared account menu label translated in every locale', () => {
+    for (const locale of Object.keys(messages)) {
+      if (!isAppLanguage(locale)) {
+        throw new Error(`Unsupported test locale: ${locale}`)
+      }
+      expect(messages[locale].common.account.trim()).not.toBe('')
+    }
+  })
 })

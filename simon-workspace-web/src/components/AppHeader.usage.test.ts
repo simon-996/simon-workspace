@@ -16,4 +16,9 @@ describe('AppHeader page usage', () => {
     expect(loginSource).not.toContain('LanguageSwitcher')
     expect(workspaceSource).not.toContain('LanguageSwitcher')
   })
+
+  it('keeps account exit controls in the shared header instead of the workspace content header', () => {
+    expect(workspaceSource).not.toContain('logout-button')
+    expect(workspaceSource).not.toContain('async function logout')
+  })
 })

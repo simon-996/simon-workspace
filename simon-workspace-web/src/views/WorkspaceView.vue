@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { NButton, NIcon } from 'naive-ui'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { NIcon } from 'naive-ui'
 import {
   Book,
   Calendar,
@@ -11,10 +11,8 @@ import {
   FileText,
   Files,
   History,
-  Logout,
   Settings,
   Template,
-  UserCircle,
   Users,
 } from '@vicons/tabler'
 
@@ -23,7 +21,6 @@ import { useAuthStore } from '../stores/auth'
 
 const { t } = useI18n()
 const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
 
 const navItems = [
@@ -44,11 +41,6 @@ const pageTitle = computed(() => {
   const titleKey = typeof route.meta.titleKey === 'string' ? route.meta.titleKey : 'workspace.title'
   return t(titleKey)
 })
-
-async function logout() {
-  await auth.logout()
-  await router.replace('/login')
-}
 </script>
 
 <template>
@@ -69,19 +61,6 @@ async function logout() {
         <header class="workspace-header">
           <div>
             <h1>{{ pageTitle }}</h1>
-          </div>
-
-          <div class="user-panel">
-            <span class="user-name">
-              <n-icon :component="UserCircle" />
-              {{ auth.displayName }}
-            </span>
-            <n-button tertiary size="small" class="logout-button" @click="logout">
-              <template #icon>
-                <n-icon :component="Logout" />
-              </template>
-              {{ t('workspace.logout') }}
-            </n-button>
           </div>
         </header>
 
@@ -191,34 +170,6 @@ h1 {
   line-height: 1.2;
 }
 
-.user-panel {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.user-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 34px;
-  color: #536773;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.user-name .n-icon {
-  color: #16708f;
-  font-size: 20px;
-}
-
-.logout-button {
-  --n-border-radius: 8px !important;
-  font-weight: 700;
-}
-
 .mobile-tabs {
   display: none;
 }
@@ -251,11 +202,6 @@ h1 {
 
   h1 {
     font-size: 24px;
-  }
-
-  .user-panel {
-    width: 100%;
-    justify-content: space-between;
   }
 
   .mobile-tabs {

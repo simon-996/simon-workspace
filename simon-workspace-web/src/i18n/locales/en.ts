@@ -1,6 +1,7 @@
 export default {
   common: {
     language: 'Language',
+    account: 'Account',
     requestFailed: 'Request failed',
     actions: {
       cancel: 'Cancel',

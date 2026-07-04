@@ -1,6 +1,7 @@
 export default {
   common: {
     language: 'ภาษา',
+    account: 'บัญชี',
     requestFailed: 'คำขอล้มเหลว',
     actions: {
       cancel: 'ยกเลิก',

@@ -1,6 +1,7 @@
 export default {
   common: {
     language: '语言',
+    account: '账号',
     requestFailed: '请求失败',
     actions: {
       cancel: '取消',
