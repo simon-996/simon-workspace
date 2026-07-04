@@ -6,7 +6,7 @@
 
 **Architecture:** Backend adds self-service auth endpoints under `/api/auth/me` so users can update only their own profile and password. Avatar upload reuses the existing file storage pipeline with a new `AVATAR` source type and public visibility, while the frontend crops locally before uploading the final image. Frontend keeps the account center in a focused `AccountCenterModal.vue` component opened from `AppHeader.vue`.
 
-**Tech Stack:** Spring Boot, Sa-Token, JdbcTemplate, MySQL, Vue 3, Pinia, Naive UI, TypeScript, canvas-based image cropping, Vitest, Maven tests.
+**Tech Stack:** Spring Boot, Sa-Token, JdbcTemplate, MySQL, Vue 3, Pinia, Naive UI, TypeScript, vue-advanced-cropper, Vitest, Maven tests.
 
 ---
 
@@ -212,3 +212,52 @@ Expected: PASS, allowing only the existing Vite chunk-size warning.
 
 Run: `git push`
 Expected: `master -> master`.
+
+### Task 7: Mature Avatar Cropper and Compact Account Modal
+
+**Files:**
+- Modify: `simon-workspace-web/package.json`
+- Modify: `simon-workspace-web/package-lock.json`
+- Modify: `simon-workspace-web/src/components/AccountCenterModal.vue`
+- Modify: `simon-workspace-web/src/components/AccountCenterModal.test.ts`
+- Modify: `simon-workspace-web/src/i18n/locales/en.ts`
+- Modify: `simon-workspace-web/src/i18n/locales/zh-CN.ts`
+- Modify: `simon-workspace-web/src/i18n/locales/th-TH.ts`
+- Delete: `simon-workspace-web/src/utils/avatarCrop.ts`
+- Delete: `simon-workspace-web/src/utils/avatarCrop.test.ts`
+
+- [ ] **Step 1: Write failing account center refinement tests**
+
+Tests prove:
+- The avatar flow imports `vue-advanced-cropper` and no longer uses manual sliders.
+- The PC account center uses fixed modal/content styles instead of a full-screen surface.
+- The profile form keeps avatar changes in the avatar tab instead of exposing a manual avatar URL input.
+
+Run: `npm run test -- src/components/AccountCenterModal.test.ts`
+Expected: FAIL before the implementation is updated.
+
+- [ ] **Step 2: Install and wire a mature cropper**
+
+Add `vue-advanced-cropper`, render a square cropper with preview, and export the cropper canvas to a WebP file before upload.
+
+- [ ] **Step 3: Redesign the PC account center layout**
+
+Use a compact two-column account center on desktop:
+- left summary with avatar, display name, username, and roles;
+- right content area with profile, avatar, and password tabs;
+- fixed modal width and internal scroll.
+
+Keep the mobile layout single-column and comfortable to use.
+
+- [ ] **Step 4: Update localized copy**
+
+Remove obsolete manual crop slider labels and add concise preview/cropper copy in English, Chinese, and Thai.
+
+- [ ] **Step 5: Verify and commit**
+
+Run:
+- `npm run test -- src/components/AccountCenterModal.test.ts src/i18n/language.test.ts`
+- `npm run test`
+- `npm run build`
+
+Expected: PASS, allowing only the existing Vite chunk-size warning.
