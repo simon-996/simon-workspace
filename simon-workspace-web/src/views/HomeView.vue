@@ -13,20 +13,8 @@ const { t } = useI18n()
 const navOpen = ref(false)
 const scrollProgress = ref(0)
 const viewport = ref({ width: 1200, height: 800 })
-const site = ref<SiteConfig>({
-  id: 'fallback',
-  siteTitle: 'Simon Workspace',
-  ownerName: 'Chen Ximeng',
-  heroTitle: '个人主页、博客和教学工作台',
-  heroSubtitle: '记录教学、开发和项目实践；公开页面给访客阅读，工作台留给授权账号使用。',
-  ownerRole: '软件教师 / 独立开发者',
-  contactEmail: null,
-  githubUrl: 'https://github.com/simon-996',
-  profileVisible: true,
-  blogVisible: true,
-  projectsVisible: true,
-  workspaceEntryVisible: false,
-})
+const site = ref<SiteConfig | null>(null)
+const siteLoadFailed = ref(false)
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
 
 let ticking = false
@@ -50,10 +38,11 @@ onBeforeUnmount(() => {
 })
 
 async function loadSite() {
+  siteLoadFailed.value = false
   try {
     site.value = await fetchPublicSiteConfig()
   } catch {
-    // Keep the fallback homepage content when public config is unavailable.
+    siteLoadFailed.value = true
   }
 }
 
@@ -114,15 +103,21 @@ function updateViewport() {
     <section class="home-scene">
       <nav class="top-nav" :aria-label="t('home.navAria')">
         <a class="brand" href="/">
-          {{ site.siteTitle }}
+          <span v-if="site">{{ site.siteTitle }}</span>
+          <span v-else class="skeleton-line brand-skeleton" aria-hidden="true"></span>
         </a>
         <div class="nav-controls">
-          <div class="nav-links" :class="{ open: navOpen }">
+          <div v-if="site" class="nav-links" :class="{ open: navOpen }">
             <a v-if="site.profileVisible" href="#about">{{ t('home.about') }}</a>
             <a v-if="site.blogVisible" href="#blog">{{ t('home.blog') }}</a>
             <a v-if="site.projectsVisible" href="#projects">{{ t('home.projects') }}</a>
             <router-link to="/login">{{ t('home.login') }}</router-link>
             <router-link v-if="site.workspaceEntryVisible" to="/workspace">{{ t('workspace.title') }}</router-link>
+          </div>
+          <div v-else class="nav-links nav-links-loading" :class="{ open: navOpen }" aria-hidden="true">
+            <span class="skeleton-line nav-skeleton"></span>
+            <span class="skeleton-line nav-skeleton short"></span>
+            <span class="skeleton-line nav-skeleton"></span>
           </div>
           <LanguageSwitcher />
           <button class="menu-button" type="button" :aria-label="t('home.menuAria')" @click="navOpen = !navOpen">
@@ -133,41 +128,77 @@ function updateViewport() {
 
       <section class="hero-section">
         <section id="about" class="intro-column" :aria-label="t('home.pageAria')">
-          <p class="intro-kicker">{{ t('home.intro.kicker') }}</p>
-          <h1>{{ site.ownerName }}</h1>
-          <p class="intro-short">{{ t('home.intro.shortLine') }}</p>
+          <template v-if="site">
+            <p class="intro-kicker">{{ t('home.intro.kicker') }}</p>
+            <h1>{{ site.ownerName }}</h1>
+            <p class="intro-short">{{ t('home.intro.shortLine') }}</p>
 
-          <div class="intro-details">
-            <p class="intro-lead">{{ t('home.intro.lead') }}</p>
-            <p>{{ t('home.intro.body') }}</p>
-            <p>{{ t('home.intro.philosophy') }}</p>
-            <a class="contact-link" href="mailto:simon996chen@outlook.com">
-              <span>{{ t('home.intro.contactLabel') }}</span>
-              <strong>{{ t('home.intro.contactEmail') }}</strong>
-            </a>
-            <div class="tech-grid" :aria-label="t('home.intro.techAria')">
-              <article>
-                <span>{{ t('home.intro.groups.backendLabel') }}</span>
-                <strong>{{ t('home.intro.groups.backendValue') }}</strong>
-              </article>
-              <article>
-                <span>{{ t('home.intro.groups.frontendLabel') }}</span>
-                <strong>{{ t('home.intro.groups.frontendValue') }}</strong>
-              </article>
-              <article>
-                <span>{{ t('home.intro.groups.mobileLabel') }}</span>
-                <strong>{{ t('home.intro.groups.mobileValue') }}</strong>
-              </article>
-              <article>
-                <span>{{ t('home.intro.groups.focusLabel') }}</span>
-                <strong>{{ t('home.intro.groups.focusValue') }}</strong>
-              </article>
+            <div class="intro-details">
+              <p class="intro-lead">{{ t('home.intro.lead') }}</p>
+              <p>{{ t('home.intro.body') }}</p>
+              <p>{{ t('home.intro.philosophy') }}</p>
+              <a class="contact-link" href="mailto:simon996chen@outlook.com">
+                <span>{{ t('home.intro.contactLabel') }}</span>
+                <strong>{{ t('home.intro.contactEmail') }}</strong>
+              </a>
+              <div class="tech-grid" :aria-label="t('home.intro.techAria')">
+                <article>
+                  <span>{{ t('home.intro.groups.backendLabel') }}</span>
+                  <strong>{{ t('home.intro.groups.backendValue') }}</strong>
+                </article>
+                <article>
+                  <span>{{ t('home.intro.groups.frontendLabel') }}</span>
+                  <strong>{{ t('home.intro.groups.frontendValue') }}</strong>
+                </article>
+                <article>
+                  <span>{{ t('home.intro.groups.mobileLabel') }}</span>
+                  <strong>{{ t('home.intro.groups.mobileValue') }}</strong>
+                </article>
+                <article>
+                  <span>{{ t('home.intro.groups.focusLabel') }}</span>
+                  <strong>{{ t('home.intro.groups.focusValue') }}</strong>
+                </article>
+              </div>
             </div>
+          </template>
+
+          <div v-else class="intro-skeleton" :class="{ failed: siteLoadFailed }">
+            <span class="skeleton-line skeleton-kicker" aria-hidden="true"></span>
+            <span class="skeleton-line skeleton-title" aria-hidden="true"></span>
+            <span class="skeleton-line skeleton-title narrow" aria-hidden="true"></span>
+            <div class="skeleton-brief" aria-hidden="true">
+              <span class="skeleton-line"></span>
+              <span class="skeleton-line medium"></span>
+              <span class="skeleton-line short"></span>
+            </div>
+            <div class="intro-skeleton-details" aria-hidden="true">
+              <span class="skeleton-line detail-title"></span>
+              <span class="skeleton-line"></span>
+              <span class="skeleton-line medium"></span>
+              <span class="skeleton-line short"></span>
+              <div class="skeleton-tech-grid">
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line"></span>
+              </div>
+            </div>
+            <p v-if="siteLoadFailed" class="load-note">{{ t('home.configLoadFailed') }}</p>
           </div>
         </section>
 
         <div class="terminal-stage">
-          <TerminalPanel />
+          <TerminalPanel v-if="site" />
+          <div v-else class="terminal-skeleton" aria-hidden="true">
+            <div class="terminal-skeleton-header">
+              <span class="skeleton-line terminal-title"></span>
+            </div>
+            <div class="terminal-skeleton-body">
+              <span class="skeleton-line terminal-line wide"></span>
+              <span class="skeleton-line terminal-line"></span>
+              <span class="skeleton-line terminal-line short"></span>
+            </div>
+          </div>
         </div>
       </section>
     </section>
@@ -252,6 +283,37 @@ function updateViewport() {
   color: #1b83a8;
 }
 
+.skeleton-line {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(190, 203, 213, 0.34) 0%,
+    rgba(255, 255, 255, 0.86) 48%,
+    rgba(190, 203, 213, 0.34) 100%
+  );
+  background-size: 220% 100%;
+  animation: skeleton-breathe 2.6s ease-in-out infinite;
+}
+
+.brand-skeleton {
+  width: 136px;
+  height: 16px;
+}
+
+.nav-links-loading {
+  pointer-events: none;
+}
+
+.nav-skeleton {
+  width: 56px;
+  height: 13px;
+}
+
+.nav-skeleton.short {
+  width: 42px;
+}
+
 .menu-button {
   display: none;
   border: 1px solid #d8e0e7;
@@ -316,6 +378,101 @@ h1 {
   will-change: opacity;
 }
 
+.intro-skeleton {
+  position: relative;
+  display: grid;
+  align-content: center;
+  width: min(620px, 100%);
+}
+
+.skeleton-kicker {
+  width: 172px;
+  height: 14px;
+  margin-bottom: 18px;
+}
+
+.skeleton-title {
+  width: min(500px, 70vw);
+  height: clamp(58px, 8vw, 104px);
+  border-radius: 18px;
+}
+
+.skeleton-title.narrow {
+  width: min(310px, 48vw);
+  height: clamp(42px, 6vw, 76px);
+  margin-top: 10px;
+}
+
+.skeleton-brief {
+  display: grid;
+  gap: 14px;
+  width: min(480px, 100%);
+  margin-top: 30px;
+  opacity: var(--brief-opacity);
+  will-change: opacity;
+}
+
+.skeleton-brief .skeleton-line {
+  height: 22px;
+}
+
+.skeleton-brief .medium {
+  width: 82%;
+}
+
+.skeleton-brief .short {
+  width: 58%;
+}
+
+.intro-skeleton-details {
+  position: absolute;
+  top: calc(100% - 130px);
+  left: 0;
+  display: grid;
+  gap: 10px;
+  width: min(820px, 80vw);
+  opacity: var(--details-opacity);
+  transform: translate3d(0, var(--details-y), 0) scale(var(--details-scale));
+  transform-origin: left top;
+  will-change: opacity, transform;
+}
+
+.intro-skeleton-details .skeleton-line {
+  height: 13px;
+}
+
+.intro-skeleton-details .detail-title {
+  width: 72%;
+  height: 24px;
+}
+
+.intro-skeleton-details .medium {
+  width: 82%;
+}
+
+.intro-skeleton-details .short {
+  width: 58%;
+}
+
+.skeleton-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin-top: 4px;
+}
+
+.skeleton-tech-grid .skeleton-line {
+  height: 44px;
+  border-radius: 8px;
+}
+
+.load-note {
+  margin: 16px 0 0;
+  color: #9a642c;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .intro-details {
   position: absolute;
   top: calc(100% - 130px);
@@ -350,6 +507,57 @@ h1 {
   transform-origin: center center;
   opacity: var(--terminal-opacity);
   will-change: transform, opacity;
+}
+
+.terminal-skeleton {
+  min-height: 410px;
+  overflow: hidden;
+  border: 1px solid #22303a;
+  border-radius: 8px;
+  background: #101923;
+  box-shadow: 0 24px 70px rgba(17, 26, 35, 0.16);
+}
+
+.terminal-skeleton .skeleton-line {
+  background: linear-gradient(
+    90deg,
+    rgba(76, 95, 110, 0.36) 0%,
+    rgba(129, 156, 174, 0.58) 48%,
+    rgba(76, 95, 110, 0.36) 100%
+  );
+  background-size: 220% 100%;
+}
+
+.terminal-skeleton-header {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  border-bottom: 1px solid #22303a;
+  padding: 0 22px;
+}
+
+.terminal-title {
+  width: 112px;
+  height: 16px;
+}
+
+.terminal-skeleton-body {
+  display: grid;
+  gap: 16px;
+  padding: 96px 24px 24px;
+}
+
+.terminal-line {
+  width: 60%;
+  height: 16px;
+}
+
+.terminal-line.wide {
+  width: 82%;
+}
+
+.terminal-line.short {
+  width: 42%;
 }
 
 .contact-link {
@@ -450,6 +658,50 @@ h1 {
     margin-top: 22px;
   }
 
+  .intro-skeleton {
+    justify-items: center;
+    width: 100%;
+  }
+
+  .skeleton-kicker {
+    margin-bottom: 14px;
+  }
+
+  .skeleton-title {
+    width: min(430px, 86vw);
+  }
+
+  .skeleton-title.narrow {
+    width: min(260px, 60vw);
+  }
+
+  .skeleton-brief {
+    justify-items: center;
+    width: 100%;
+    margin-top: 24px;
+  }
+
+  .intro-skeleton-details {
+    right: 0;
+    left: 0;
+    width: 100%;
+    transform: translate3d(0, var(--details-y), 0) scale(var(--details-scale));
+    transform-origin: center top;
+  }
+
+  .skeleton-tech-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .terminal-skeleton {
+    min-height: 280px;
+  }
+
+  .terminal-skeleton-body {
+    padding-top: 66px;
+  }
+
   h1 {
     font-size: clamp(48px, 18vw, 86px);
   }
@@ -500,6 +752,11 @@ h1 {
     gap: 10px;
   }
 
+  .intro-skeleton-details {
+    top: calc(100% + 20px);
+    gap: 10px;
+  }
+
   .intro-details p {
     font-size: 13px;
     line-height: 1.58;
@@ -514,16 +771,39 @@ h1 {
   }
 }
 
+@keyframes skeleton-breathe {
+  0%,
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.46;
+  }
+
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.92;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .intro-column,
   .terminal-stage,
-  .intro-details {
+  .intro-details,
+  .intro-skeleton-details {
     transform: none;
     opacity: 1;
     transition: none;
   }
 
+  .skeleton-line {
+    animation: none;
+  }
+
   .intro-details {
+    position: static;
+    margin-top: 22px;
+  }
+
+  .intro-skeleton-details {
     position: static;
     margin-top: 22px;
   }
