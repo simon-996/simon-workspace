@@ -45,18 +45,7 @@ async function submitLogin() {
     <AppHeader />
 
     <section class="login-shell">
-      <div class="login-copy">
-        <p class="eyebrow">{{ t('login.eyebrow') }}</p>
-        <h1>{{ t('login.title') }}</h1>
-        <p>{{ t('login.subtitle') }}</p>
-      </div>
-
       <form class="login-panel" @submit.prevent="submitLogin">
-        <div class="panel-header">
-          <p>{{ t('login.panelTitle') }}</p>
-          <span>{{ t('login.session') }}</span>
-        </div>
-
         <label>
           <span>{{ t('login.username') }}</span>
           <n-input v-model:value="form.username" size="large" :placeholder="t('login.usernamePlaceholder')" clearable>
@@ -117,64 +106,28 @@ async function submitLogin() {
 
 .login-shell {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(340px, 420px);
-  align-items: center;
-  gap: clamp(36px, 7vw, 92px);
-  width: min(1080px, calc(100% - 48px));
+  place-items: center;
+  width: min(100% - 48px, 520px);
   min-height: calc(100dvh - 74px);
   margin: 0 auto;
-  padding: 48px 0;
+  padding: 42px 0;
   position: relative;
   z-index: 1;
 }
 
-.eyebrow {
-  margin: 0 0 18px;
-  color: #16708f;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-h1 {
-  max-width: 560px;
-  margin: 0;
-  color: #17212b;
-  font-size: clamp(40px, 5.6vw, 70px);
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.05;
-}
-
-.login-copy p:last-child {
-  max-width: 440px;
-  margin: 24px 0 0;
-  color: #657783;
-  font-size: 16px;
-  line-height: 1.62;
-}
-
 .login-panel {
   display: grid;
-  gap: 20px;
+  gap: 18px;
+  width: min(100%, 420px);
   border: 1px solid rgba(223, 231, 235, 0.95);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 18px 55px rgba(32, 53, 66, 0.08);
-  padding: 24px;
+  padding: 26px;
   backdrop-filter: blur(20px);
   animation: login-panel-in 580ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #dfe7eb;
-  padding-bottom: 18px;
-}
-
-.panel-header p,
 label span {
   margin: 0;
   color: #657783;
@@ -183,12 +136,6 @@ label span {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-}
-
-.panel-header span {
-  color: #28734d;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 12px;
 }
 
 label {
@@ -222,13 +169,7 @@ label {
 
 @media (max-width: 820px) {
   .login-shell {
-    grid-template-columns: 1fr;
-    gap: 34px;
     width: min(100% - 32px, 520px);
-  }
-
-  .eyebrow {
-    margin-top: 18px;
   }
 
   .login-panel {
