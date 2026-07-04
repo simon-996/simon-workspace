@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 import { unwrapApiResponse, type ApiResponse } from '../api/errors'
 import { http } from '../api/http'
+import { uploadAvatarResource } from '../api/workspace'
 import {
   clearStoredSession,
   isSessionExpired,
@@ -25,6 +26,17 @@ interface LoginData {
   tokenType: string
   expiresIn: number
   user: CurrentUser
+}
+
+export interface ProfileUpdatePayload {
+  nickname: string
+  email?: string | null
+  avatarUrl?: string | null
+}
+
+export interface PasswordUpdatePayload {
+  currentPassword: string
+  newPassword: string
 }
 
 interface AuthState {
@@ -97,6 +109,22 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.clear()
       }
+    },
+
+    async updateProfile(payload: ProfileUpdatePayload) {
+      const response = await http.put<ApiResponse<CurrentUser>>('/auth/me/profile', payload)
+      const updatedUser = unwrapApiResponse(response.data)
+      this.user = updatedUser
+      return updatedUser
+    },
+
+    async updatePassword(payload: PasswordUpdatePayload) {
+      const response = await http.put<ApiResponse<null>>('/auth/me/password', payload)
+      return unwrapApiResponse(response.data)
+    },
+
+    async uploadAvatar(file: File) {
+      return uploadAvatarResource(file)
     },
 
     clear() {

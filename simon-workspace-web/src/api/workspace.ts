@@ -407,6 +407,18 @@ export async function uploadFileResource(file: File, visibility = 'PRIVATE') {
   return unwrapApiResponse(response.data)
 }
 
+export async function uploadAvatarResource(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await http.post<ApiResponse<FileResource>>('/files', formData, {
+    params: {
+      sourceType: 'AVATAR',
+      visibility: 'PUBLIC',
+    },
+  })
+  return unwrapApiResponse(response.data)
+}
+
 export async function deleteFileResource(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/files/${id}`)
   return unwrapApiResponse(response.data)
