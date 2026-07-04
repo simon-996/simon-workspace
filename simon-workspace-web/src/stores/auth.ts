@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
+import { unwrapApiResponse, type ApiResponse } from '../api/errors'
 import { http } from '../api/http'
-import { translate } from '../i18n'
 import {
   clearStoredSession,
   isSessionExpired,
@@ -9,12 +9,6 @@ import {
   type AuthSession,
   writeStoredSession,
 } from './authSession'
-
-interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
-}
 
 export interface CurrentUser {
   id: string
@@ -59,19 +53,17 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(username: string, password: string) {
       const response = await http.post<ApiResponse<LoginData>>('/auth/login', { username, password })
-      if (response.data.code !== 0) {
-        throw new Error(response.data.message || translate('login.failed'))
-      }
+      const loginData = unwrapApiResponse(response.data)
 
       const session: AuthSession = {
-        accessToken: response.data.data.accessToken,
-        tokenType: response.data.data.tokenType || 'Bearer',
-        expiresIn: response.data.data.expiresIn,
+        accessToken: loginData.accessToken,
+        tokenType: loginData.tokenType || 'Bearer',
+        expiresIn: loginData.expiresIn,
         loginTime: Date.now(),
       }
 
       this.session = session
-      this.user = response.data.data.user
+      this.user = loginData.user
       this.restored = true
       writeStoredSession(session)
     },
@@ -88,12 +80,7 @@ export const useAuthStore = defineStore('auth', {
 
       try {
         const response = await http.get<ApiResponse<CurrentUser>>('/auth/me')
-        if (response.data.code !== 0) {
-          this.clear()
-          return false
-        }
-
-        this.user = response.data.data
+        this.user = unwrapApiResponse(response.data)
         this.restored = true
         return true
       } catch {

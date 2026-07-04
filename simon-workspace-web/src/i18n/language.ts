@@ -42,10 +42,20 @@ export function normalizeLanguage(value?: string | null): AppLanguage {
   return 'en'
 }
 
-export function loadStoredLanguage(storage: Storage = localStorage): AppLanguage {
+export function loadStoredLanguage(storage: Storage | undefined = browserStorage()): AppLanguage {
+  if (!storage) {
+    return 'en'
+  }
   return normalizeLanguage(storage.getItem(LANGUAGE_STORAGE_KEY))
 }
 
-export function saveLanguage(language: AppLanguage, storage: Storage = localStorage) {
+export function saveLanguage(language: AppLanguage, storage: Storage | undefined = browserStorage()) {
+  if (!storage) {
+    return
+  }
   storage.setItem(LANGUAGE_STORAGE_KEY, language)
+}
+
+function browserStorage() {
+  return typeof localStorage === 'undefined' ? undefined : localStorage
 }

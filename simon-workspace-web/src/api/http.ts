@@ -1,5 +1,6 @@
 import axios, { AxiosHeaders } from 'axios'
 
+import { toAppError } from './errors'
 import { buildAuthHeader, readStoredSession } from '../stores/authSession'
 
 export const http = axios.create({
@@ -15,3 +16,8 @@ http.interceptors.request.use((config) => {
   }
   return config
 })
+
+http.interceptors.response.use(
+  (response) => response,
+  (error) => Promise.reject(toAppError(error)),
+)

@@ -1,6 +1,5 @@
 import { http } from './http'
-import { translate } from '../i18n'
-import type { ApiResponse } from './workspace'
+import { unwrapApiResponse, type ApiResponse } from './errors'
 
 export interface SiteConfig {
   id: string
@@ -32,24 +31,17 @@ export interface SiteConfigPayload {
   workspaceEntryVisible: boolean
 }
 
-function unwrap<T>(response: ApiResponse<T>) {
-  if (response.code !== 0) {
-    throw new Error(response.message || translate('common.requestFailed'))
-  }
-  return response.data
-}
-
 export async function fetchPublicSiteConfig() {
   const response = await http.get<ApiResponse<SiteConfig>>('/public/site')
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchAdminSiteConfig() {
   const response = await http.get<ApiResponse<SiteConfig>>('/site/config')
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateAdminSiteConfig(payload: SiteConfigPayload) {
   const response = await http.put<ApiResponse<SiteConfig>>('/site/config', payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }

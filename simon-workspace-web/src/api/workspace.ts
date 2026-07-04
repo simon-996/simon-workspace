@@ -1,11 +1,5 @@
 import { http } from './http'
-import { translate } from '../i18n'
-
-export interface ApiResponse<T> {
-  code: number
-  message: string
-  data: T
-}
+import { unwrapApiResponse, type ApiResponse } from './errors'
 
 export interface Course {
   id: string
@@ -260,35 +254,28 @@ export interface UpdateUserRolesPayload {
   roleCodes: string[]
 }
 
-function unwrap<T>(response: ApiResponse<T>) {
-  if (response.code !== 0) {
-    throw new Error(response.message || translate('common.requestFailed'))
-  }
-  return response.data
-}
-
 export async function fetchCourses(keyword?: string) {
   const response = await http.get<ApiResponse<Course[]>>('/courses', {
     params: {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function createCourse(payload: CoursePayload) {
   const response = await http.post<ApiResponse<Course>>('/courses', payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateCourse(id: string, payload: CoursePayload) {
   const response = await http.put<ApiResponse<Course>>(`/courses/${id}`, payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function deleteCourse(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/courses/${id}`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchClasses(keyword?: string) {
@@ -297,22 +284,22 @@ export async function fetchClasses(keyword?: string) {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function createClassInfo(payload: ClassInfoPayload) {
   const response = await http.post<ApiResponse<ClassInfo>>('/classes', payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateClassInfo(id: string, payload: ClassInfoPayload) {
   const response = await http.put<ApiResponse<ClassInfo>>(`/classes/${id}`, payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function deleteClassInfo(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/classes/${id}`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchSemesters(keyword?: string) {
@@ -321,27 +308,27 @@ export async function fetchSemesters(keyword?: string) {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function createSemester(payload: SemesterPayload) {
   const response = await http.post<ApiResponse<Semester>>('/semesters', payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateSemester(id: string, payload: SemesterPayload) {
   const response = await http.put<ApiResponse<Semester>>(`/semesters/${id}`, payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function generateSemesterCalendar(id: string) {
   const response = await http.post<ApiResponse<SemesterCalendar[]>>(`/semesters/${id}/calendar/generate`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchSemesterCalendar(id: string) {
   const response = await http.get<ApiResponse<SemesterCalendar[]>>(`/semesters/${id}/calendar`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateSemesterCalendar(
@@ -353,7 +340,7 @@ export async function updateSemesterCalendar(
     `/semesters/${semesterId}/calendar/${calendarId}`,
     payload,
   )
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchTemplates(keyword?: string) {
@@ -362,7 +349,7 @@ export async function fetchTemplates(keyword?: string) {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function uploadTemplate(file: File, payload: TemplateUploadPayload) {
@@ -371,27 +358,27 @@ export async function uploadTemplate(file: File, payload: TemplateUploadPayload)
   const response = await http.post<ApiResponse<TemplateFile>>('/templates/upload', formData, {
     params: payload,
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateTemplate(id: string, payload: TemplatePayload) {
   const response = await http.put<ApiResponse<TemplateFile>>(`/templates/${id}`, payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function deleteTemplate(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/templates/${id}`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchTemplateFields(id: string) {
   const response = await http.get<ApiResponse<TemplateField[]>>(`/templates/${id}/fields`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateTemplateFields(id: string, fields: TemplateFieldPayload[]) {
   const response = await http.put<ApiResponse<TemplateField[]>>(`/templates/${id}/fields`, { fields })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchFiles(keyword?: string) {
@@ -400,12 +387,12 @@ export async function fetchFiles(keyword?: string) {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchFileDetail(id: string) {
   const response = await http.get<ApiResponse<FileResource>>(`/files/${id}`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function uploadFileResource(file: File, visibility = 'PRIVATE') {
@@ -417,12 +404,12 @@ export async function uploadFileResource(file: File, visibility = 'PRIVATE') {
       visibility,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function deleteFileResource(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/files/${id}`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function downloadFileResource(id: string) {
@@ -438,17 +425,17 @@ export async function downloadFileResource(id: string) {
 
 export async function fetchStorageProviders() {
   const response = await http.get<ApiResponse<StorageProviderState[]>>('/storage/providers')
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function activateStorageProvider(code: string) {
   const response = await http.put<ApiResponse<StorageProviderState>>(`/storage/providers/${code}/activate`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function testStorageProvider(code: string) {
   const response = await http.post<ApiResponse<StorageProviderState>>(`/storage/providers/${code}/test`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 function filenameFromDisposition(disposition?: string) {
@@ -465,12 +452,12 @@ export async function fetchGenerationTasks(keyword?: string) {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchGenerationTaskDetail(id: string) {
   const response = await http.get<ApiResponse<GenerationTask>>(`/generation/tasks/${id}`)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchSecurityUsers(keyword?: string) {
@@ -479,15 +466,15 @@ export async function fetchSecurityUsers(keyword?: string) {
       keyword: keyword || undefined,
     },
   })
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function fetchSecurityRoles() {
   const response = await http.get<ApiResponse<Role[]>>('/security/roles')
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
 
 export async function updateSecurityUserRoles(id: string, payload: UpdateUserRolesPayload) {
   const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/roles`, payload)
-  return unwrap(response.data)
+  return unwrapApiResponse(response.data)
 }
