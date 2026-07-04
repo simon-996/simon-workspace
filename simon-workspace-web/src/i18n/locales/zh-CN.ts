@@ -55,7 +55,6 @@ export default {
       body: '平时主要做 Web、微信小程序和 Flutter App 开发，也会记录教学实践、项目开发和一些技术折腾。',
       philosophy: '我更关注技术能否解决真实问题。',
       contactLabel: '',
-      contactEmail: 'simon996chen@outlook.com',
       techAria: '技术栈',
       groups: {
         backendLabel: 'Backend',

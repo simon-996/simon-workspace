@@ -68,7 +68,7 @@ describe('language helpers', () => {
     expect(loadStoredLanguage(storage)).toBe('th-TH')
   })
 
-  it('compiles homepage contact email messages for every locale', () => {
+  it('keeps homepage contact email as profile data instead of i18n copy', () => {
     const i18n = createI18n({
       legacy: false,
       locale: 'en',
@@ -80,8 +80,10 @@ describe('language helpers', () => {
       if (!isAppLanguage(locale)) {
         throw new Error(`Unsupported test locale: ${locale}`)
       }
+      const message = messages[locale]
       i18n.global.locale.value = locale
-      expect(i18n.global.t('home.intro.contactEmail')).toBe('simon996chen@outlook.com')
+      expect(message.home.intro).not.toHaveProperty('contactEmail')
+      expect(i18n.global.t('home.intro.lead')).not.toBe('')
     }
   })
 })

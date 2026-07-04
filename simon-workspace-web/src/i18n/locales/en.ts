@@ -55,7 +55,6 @@ export default {
       body: 'I mainly build Web applications, WeChat mini programs, and Flutter apps. I also record teaching practice, project work, and technical experiments here.',
       philosophy: 'I care more about whether technology solves real problems than how many tools are listed.',
       contactLabel: '',
-      contactEmail: 'simon996chen@outlook.com',
       techAria: 'Technology stack',
       groups: {
         backendLabel: 'Backend',

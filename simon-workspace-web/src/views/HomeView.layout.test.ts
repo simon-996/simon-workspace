@@ -26,4 +26,12 @@ describe('HomeView profile layout', () => {
     expect(homeSource).toContain('const contactLabel = computed')
     expect(homeSource).toContain('v-if="contactLabel"')
   })
+
+  it('renders the contact email as profile data instead of an i18n message', () => {
+    expect(homeSource).toContain('const contactEmail = computed')
+    expect(homeSource).toContain('site.value?.contactEmail')
+    expect(homeSource).toContain(':href="contactHref"')
+    expect(homeSource).toContain('{{ contactEmail }}')
+    expect(homeSource).not.toContain("t('home.intro.contactEmail')")
+  })
 })
