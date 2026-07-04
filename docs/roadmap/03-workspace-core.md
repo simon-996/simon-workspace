@@ -41,6 +41,7 @@
 - [x] `/workspace/semesters` 学期管理：列表、新增、编辑、生成周历、查看周历、编辑周历。
 - [x] `/workspace/templates` 模板管理：列表、搜索、上传、编辑、删除、字段维护。
 - [x] `/workspace/files` 文件中心：列表、搜索、下载、删除。
+- [x] `/workspace/storage` 存储配置：provider 状态、连接测试、默认存储切换。
 - [x] `/workspace/history` 生成记录：列表、搜索、详情。
 - [x] `/workspace/security` 权限管理：用户、角色、用户角色分配。
 - [x] `/workspace/site` 站点配置：首页配置、公开模块开关。
@@ -54,6 +55,7 @@
 - [x] 模板上传、查询、更新、删除。
 - [x] 模板字段查询、更新。
 - [x] 文件列表、详情、下载、删除。
+- [x] 文件上传、provider 存储、存储管理接口。
 - [x] 生成任务列表、详情。
 - [x] 站点公开配置和后台配置。
 - [x] 用户与角色管理。
@@ -104,7 +106,7 @@
 - [ ] 能查看和下载文件。
 - [ ] 能查看生成记录。
 - [ ] 能维护站点公开配置。
-- [ ] `mvn -f simon-workspace-api/pom.xml test` 通过。
+- [x] `mvn -f simon-workspace-api/pom.xml test` 通过。2026-07-04 已验证。
 - [x] `npm run build --prefix simon-workspace-web` 通过。2026-07-04 已验证。
 
 ## 进度记录
@@ -113,5 +115,6 @@
 2026-07-04:
 - 工作台核心页面已全部接入路由。
 - 首页、登录页、工作台外壳和管理页视觉已统一。
+- 新增存储配置页面和文件 provider 信息展示。
 - 当前主要缺口是后端测试覆盖、角色管理细节和移动端细节复查。
 ```

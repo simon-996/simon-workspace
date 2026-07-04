@@ -28,6 +28,7 @@
 - [x] Redis 使用远程连接。
 - [x] Compose 不再部署 MySQL、Redis、MinIO。
 - [x] 前端支持配置后端访问地址。
+- [x] 文件存储支持通过环境变量配置 LOCAL、腾讯 COS、阿里 OSS、Cloudflare R2。
 
 ## 待完成 Todo
 
@@ -113,7 +114,7 @@
 - [ ] 部署后 API 健康检查通过。
 - [ ] 部署后 Web 首页可访问。
 - [x] `npm run build --prefix simon-workspace-web` 通过。2026-07-04 已验证。
-- [ ] `mvn -f simon-workspace-api/pom.xml test` 通过。
+- [x] `mvn -f simon-workspace-api/pom.xml test` 通过。2026-07-04 已验证。
 - [ ] Docker Compose 在服务器通过。
 
 ## 进度记录
