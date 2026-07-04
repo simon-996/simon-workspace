@@ -1,9 +1,12 @@
 package com.simon.workspace.auth;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.simon.workspace.auth.dto.PasswordUpdateRequest;
+import com.simon.workspace.auth.dto.ProfileUpdateRequest;
 import com.simon.workspace.auth.dto.LoginRequest;
 import com.simon.workspace.auth.dto.LoginResponse;
 import com.simon.workspace.auth.model.AuthUser;
+import com.simon.workspace.auth.model.CurrentUser;
 import com.simon.workspace.auth.password.PasswordHashVerifier;
 import com.simon.workspace.common.error.BusinessException;
 import com.simon.workspace.common.error.ErrorCode;
@@ -74,6 +77,46 @@ public class AuthService {
         }
     }
 
+    @Transactional
+    public CurrentUser updateProfile(long userId, ProfileUpdateRequest request) {
+        String nickname = required(request.nickname(), "昵称不能为空");
+        int affected = jdbcTemplate.update("""
+                        UPDATE `user`
+                        SET nickname = ?, email = ?, avatar_url = ?
+                        WHERE id = ? AND deleted = 0
+                        """,
+                nickname,
+                blankToNull(request.email()),
+                blankToNull(request.avatarUrl()),
+                userId
+        );
+        if (affected == 0) {
+            throw new IllegalStateException("当前用户不存在");
+        }
+        return authAccountService.requireCurrentUser(userId);
+    }
+
+    @Transactional
+    public void updatePassword(long userId, PasswordUpdateRequest request) {
+        AuthUser currentUser = authAccountService.requireAuthUser(userId);
+        if (!passwordHashVerifier.matches(request.currentPassword(), currentUser.passwordHash())) {
+            throw new BusinessException(ErrorCode.AUTH_BAD_CREDENTIALS);
+        }
+
+        String newPassword = required(request.newPassword(), "新密码不能为空");
+        String newPasswordHash = "sha256:" + passwordHashVerifier.sha256(newPassword);
+        int affected = jdbcTemplate.update("""
+                        UPDATE `user` SET password_hash = ?
+                        WHERE id = ? AND deleted = 0
+                        """,
+                newPasswordHash,
+                userId
+        );
+        if (affected == 0) {
+            throw new IllegalStateException("当前用户不存在");
+        }
+    }
+
     private void recordLogin(Long userId, String username, HttpServletRequest request, String status, String failureReason) {
         jdbcTemplate.update("""
                         INSERT INTO login_log (user_id, username, login_ip, user_agent, status, failure_reason)
@@ -102,6 +145,17 @@ public class AuthService {
             return userAgent;
         }
         return userAgent.substring(0, 512);
+    }
+
+    private String required(String value, String message) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException(message);
+        }
+        return value.trim();
+    }
+
+    private String blankToNull(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
     }
 
 }

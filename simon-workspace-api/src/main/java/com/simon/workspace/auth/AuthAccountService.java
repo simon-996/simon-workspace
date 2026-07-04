@@ -31,6 +31,15 @@ public class AuthAccountService {
     }
 
     public Optional<CurrentUser> findCurrentUser(long userId) {
+        return findAuthUserById(userId).map(AuthUser::toCurrentUser);
+    }
+
+    public CurrentUser requireCurrentUser(long userId) {
+        return findCurrentUser(userId)
+                .orElseThrow(() -> new IllegalStateException("当前用户不存在"));
+    }
+
+    public Optional<AuthUser> findAuthUserById(long userId) {
         return findUser("""
                         SELECT id, username, password_hash, nickname, avatar_url, email, status
                         FROM `user`
@@ -38,11 +47,11 @@ public class AuthAccountService {
                         LIMIT 1
                         """,
                 userId
-        ).map(AuthUser::toCurrentUser);
+        );
     }
 
-    public CurrentUser requireCurrentUser(long userId) {
-        return findCurrentUser(userId)
+    public AuthUser requireAuthUser(long userId) {
+        return findAuthUserById(userId)
                 .orElseThrow(() -> new IllegalStateException("当前用户不存在"));
     }
 
