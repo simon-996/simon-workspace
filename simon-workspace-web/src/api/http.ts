@@ -1,6 +1,6 @@
-import axios from 'axios'
+import axios, { AxiosHeaders } from 'axios'
 
-export const AUTH_TOKEN_STORAGE_KEY = 'simon-workspace-token'
+import { buildAuthHeader, readStoredSession } from '../stores/authSession'
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? '/api',
@@ -8,9 +8,10 @@ export const http = axios.create({
 })
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const authHeader = buildAuthHeader(readStoredSession())
+  if (authHeader.Authorization) {
+    config.headers = AxiosHeaders.from(config.headers)
+    config.headers.set('Authorization', authHeader.Authorization)
   }
   return config
 })

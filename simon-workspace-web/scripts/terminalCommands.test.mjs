@@ -1,31 +1,49 @@
-import assert from 'node:assert/strict'
+import { describe, expect, it } from 'vitest'
 
 import { evaluateTerminalCommand, terminalCommands } from '../src/components/terminalCommands.ts'
 
-const anonymous = {
-  isAuthenticated: false,
-  hasPermission: () => false,
-}
+describe('terminal commands', () => {
+  const anonymous = {
+    isAuthenticated: false,
+    hasPermission: () => false,
+  }
 
-assert.equal(evaluateTerminalCommand('about', anonymous).status, 'run')
-assert.equal(evaluateTerminalCommand('about', anonymous).to, '#about')
+  it('allows public commands', () => {
+    expect(evaluateTerminalCommand('about', anonymous).status).toBe('run')
+    expect(evaluateTerminalCommand('about', anonymous).to).toBe('#about')
+  })
 
-const loginRequired = evaluateTerminalCommand('site', anonymous)
-assert.equal(loginRequired.status, 'login-required')
-assert.equal(loginRequired.permission, 'site:config')
+  it('requires login before protected commands', () => {
+    const loginRequired = evaluateTerminalCommand('site', anonymous)
 
-const forbidden = evaluateTerminalCommand('site', {
-  isAuthenticated: true,
-  hasPermission: () => false,
+    expect(loginRequired.status).toBe('login-required')
+    expect(loginRequired.permission).toBe('site:config')
+  })
+
+  it('blocks protected commands without permission', () => {
+    const forbidden = evaluateTerminalCommand('site', {
+      isAuthenticated: true,
+      hasPermission: () => false,
+    })
+
+    expect(forbidden.status).toBe('forbidden')
+    expect(forbidden.permission).toBe('site:config')
+  })
+
+  it('runs protected commands with permission', () => {
+    const allowed = evaluateTerminalCommand('site', {
+      isAuthenticated: true,
+      hasPermission: (permission) => permission === 'site:config',
+    })
+
+    expect(allowed.status).toBe('run')
+    expect(allowed.to).toBe('/workspace/site')
+  })
+
+  it('keeps course management behind course permission', () => {
+    expect(terminalCommands).toContainEqual(expect.objectContaining({
+      command: 'courses',
+      permission: 'course:manage',
+    }))
+  })
 })
-assert.equal(forbidden.status, 'forbidden')
-assert.equal(forbidden.permission, 'site:config')
-
-const allowed = evaluateTerminalCommand('site', {
-  isAuthenticated: true,
-  hasPermission: (permission) => permission === 'site:config',
-})
-assert.equal(allowed.status, 'run')
-assert.equal(allowed.to, '/workspace/site')
-
-assert.ok(terminalCommands.some((command) => command.command === 'courses' && command.permission === 'course:manage'))

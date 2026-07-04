@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 
-import { AUTH_TOKEN_STORAGE_KEY, http } from '../api/http'
+import { http } from '../api/http'
 import { translate } from '../i18n'
+import {
+  clearStoredSession,
+  isSessionExpired,
+  readStoredSession,
+  type AuthSession,
+  writeStoredSession,
+} from './authSession'
 
 interface ApiResponse<T> {
   code: number
@@ -20,24 +27,26 @@ export interface CurrentUser {
 }
 
 interface LoginData {
-  token: string
+  accessToken: string
+  tokenType: string
+  expiresIn: number
   user: CurrentUser
 }
 
 interface AuthState {
-  token: string
+  session: AuthSession | null
   user: CurrentUser | null
   restored: boolean
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    token: localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ?? '',
+    session: readStoredSession(),
     user: null,
     restored: false,
   }),
   getters: {
-    isAuthenticated: (state) => Boolean(state.token),
+    isAuthenticated: (state) => Boolean(state.session && !isSessionExpired(state.session)),
     displayName: (state) => state.user?.nickname || state.user?.username || 'Simon',
     hasRole: (state) => (role: string) => state.user?.roles?.includes(role) ?? false,
     hasPermission: (state) => (permission: string) => {
@@ -54,10 +63,17 @@ export const useAuthStore = defineStore('auth', {
         throw new Error(response.data.message || translate('login.failed'))
       }
 
-      this.token = response.data.data.token
+      const session: AuthSession = {
+        accessToken: response.data.data.accessToken,
+        tokenType: response.data.data.tokenType || 'Bearer',
+        expiresIn: response.data.data.expiresIn,
+        loginTime: Date.now(),
+      }
+
+      this.session = session
       this.user = response.data.data.user
       this.restored = true
-      localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, this.token)
+      writeStoredSession(session)
     },
 
     async restore() {
@@ -65,8 +81,8 @@ export const useAuthStore = defineStore('auth', {
         return this.isAuthenticated
       }
 
-      if (!this.token) {
-        this.restored = true
+      if (!this.session || isSessionExpired(this.session)) {
+        this.clear()
         return false
       }
 
@@ -88,7 +104,7 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       try {
-        if (this.token) {
+        if (this.session) {
           await http.post('/auth/logout')
         }
       } finally {
@@ -97,10 +113,10 @@ export const useAuthStore = defineStore('auth', {
     },
 
     clear() {
-      this.token = ''
+      this.session = null
       this.user = null
       this.restored = true
-      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+      clearStoredSession()
     },
   },
 })
