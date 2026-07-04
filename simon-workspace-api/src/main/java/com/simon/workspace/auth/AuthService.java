@@ -1,20 +1,16 @@
 package com.simon.workspace.auth;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.simon.workspace.auth.dto.LoginRequest;
 import com.simon.workspace.auth.dto.LoginResponse;
 import com.simon.workspace.auth.model.AuthUser;
 import com.simon.workspace.auth.password.PasswordHashVerifier;
-import com.simon.workspace.auth.session.TokenStore;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,18 +21,22 @@ public class AuthService {
 
     private final JdbcTemplate jdbcTemplate;
     private final PasswordHashVerifier passwordHashVerifier;
-    private final TokenStore tokenStore;
+    private final AuthAccountService authAccountService;
 
-    public AuthService(JdbcTemplate jdbcTemplate, PasswordHashVerifier passwordHashVerifier, TokenStore tokenStore) {
+    public AuthService(
+            JdbcTemplate jdbcTemplate,
+            PasswordHashVerifier passwordHashVerifier,
+            AuthAccountService authAccountService
+    ) {
         this.jdbcTemplate = jdbcTemplate;
         this.passwordHashVerifier = passwordHashVerifier;
-        this.tokenStore = tokenStore;
+        this.authAccountService = authAccountService;
     }
 
     @Transactional
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         String username = request.username().trim();
-        Optional<AuthUser> user = findUser(username);
+        Optional<AuthUser> user = authAccountService.findUserByUsername(username);
 
         if (user.isEmpty()) {
             recordLogin(null, username, httpRequest, LOGIN_FAILED, "USER_NOT_FOUND");
@@ -57,78 +57,19 @@ public class AuthService {
         jdbcTemplate.update("UPDATE `user` SET last_login_time = NOW() WHERE id = ?", authUser.id());
         recordLogin(authUser.id(), username, httpRequest, LOGIN_SUCCESS, null);
 
-        String token = tokenStore.create(authUser);
-        return new LoginResponse(token, authUser.toCurrentUser());
+        StpUtil.login(authUser.id());
+        return new LoginResponse(
+                StpUtil.getTokenValue(),
+                "Bearer",
+                StpUtil.getTokenTimeout(),
+                authUser.toCurrentUser()
+        );
     }
 
     public void logout(HttpServletRequest request) {
-        tokenStore.remove(extractToken(request));
-    }
-
-    private Optional<AuthUser> findUser(String username) {
-        Optional<AuthUser> user = jdbcTemplate.query("""
-                        SELECT id, username, password_hash, nickname, avatar_url, email, status
-                        FROM `user`
-                        WHERE username = ? AND deleted = 0
-                        LIMIT 1
-                        """,
-                (rs, rowNum) -> mapUser(rs),
-                username
-        ).stream().findFirst();
-
-        return user.map(authUser -> new AuthUser(
-                authUser.id(),
-                authUser.username(),
-                authUser.passwordHash(),
-                authUser.nickname(),
-                authUser.avatarUrl(),
-                authUser.email(),
-                authUser.status(),
-                findRoles(authUser.id()),
-                findPermissions(authUser.id())
-        ));
-    }
-
-    private AuthUser mapUser(ResultSet rs) throws SQLException {
-        return new AuthUser(
-                rs.getLong("id"),
-                rs.getString("username"),
-                rs.getString("password_hash"),
-                rs.getString("nickname"),
-                rs.getString("avatar_url"),
-                rs.getString("email"),
-                rs.getString("status"),
-                List.of(),
-                List.of()
-        );
-    }
-
-    private List<String> findRoles(long userId) {
-        return jdbcTemplate.query("""
-                        SELECT r.role_code
-                        FROM user_role ur
-                        JOIN role r ON r.id = ur.role_id AND r.deleted = 0
-                        WHERE ur.user_id = ? AND ur.deleted = 0
-                        ORDER BY r.role_code ASC
-                        """,
-                (rs, rowNum) -> rs.getString("role_code"),
-                userId
-        );
-    }
-
-    private List<String> findPermissions(long userId) {
-        return jdbcTemplate.query("""
-                        SELECT DISTINCT p.permission_code
-                        FROM user_role ur
-                        JOIN role r ON r.id = ur.role_id AND r.deleted = 0
-                        JOIN role_permission rp ON rp.role_id = r.id AND rp.deleted = 0
-                        JOIN permission p ON p.id = rp.permission_id AND p.deleted = 0
-                        WHERE ur.user_id = ? AND ur.deleted = 0
-                        ORDER BY p.permission_code ASC
-                        """,
-                (rs, rowNum) -> rs.getString("permission_code"),
-                userId
-        );
+        if (StpUtil.isLogin()) {
+            StpUtil.logout();
+        }
     }
 
     private void recordLogin(Long userId, String username, HttpServletRequest request, String status, String failureReason) {
@@ -161,11 +102,4 @@ public class AuthService {
         return userAgent.substring(0, 512);
     }
 
-    private String extractToken(HttpServletRequest request) {
-        String authorization = request.getHeader("Authorization");
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            return authorization.substring(7);
-        }
-        return null;
-    }
 }

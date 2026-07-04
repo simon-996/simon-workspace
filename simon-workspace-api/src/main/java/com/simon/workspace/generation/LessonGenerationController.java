@@ -1,6 +1,6 @@
 package com.simon.workspace.generation;
 
-import com.simon.workspace.auth.permission.RequirePermission;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.generation.dto.LessonPreviewRequest;
 import com.simon.workspace.generation.dto.LessonPreviewResponse;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/generation/lessons")
-@RequirePermission("generation:lesson")
+@SaCheckPermission("generation:lesson")
 public class LessonGenerationController {
 
     private final GenerationPreviewService generationPreviewService;

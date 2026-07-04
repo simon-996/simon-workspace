@@ -1,6 +1,6 @@
 package com.simon.workspace.generation;
 
-import com.simon.workspace.auth.permission.RequirePermission;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.generation.dto.CalendarPreviewRequest;
 import com.simon.workspace.generation.dto.CalendarPreviewResponse;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/generation/calendars")
-@RequirePermission("generation:calendar")
+@SaCheckPermission("generation:calendar")
 public class CalendarGenerationController {
 
     private final GenerationPreviewService generationPreviewService;

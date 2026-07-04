@@ -1,6 +1,6 @@
 package com.simon.workspace.file;
 
-import com.simon.workspace.auth.permission.RequirePermission;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.file.dto.FileResourceResponse;
 import com.simon.workspace.file.model.FileDownload;
@@ -24,7 +24,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/files")
-@RequirePermission("file:manage")
+@SaCheckPermission("file:manage")
 public class FileResourceController {
 
     private final FileResourceService fileResourceService;

@@ -1,6 +1,6 @@
 package com.simon.workspace.site;
 
-import com.simon.workspace.auth.permission.RequirePermission;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.site.dto.SiteConfigRequest;
 import com.simon.workspace.site.dto.SiteConfigResponse;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/site/config")
-@RequirePermission("site:config")
+@SaCheckPermission("site:config")
 public class SiteConfigController {
 
     private final SiteConfigService siteConfigService;

@@ -1,6 +1,6 @@
 package com.simon.workspace.course;
 
-import com.simon.workspace.auth.permission.RequirePermission;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.course.dto.CourseRequest;
 import com.simon.workspace.course.dto.CourseResponse;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
-@RequirePermission("course:manage")
+@SaCheckPermission("course:manage")
 public class CourseController {
 
     private final CourseService courseService;

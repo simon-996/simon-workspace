@@ -1,12 +1,14 @@
 package com.simon.workspace.auth.session;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simon.workspace.auth.permission.PermissionAuthorization;
-import com.simon.workspace.auth.permission.RequirePermission;
+import com.simon.workspace.auth.AuthAccountService;
 import com.simon.workspace.common.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -19,18 +21,15 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
-    private final TokenStore tokenStore;
+    private final AuthAccountService authAccountService;
     private final ObjectMapper objectMapper;
-    private final PermissionAuthorization permissionAuthorization;
 
     public AuthInterceptor(
-            TokenStore tokenStore,
-            ObjectMapper objectMapper,
-            PermissionAuthorization permissionAuthorization
+            AuthAccountService authAccountService,
+            ObjectMapper objectMapper
     ) {
-        this.tokenStore = tokenStore;
+        this.authAccountService = authAccountService;
         this.objectMapper = objectMapper;
-        this.permissionAuthorization = permissionAuthorization;
     }
 
     @Override
@@ -39,21 +38,19 @@ public class AuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String token = extractToken(request);
-        return tokenStore.find(token)
-                .map(user -> {
-                    String permission = requiredPermission(handler);
-                    if (permission != null && !permissionAuthorization.canAccess(user, permission)) {
-                        writeForbidden(response);
-                        return false;
-                    }
-                    AuthContextHolder.set(user);
-                    return true;
-                })
-                .orElseGet(() -> {
-                    writeUnauthorized(response);
-                    return false;
-                });
+        try {
+            StpUtil.checkLogin();
+            var currentUser = authAccountService.requireCurrentUser(StpUtil.getLoginIdAsLong());
+            checkRequiredPermissions(handler);
+            AuthContextHolder.set(currentUser);
+            return true;
+        } catch (NotLoginException exception) {
+            writeUnauthorized(response);
+            return false;
+        } catch (NotPermissionException exception) {
+            writeForbidden(response);
+            return false;
+        }
     }
 
     @Override
@@ -68,26 +65,27 @@ public class AuthInterceptor implements HandlerInterceptor {
                 || path.startsWith("/actuator/");
     }
 
-    private String requiredPermission(Object handler) {
+    private void checkRequiredPermissions(Object handler) {
         if (!(handler instanceof HandlerMethod handlerMethod)) {
-            return null;
+            return;
         }
 
-        RequirePermission methodPermission = handlerMethod.getMethodAnnotation(RequirePermission.class);
+        SaCheckPermission methodPermission = handlerMethod.getMethodAnnotation(SaCheckPermission.class);
         if (methodPermission != null) {
-            return methodPermission.value();
+            checkPermissions(methodPermission.value());
+            return;
         }
 
-        RequirePermission typePermission = handlerMethod.getBeanType().getAnnotation(RequirePermission.class);
-        return typePermission == null ? null : typePermission.value();
+        SaCheckPermission typePermission = handlerMethod.getBeanType().getAnnotation(SaCheckPermission.class);
+        if (typePermission != null) {
+            checkPermissions(typePermission.value());
+        }
     }
 
-    private String extractToken(HttpServletRequest request) {
-        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            return authorization.substring(7);
+    private void checkPermissions(String[] permissions) {
+        for (String permission : permissions) {
+            StpUtil.checkPermission(permission);
         }
-        return null;
     }
 
     private void writeUnauthorized(HttpServletResponse response) {
