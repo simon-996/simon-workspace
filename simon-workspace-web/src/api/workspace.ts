@@ -181,12 +181,32 @@ export interface FileResource {
   ownerUserId: string
   sourceType: string
   originalFilename: string
+  storageProvider: string
+  objectKey?: string | null
+  visibility: 'PUBLIC' | 'PRIVATE' | string
+  publicUrl?: string | null
   fileSize: number
   contentType?: string | null
   fileExtension?: string | null
   status: string
+  orphanedTime?: string | null
   createdTime?: string
   updatedTime?: string
+}
+
+export interface StorageProviderState {
+  providerCode: string
+  providerType: string
+  displayName: string
+  configured: boolean
+  enabled: boolean
+  active: boolean
+  endpoint?: string | null
+  bucket?: string | null
+  publicBaseUrl?: string | null
+  lastTestStatus?: 'SUCCESS' | 'FAILED' | string | null
+  lastTestMessage?: string | null
+  lastTestTime?: string | null
 }
 
 export interface GenerationTask {
@@ -388,6 +408,18 @@ export async function fetchFileDetail(id: string) {
   return unwrap(response.data)
 }
 
+export async function uploadFileResource(file: File, visibility = 'PRIVATE') {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await http.post<ApiResponse<FileResource>>('/files', formData, {
+    params: {
+      sourceType: 'UPLOAD',
+      visibility,
+    },
+  })
+  return unwrap(response.data)
+}
+
 export async function deleteFileResource(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/files/${id}`)
   return unwrap(response.data)
@@ -402,6 +434,21 @@ export async function downloadFileResource(id: string) {
     blob: response.data,
     filename: filenameFromDisposition(typeof disposition === 'string' ? disposition : undefined) || `file-${id}`,
   }
+}
+
+export async function fetchStorageProviders() {
+  const response = await http.get<ApiResponse<StorageProviderState[]>>('/storage/providers')
+  return unwrap(response.data)
+}
+
+export async function activateStorageProvider(code: string) {
+  const response = await http.put<ApiResponse<StorageProviderState>>(`/storage/providers/${code}/activate`)
+  return unwrap(response.data)
+}
+
+export async function testStorageProvider(code: string) {
+  const response = await http.post<ApiResponse<StorageProviderState>>(`/storage/providers/${code}/test`)
+  return unwrap(response.data)
 }
 
 function filenameFromDisposition(disposition?: string) {

@@ -10,6 +10,7 @@ import GenerationHistoryView from '../views/workspace/GenerationHistoryView.vue'
 import SecurityManagementView from '../views/workspace/SecurityManagementView.vue'
 import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
 import SiteConfigView from '../views/workspace/SiteConfigView.vue'
+import StorageManagementView from '../views/workspace/StorageManagementView.vue'
 import TemplateManagementView from '../views/workspace/TemplateManagementView.vue'
 import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
 import { useAuthStore } from '../stores/auth'
@@ -81,6 +82,15 @@ export const router = createRouter({
           component: FileCenterView,
           meta: {
             titleKey: 'workspace.pages.files',
+            permission: 'file:manage',
+          },
+        },
+        {
+          path: 'storage',
+          name: 'workspace-storage',
+          component: StorageManagementView,
+          meta: {
+            titleKey: 'workspace.pages.storage',
             permission: 'file:manage',
           },
         },

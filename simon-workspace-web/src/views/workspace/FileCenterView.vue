@@ -82,6 +82,10 @@ function sourceText(sourceType: string) {
   if (sourceType === 'GENERATED') return t('workspace.files.source.generated')
   return t('workspace.files.source.other')
 }
+
+function visibilityText(visibility: string) {
+  return visibility === 'PUBLIC' ? t('workspace.files.visibility.public') : t('workspace.files.visibility.private')
+}
 </script>
 
 <template>
@@ -152,8 +156,10 @@ function sourceText(sourceType: string) {
             <tr>
               <th>{{ t('workspace.files.table.file') }}</th>
               <th>{{ t('workspace.files.table.source') }}</th>
+              <th>{{ t('workspace.files.table.storage') }}</th>
               <th>{{ t('workspace.files.table.type') }}</th>
               <th>{{ t('workspace.files.table.size') }}</th>
+              <th>{{ t('workspace.files.table.visibility') }}</th>
               <th>{{ t('workspace.files.table.createdTime') }}</th>
               <th>{{ t('workspace.files.table.actions') }}</th>
             </tr>
@@ -167,8 +173,12 @@ function sourceText(sourceType: string) {
               <td>
                 <span class="source-pill">{{ sourceText(item.sourceType) }}</span>
               </td>
+              <td>
+                <span class="storage-pill">{{ item.storageProvider || 'LOCAL' }}</span>
+              </td>
               <td>{{ item.contentType || '-' }}</td>
               <td>{{ formatSize(item.fileSize) }}</td>
+              <td>{{ visibilityText(item.visibility) }}</td>
               <td>{{ item.createdTime ? item.createdTime.slice(0, 10) : '-' }}</td>
               <td>
                 <div class="row-actions">
@@ -289,7 +299,7 @@ function sourceText(sourceType: string) {
 
 .file-table {
   width: 100%;
-  min-width: 820px;
+  min-width: 980px;
   border-collapse: collapse;
 }
 
@@ -338,6 +348,17 @@ function sourceText(sourceType: string) {
   border-radius: 999px;
   background: #eef6ff;
   color: #246b9f !important;
+  padding: 0 10px;
+  font-weight: 800;
+}
+
+.storage-pill {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 24px;
+  border-radius: 999px;
+  background: #eef8f3;
+  color: #22764e !important;
   padding: 0 10px;
   font-weight: 800;
 }
