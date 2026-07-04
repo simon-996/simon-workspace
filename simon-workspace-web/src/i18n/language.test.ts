@@ -86,4 +86,14 @@ describe('language helpers', () => {
       expect(i18n.global.t('home.intro.lead')).not.toBe('')
     }
   })
+
+  it('does not expose a real username in the login username placeholder', () => {
+    for (const locale of Object.keys(messages)) {
+      if (!isAppLanguage(locale)) {
+        throw new Error(`Unsupported test locale: ${locale}`)
+      }
+      const placeholder = messages[locale].login.usernamePlaceholder.trim().toLowerCase()
+      expect(placeholder).not.toBe('simon')
+    }
+  })
 })

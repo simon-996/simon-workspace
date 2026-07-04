@@ -77,7 +77,7 @@ export default {
     session: '受保护',
     username: '用户名',
     password: '密码',
-    usernamePlaceholder: 'simon',
+    usernamePlaceholder: '请输入用户名',
     passwordPlaceholder: '密码',
     submit: '进入工作台',
     missingCredentials: '请输入用户名和密码',

@@ -77,7 +77,7 @@ export default {
     session: 'Protected',
     username: 'Username',
     password: 'Password',
-    usernamePlaceholder: 'simon',
+    usernamePlaceholder: 'Username',
     passwordPlaceholder: 'Password',
     submit: 'Enter Workspace',
     missingCredentials: 'Please enter username and password',

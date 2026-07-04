@@ -77,7 +77,7 @@ export default {
     session: 'ป้องกันแล้ว',
     username: 'ชื่อผู้ใช้',
     password: 'รหัสผ่าน',
-    usernamePlaceholder: 'simon',
+    usernamePlaceholder: 'ชื่อผู้ใช้',
     passwordPlaceholder: 'รหัสผ่าน',
     submit: 'เข้าเวิร์กสเปซ',
     missingCredentials: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน',
