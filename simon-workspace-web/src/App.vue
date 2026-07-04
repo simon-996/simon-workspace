@@ -6,6 +6,7 @@ import {
   dateThTH,
   dateZhCN,
   enUS,
+  type GlobalThemeOverrides,
   NConfigProvider,
   NMessageProvider,
   thTH,
@@ -25,10 +26,59 @@ const naiveDateLocale = computed(() => {
   if (locale.value === 'th-TH') return dateThTH
   return dateEnUS
 })
+
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    fontFamily:
+      'Outfit, Geist, Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif',
+    fontFamilyMono: '"JetBrains Mono", "SFMono-Regular", Consolas, monospace',
+    primaryColor: '#16708f',
+    primaryColorHover: '#1d86a9',
+    primaryColorPressed: '#105c76',
+    primaryColorSuppl: '#1d86a9',
+    borderRadius: '8px',
+    borderColor: '#dfe7eb',
+    textColorBase: '#17212b',
+  },
+  Button: {
+    borderRadiusSmall: '8px',
+    borderRadiusMedium: '8px',
+    borderRadiusLarge: '8px',
+    fontWeight: '700',
+    textColorHover: '#105c76',
+    textColorPressed: '#105c76',
+  },
+  Card: {
+    borderRadius: '8px',
+    paddingMedium: '22px',
+  },
+  Input: {
+    borderRadius: '8px',
+    borderHover: '1px solid #9bb8c2',
+    borderFocus: '1px solid #16708f',
+    boxShadowFocus: '0 0 0 2px rgba(22, 112, 143, 0.12)',
+  },
+  InputNumber: {
+    borderRadius: '8px',
+  },
+  Select: {
+    peers: {
+      InternalSelection: {
+        borderRadius: '8px',
+        borderHover: '1px solid #9bb8c2',
+        borderFocus: '1px solid #16708f',
+        boxShadowFocus: '0 0 0 2px rgba(22, 112, 143, 0.12)',
+      },
+    },
+  },
+  Modal: {
+    borderRadius: '8px',
+  },
+}
 </script>
 
 <template>
-  <NConfigProvider :locale="naiveLocale" :date-locale="naiveDateLocale">
+  <NConfigProvider :locale="naiveLocale" :date-locale="naiveDateLocale" :theme-overrides="themeOverrides">
     <NMessageProvider>
       <router-view />
     </NMessageProvider>

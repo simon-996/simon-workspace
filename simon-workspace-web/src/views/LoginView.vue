@@ -48,7 +48,7 @@ async function submitLogin() {
 
     <section class="login-shell">
       <div class="login-copy">
-        <router-link class="brand" to="/"><span>&gt;_</span> Simon Workspace</router-link>
+        <router-link class="brand" to="/"><span>S</span> Simon</router-link>
         <p class="eyebrow">{{ t('login.eyebrow') }}</p>
         <h1>{{ t('login.title') }}</h1>
         <p>{{ t('login.subtitle') }}</p>
@@ -98,11 +98,22 @@ async function submitLogin() {
   position: relative;
   min-height: 100dvh;
   background:
-    linear-gradient(90deg, rgba(62, 198, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(62, 198, 255, 0.04) 1px, transparent 1px),
-    #061018;
-  background-size: 120px 120px;
-  color: #f6fbff;
+    radial-gradient(circle at 80% 22%, rgba(22, 112, 143, 0.08), transparent 28%),
+    linear-gradient(180deg, #fbfcfc 0%, #f7f8f8 52%, #eef3f5 100%);
+  color: #17212b;
+  overflow: hidden;
+}
+
+.login-page::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(23, 33, 43, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(23, 33, 43, 0.03) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 70%);
 }
 
 .login-language {
@@ -114,89 +125,100 @@ async function submitLogin() {
 
 .login-shell {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 440px);
+  grid-template-columns: minmax(0, 0.95fr) minmax(340px, 420px);
   align-items: center;
-  gap: 84px;
-  width: min(1180px, calc(100% - 48px));
+  gap: clamp(36px, 7vw, 92px);
+  width: min(1080px, calc(100% - 48px));
   min-height: 100dvh;
   margin: 0 auto;
   padding: 48px 0;
+  position: relative;
+  z-index: 1;
 }
 
 .brand {
   align-items: center;
   display: inline-flex;
   gap: 12px;
-  color: #f5fbff;
-  font-family: "JetBrains Mono", Consolas, monospace;
+  color: #17212b;
   font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
-.brand span,
-.eyebrow {
-  color: #3fc6ff;
-}
-
-.eyebrow {
-  margin: 76px 0 20px;
+.brand span {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #dfe7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #16708f;
   font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.eyebrow {
+  margin: 78px 0 18px;
+  color: #16708f;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 h1 {
-  max-width: 620px;
+  max-width: 560px;
   margin: 0;
-  color: #f9fcff;
-  font-size: clamp(42px, 6vw, 76px);
-  font-weight: 500;
+  color: #17212b;
+  font-size: clamp(40px, 5.6vw, 70px);
+  font-weight: 600;
   letter-spacing: 0;
   line-height: 1.05;
 }
 
 .login-copy p:last-child {
-  max-width: 520px;
-  margin: 26px 0 0;
-  color: #aab5c2;
-  font-size: 18px;
-  line-height: 1.55;
+  max-width: 440px;
+  margin: 24px 0 0;
+  color: #657783;
+  font-size: 16px;
+  line-height: 1.62;
 }
 
 .login-panel {
   display: grid;
-  gap: 22px;
-  border: 1px solid rgba(88, 167, 217, 0.32);
+  gap: 20px;
+  border: 1px solid rgba(223, 231, 235, 0.95);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, rgba(10, 23, 35, 0.94), rgba(5, 13, 22, 0.96)),
-    #07111b;
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
-  padding: 28px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 55px rgba(32, 53, 66, 0.08);
+  padding: 24px;
+  backdrop-filter: blur(20px);
+  animation: login-panel-in 580ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(88, 167, 217, 0.22);
-  padding-bottom: 20px;
+  border-bottom: 1px solid #dfe7eb;
+  padding-bottom: 18px;
 }
 
 .panel-header p,
 label span {
   margin: 0;
-  color: #39bdf2;
+  color: #657783;
   font-family: "JetBrains Mono", Consolas, monospace;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .panel-header span {
-  color: #80d778;
+  color: #28734d;
   font-family: "JetBrains Mono", Consolas, monospace;
   font-size: 12px;
 }
@@ -210,15 +232,24 @@ label {
   --n-border-radius: 6px !important;
   height: 52px;
   margin-top: 6px;
-  font-family: "JetBrains Mono", Consolas, monospace;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .login-button :deep(.n-button__content) {
   gap: 10px;
+}
+
+@keyframes login-panel-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 @media (max-width: 820px) {
@@ -229,7 +260,7 @@ label {
   }
 
   .eyebrow {
-    margin-top: 48px;
+    margin-top: 54px;
   }
 
   .login-panel {

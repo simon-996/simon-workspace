@@ -53,7 +53,12 @@ function selectLanguage(key: string | number) {
 <style scoped>
 .language-switcher {
   --n-border-radius: 8px !important;
+  min-width: 0;
+  border-color: rgba(223, 231, 235, 0.92) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #536773 !important;
   font-weight: 700;
+  backdrop-filter: blur(16px);
 }
 
 .language-switcher :deep(.n-button__content) {

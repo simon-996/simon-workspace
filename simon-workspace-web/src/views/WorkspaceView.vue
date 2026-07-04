@@ -54,7 +54,7 @@ async function logout() {
     <aside class="workspace-sider" :aria-label="t('workspace.aria')">
       <RouterLink class="side-brand" to="/workspace">
         <span class="brand-mark">S</span>
-        <span>Simon Workspace</span>
+        <span>Simon</span>
       </RouterLink>
 
       <nav class="side-nav">
@@ -68,7 +68,6 @@ async function logout() {
     <section class="workspace-main">
       <header class="workspace-header">
         <div>
-          <p class="header-kicker">{{ t('workspace.kicker') }}</p>
           <h1>{{ pageTitle }}</h1>
         </div>
 
@@ -102,10 +101,12 @@ async function logout() {
 <style scoped>
 .workspace-shell {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-columns: 236px minmax(0, 1fr);
   min-height: 100dvh;
-  background: #f3f6f8;
-  color: #14202b;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(22, 112, 143, 0.08), transparent 28%),
+    linear-gradient(180deg, #fbfcfc 0%, #f7f8f8 48%, #eef3f5 100%);
+  color: #17212b;
 }
 
 .workspace-sider {
@@ -115,38 +116,44 @@ async function logout() {
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 100dvh;
-  border-right: 1px solid #d8e0e7;
-  background: #111a23;
-  color: #d8e5ef;
+  border-right: 1px solid rgba(223, 231, 235, 0.9);
+  background: rgba(255, 255, 255, 0.72);
+  color: #17212b;
+  backdrop-filter: blur(24px);
 }
 
 .side-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 72px;
+  height: 78px;
   padding: 0 20px;
-  border-bottom: 1px solid rgba(216, 229, 239, 0.12);
-  color: #f7fbff;
+  border-bottom: 1px solid rgba(223, 231, 235, 0.86);
+  color: #17212b;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .brand-mark {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
-  background: #20a4d8;
-  color: #ffffff;
+  border: 1px solid #dfe7eb;
+  background: #f7fbfc;
+  color: #16708f;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .side-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 12px;
+  gap: 3px;
+  padding: 14px 10px;
 }
 
 .nav-link {
@@ -154,12 +161,16 @@ async function logout() {
   grid-template-columns: 24px 1fr;
   align-items: center;
   gap: 10px;
-  min-height: 44px;
+  min-height: 42px;
   border-radius: 8px;
   padding: 0 12px;
-  color: #91a5b5;
-  font-size: 14px;
+  color: #667783;
+  font-size: 13px;
   font-weight: 700;
+  transition:
+    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nav-link .n-icon {
@@ -168,39 +179,39 @@ async function logout() {
 
 .nav-link.router-link-exact-active,
 .nav-link:hover {
-  background: rgba(32, 164, 216, 0.14);
-  color: #47c2f3;
+  background: #e7f4f7;
+  color: #105c76;
+  transform: translate3d(2px, 0, 0);
 }
 
 .workspace-main {
   min-width: 0;
-  padding: 28px;
+  padding: 26px clamp(18px, 3vw, 34px) 34px;
 }
 
 .workspace-header {
+  position: sticky;
+  top: 0;
+  z-index: 8;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  min-height: 72px;
-  margin-bottom: 22px;
-  border-bottom: 1px solid #d8e0e7;
-  padding-bottom: 18px;
-}
-
-.header-kicker {
-  margin: 0 0 6px;
-  color: #5f7284;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
+  min-height: 64px;
+  margin: -10px 0 22px;
+  border: 1px solid rgba(223, 231, 235, 0.86);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 36px rgba(32, 53, 66, 0.05);
+  padding: 12px 14px 12px 18px;
+  backdrop-filter: blur(20px);
 }
 
 h1 {
   margin: 0;
-  color: #111a23;
-  font-size: 30px;
-  font-weight: 800;
+  color: #17212b;
+  font-size: clamp(22px, 2.2vw, 30px);
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -217,13 +228,13 @@ h1 {
   align-items: center;
   gap: 7px;
   min-height: 34px;
-  color: #465968;
-  font-size: 14px;
+  color: #536773;
+  font-size: 13px;
   font-weight: 700;
 }
 
 .user-name .n-icon {
-  color: #1688b9;
+  color: #16708f;
   font-size: 20px;
 }
 
@@ -247,12 +258,14 @@ h1 {
   }
 
   .workspace-main {
-    padding: 20px 14px;
+    padding: 14px 12px 22px;
   }
 
   .workspace-header {
     align-items: flex-start;
     flex-direction: column;
+    margin-top: 0;
+    padding: 14px;
   }
 
   h1 {
@@ -272,8 +285,8 @@ h1 {
     z-index: 20;
     display: flex;
     min-height: 64px;
-    border-top: 1px solid #d8e0e7;
-    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid #dfe7eb;
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(16px);
     overflow-x: auto;
   }
@@ -285,7 +298,7 @@ h1 {
     align-content: center;
     gap: 3px;
     min-width: 0;
-    color: #637687;
+    color: #637783;
     font-size: 11px;
     font-weight: 700;
   }
@@ -295,7 +308,7 @@ h1 {
   }
 
   .mobile-tabs a.router-link-exact-active {
-    color: #1688b9;
+    color: #16708f;
   }
 }
 </style>

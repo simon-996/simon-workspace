@@ -163,6 +163,10 @@ function textOrNull(value?: string | null) {
         <n-button size="small" tertiary @click="loadConfig">{{ t('common.actions.retry') }}</n-button>
       </div>
 
+      <div v-else-if="loading && !config" class="config-skeleton" aria-hidden="true">
+        <span v-for="index in 8" :key="index" />
+      </div>
+
       <n-spin v-else :show="loading">
         <form class="config-form" @submit.prevent="submitConfig">
           <label class="field">
@@ -338,6 +342,20 @@ function textOrNull(value?: string | null) {
   gap: 14px;
 }
 
+.config-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.config-skeleton span {
+  min-height: 58px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e9eef1 0%, #f8fafb 45%, #e9eef1 100%);
+  background-size: 200% 100%;
+  animation: sw-shimmer 1.45s ease-in-out infinite;
+}
+
 .field {
   display: grid;
   gap: 7px;
@@ -401,6 +419,7 @@ function textOrNull(value?: string | null) {
 
 @media (max-width: 860px) {
   .summary-grid,
+  .config-skeleton,
   .config-form,
   .switch-grid {
     grid-template-columns: 1fr;

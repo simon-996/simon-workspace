@@ -55,7 +55,7 @@ export default {
       body: '平时主要做 Web、微信小程序和 Flutter App 开发，也会记录教学实践、项目开发和一些技术折腾。',
       philosophy: '我更关注技术能否解决真实问题。',
       contactLabel: '',
-      contactEmail: "simon996chen{'@'}outlook.com",
+      contactEmail: 'simon996chen@outlook.com',
       techAria: '技术栈',
       groups: {
         backendLabel: 'Backend',
@@ -70,11 +70,11 @@ export default {
     },
   },
   login: {
-    eyebrow: '// 安全工作台',
-    title: '登录后继续。',
-    subtitle: '课程、模板、生成文件和教学记录都保存在授权工作台中。',
-    panelTitle: '身份验证',
-    session: '令牌会话',
+    eyebrow: '私人工作台',
+    title: '登录。',
+    subtitle: '授权工具和教学记录都在这里。',
+    panelTitle: '账号',
+    session: '受保护',
     username: '用户名',
     password: '密码',
     usernamePlaceholder: 'simon',
@@ -135,9 +135,9 @@ export default {
     },
     home: {
       apiReady: 'API 就绪',
-      phase: '阶段 03',
-      title: '基础资料与生成资源入口',
-      description: '后端核心接口已经按模块落地，下一步进入课程、班级、学期、模板、文件和记录的前端维护页。',
+      phase: '就绪',
+      title: '教学工作区',
+      description: '课程、班级、学期、模板、文件和生成记录都在这里维护。',
       modules: {
         courses: '课程管理',
         classes: '班级管理',
@@ -526,7 +526,7 @@ export default {
         publicModules: '公开模块',
         updatedTime: '最近更新',
       },
-      toolbarText: '控制访客在首页能看到的内容。',
+      toolbarText: '公开可见性',
       openHome: '打开首页',
       fields: {
         siteTitle: '站点标题',

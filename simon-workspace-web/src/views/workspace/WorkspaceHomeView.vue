@@ -6,25 +6,25 @@ import { Book, Calendar, CircleCheck, Files, History, Template } from '@vicons/t
 const { t } = useI18n()
 
 const modules = [
-  { labelKey: 'workspace.home.modules.courses', valueKey: 'workspace.home.apiReady', icon: Book },
-  { labelKey: 'workspace.home.modules.classes', valueKey: 'workspace.home.apiReady', icon: CircleCheck },
-  { labelKey: 'workspace.home.modules.semesters', valueKey: 'workspace.home.apiReady', icon: Calendar },
-  { labelKey: 'workspace.home.modules.templates', valueKey: 'workspace.home.apiReady', icon: Template },
-  { labelKey: 'workspace.home.modules.files', valueKey: 'workspace.home.apiReady', icon: Files },
-  { labelKey: 'workspace.home.modules.history', valueKey: 'workspace.home.apiReady', icon: History },
+  { labelKey: 'workspace.home.modules.courses', valueKey: 'workspace.home.apiReady', icon: Book, to: '/workspace/courses' },
+  { labelKey: 'workspace.home.modules.classes', valueKey: 'workspace.home.apiReady', icon: CircleCheck, to: '/workspace/classes' },
+  { labelKey: 'workspace.home.modules.semesters', valueKey: 'workspace.home.apiReady', icon: Calendar, to: '/workspace/semesters' },
+  { labelKey: 'workspace.home.modules.templates', valueKey: 'workspace.home.apiReady', icon: Template, to: '/workspace/templates' },
+  { labelKey: 'workspace.home.modules.files', valueKey: 'workspace.home.apiReady', icon: Files, to: '/workspace/files' },
+  { labelKey: 'workspace.home.modules.history', valueKey: 'workspace.home.apiReady', icon: History, to: '/workspace/history' },
 ]
 </script>
 
 <template>
   <section class="workspace-home">
     <div class="status-grid">
-      <article v-for="module in modules" :key="module.labelKey" class="status-card">
+      <router-link v-for="module in modules" :key="module.labelKey" :to="module.to" class="status-card">
         <n-icon :component="module.icon" />
         <div>
           <span>{{ t(module.valueKey) }}</span>
           <h2>{{ t(module.labelKey) }}</h2>
         </div>
-      </article>
+      </router-link>
     </div>
 
     <section class="home-band">
@@ -40,25 +40,37 @@ const modules = [
 <style scoped>
 .workspace-home {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .status-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #dfe7eb;
+  border-radius: 8px;
+  background: #edf2f4;
+  box-shadow: 0 14px 36px rgba(32, 53, 66, 0.05);
 }
 
 .status-card {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  align-items: center;
-  gap: 14px;
-  min-height: 104px;
-  border: 1px solid #d8e0e7;
-  border-radius: 8px;
-  background: #ffffff;
+  align-content: space-between;
+  gap: 22px;
+  min-height: 132px;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.88);
   padding: 18px;
+  transition:
+    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.status-card:hover {
+  background: #ffffff;
+  transform: translate3d(0, -2px, 0);
 }
 
 .status-card .n-icon {
@@ -67,57 +79,66 @@ const modules = [
   width: 42px;
   height: 42px;
   border-radius: 8px;
-  background: #e7f5fb;
-  color: #1688b9;
-  font-size: 23px;
+  background: #e7f4f7;
+  color: #16708f;
+  font-size: 22px;
 }
 
 .status-card span,
 .home-band span {
-  color: #668093;
-  font-size: 12px;
-  font-weight: 800;
+  color: #657783;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .status-card h2 {
   margin: 6px 0 0;
-  color: #14202b;
+  color: #17212b;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .home-band {
   display: grid;
   grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
   gap: 22px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid #dfe7eb;
   border-radius: 8px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 14px 36px rgba(32, 53, 66, 0.05);
   padding: 22px;
 }
 
 .home-band h2 {
   margin: 6px 0 0;
-  color: #14202b;
+  color: #17212b;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .home-band p {
   margin: 0;
-  color: #536675;
+  color: #657783;
   font-size: 15px;
   line-height: 1.7;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1180px) {
   .status-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .status-grid,
+  .home-band {
     grid-template-columns: 1fr;
   }
 
-  .home-band {
-    grid-template-columns: 1fr;
+  .status-card {
+    min-height: 104px;
   }
 }
 </style>
