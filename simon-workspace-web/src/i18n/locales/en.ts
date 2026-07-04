@@ -40,6 +40,7 @@ export default {
     publicContentAria: 'Public content',
     linksAria: 'Primary links',
     menuAria: 'Toggle navigation',
+    home: 'Home',
     about: 'About',
     blog: 'Blog',
     projects: 'Projects',

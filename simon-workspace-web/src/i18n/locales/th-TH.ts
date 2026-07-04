@@ -40,6 +40,7 @@ export default {
     publicContentAria: 'เนื้อหาสาธารณะ',
     linksAria: 'ลิงก์หลัก',
     menuAria: 'สลับเมนู',
+    home: 'หน้าแรก',
     about: 'เกี่ยวกับ',
     blog: 'บล็อก',
     projects: 'โปรเจกต์',

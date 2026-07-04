@@ -40,6 +40,7 @@ export default {
     publicContentAria: '公开内容',
     linksAria: '主要入口',
     menuAria: '切换导航',
+    home: '首页',
     about: '关于',
     blog: '博客',
     projects: '项目',
