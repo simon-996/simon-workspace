@@ -38,7 +38,7 @@ function logAvatarUrl(input: string, output: string, reason: string) {
     return
   }
 
-  console.debug('[avatar-url]', { input, output, reason })
+  console.info('[avatar-url]', { input, output, reason })
 }
 
 function avatarUrlDebugEnabled() {

@@ -132,7 +132,13 @@ async function selectAccountAction(key: string | number) {
         >
           <n-button class="account-button" secondary size="small" :aria-label="t('common.account')">
             <template #icon>
-              <n-avatar class="account-avatar" round :size="22" :src="accountAvatarUrl || undefined">
+              <n-avatar
+                class="account-avatar"
+                round
+                :size="22"
+                :src="accountAvatarUrl || undefined"
+                :data-avatar-src="accountAvatarUrl"
+              >
                 {{ accountInitial }}
               </n-avatar>
             </template>

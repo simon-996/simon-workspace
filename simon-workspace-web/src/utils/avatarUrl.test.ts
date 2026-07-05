@@ -15,7 +15,7 @@ describe('resolveAvatarUrl', () => {
   })
 
   it('prints avatar url diagnostics when debug mode is enabled', () => {
-    const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+    const info = vi.spyOn(console, 'info').mockImplementation(() => undefined)
     vi.stubGlobal('localStorage', {
       getItem: (key: string) => key === 'simon-workspace-avatar-debug' ? '1' : null,
     })
@@ -23,7 +23,7 @@ describe('resolveAvatarUrl', () => {
     const url = 'https://pub-9a2ecd5e709b4a6b80d23d97010e0ae2.r2.dev/files/2026/07/avatar.webp'
 
     expect(resolveAvatarUrl(url)).toBe(url)
-    expect(debug).toHaveBeenCalledWith('[avatar-url]', {
+    expect(info).toHaveBeenCalledWith('[avatar-url]', {
       input: url,
       output: url,
       reason: 'absolute',

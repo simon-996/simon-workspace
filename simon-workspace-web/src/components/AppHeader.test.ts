@@ -42,6 +42,7 @@ describe('AppHeader', () => {
     expect(source).toContain('v-if="auth.isAuthenticated"')
     expect(source).toContain('accountLabel')
     expect(source).toContain('accountAvatarUrl')
+    expect(source).toContain('data-avatar-src')
     expect(source).toContain('resolveAvatarUrl')
     expect(source).toContain('account-avatar')
     expect(source).toContain('accountOptions')
