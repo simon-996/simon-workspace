@@ -17,6 +17,7 @@ import {
 } from 'naive-ui'
 
 import { useAuthStore } from '../stores/auth'
+import { resolveAvatarUrl } from '../utils/avatarUrl'
 
 const props = defineProps<{
   show: boolean
@@ -79,7 +80,7 @@ const passwordForm = reactive({
   confirmPassword: '',
 })
 
-const avatarPreview = computed(() => profileForm.avatarUrl || auth.user?.avatarUrl || '')
+const avatarPreview = computed(() => resolveAvatarUrl(profileForm.avatarUrl || auth.user?.avatarUrl))
 const displayName = computed(() =>
   auth.user?.nickname?.trim() || auth.user?.username?.trim() || t('common.account'),
 )

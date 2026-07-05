@@ -20,16 +20,16 @@
 - Modify: `simon-workspace-web/src/components/AccountCenterModal.vue`
 - Modify: `simon-workspace-web/src/components/AccountCenterModal.test.ts`
 
-- [ ] **Step 1: Write failing avatar URL and header tests**
+- [x] **Step 1: Write failing avatar URL and header tests**
 
 Run: `npm run test -- src/utils/avatarUrl.test.ts src/components/AppHeader.test.ts src/components/AccountCenterModal.test.ts`
 Expected: FAIL because the avatar helper and header avatar rendering do not exist.
 
-- [ ] **Step 2: Implement URL resolver and wire avatar displays**
+- [x] **Step 2: Implement URL resolver and wire avatar displays**
 
 Resolve absolute URLs unchanged, resolve `/api/...` unchanged, resolve `/files/...` or `files/...` against the API base URL, and keep empty values empty. Use it in account center and header.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run: `npm run test -- src/utils/avatarUrl.test.ts src/components/AppHeader.test.ts src/components/AccountCenterModal.test.ts`
 Expected: PASS.

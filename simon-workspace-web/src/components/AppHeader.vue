@@ -2,14 +2,15 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { NButton, NDropdown, NIcon } from 'naive-ui'
-import { ChevronDown, Menu2, UserCircle } from '@vicons/tabler'
+import { NAvatar, NButton, NDropdown, NIcon } from 'naive-ui'
+import { ChevronDown, Menu2 } from '@vicons/tabler'
 
 import AccountCenterModal from './AccountCenterModal.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { usePublicSiteConfig } from '../composables/usePublicSiteConfig'
 import { useAuthStore } from '../stores/auth'
 import { buildHeaderNavItems } from '../utils/appHeaderNav'
+import { resolveAvatarUrl } from '../utils/avatarUrl'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -45,6 +46,8 @@ const showSkeleton = computed(() => loading.value && !site.value)
 const accountLabel = computed(() =>
   auth.user?.nickname?.trim() || auth.user?.username?.trim() || t('common.account'),
 )
+const accountInitial = computed(() => accountLabel.value.slice(0, 1).toUpperCase())
+const accountAvatarUrl = computed(() => resolveAvatarUrl(auth.user?.avatarUrl))
 const accountOptions = computed(() => [
   {
     label: t('account.menu.profile'),
@@ -113,7 +116,9 @@ async function selectAccountAction(key: string | number) {
         >
           <n-button class="account-button" secondary size="small" :aria-label="t('common.account')">
             <template #icon>
-              <n-icon :component="UserCircle" />
+              <n-avatar class="account-avatar" round :size="22" :src="accountAvatarUrl || undefined">
+                {{ accountInitial }}
+              </n-avatar>
             </template>
             <span class="account-name">{{ accountLabel }}</span>
             <n-icon class="account-chevron" :component="ChevronDown" />
@@ -232,6 +237,14 @@ async function selectAccountAction(key: string | number) {
 .account-chevron {
   flex: 0 0 auto;
   font-size: 14px;
+}
+
+.account-avatar {
+  flex: 0 0 auto;
+  background: #e7f4f7;
+  color: #105c76;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .header-skeleton {

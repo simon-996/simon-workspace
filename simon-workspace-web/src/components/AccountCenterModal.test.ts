@@ -22,6 +22,7 @@ describe('AccountCenterModal', () => {
     expect(source).toContain('nickname')
     expect(source).toContain('email')
     expect(source).toContain('avatarUrl')
+    expect(source).toContain('resolveAvatarUrl')
     expect(source).not.toContain('account.profile.avatarUrl')
   })
 
