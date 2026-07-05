@@ -21,13 +21,14 @@ const props = withDefaults(defineProps<TerminalPanelProps>(), {
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
-const prompt = ref('help')
+const prompt = ref('')
 const commandInput = ref<HTMLInputElement | null>(null)
 const initialLine = computed(() => t('terminal.initialLine'))
 const lines = ref<string[]>([initialLine.value])
 
 const commandContext = computed(() => ({
   isAuthenticated: auth.isAuthenticated && Boolean(auth.user),
+  username: auth.user?.username || auth.user?.nickname || '',
   hasPermission: (permission: string) => auth.hasPermission(permission),
 }))
 
@@ -53,10 +54,31 @@ onMounted(() => {
 
 async function execute(command = prompt.value) {
   const result = evaluateTerminalCommand(command, commandContext.value, t)
-  writeResult(result)
 
-  if (result.status === 'run' && result.to) {
-    await navigate(result.to)
+  try {
+    if (result.status === 'login') {
+      await auth.login(result.args?.[0] || '', result.args?.[1] || '')
+      writeResult({ ...result, message: t('terminal.loginSuccess', { username: auth.user?.username || result.args?.[0] || '' }) })
+      return
+    }
+
+    if (result.status === 'logout') {
+      await auth.logout()
+      writeResult({ ...result, message: t('terminal.logoutSuccess') })
+      return
+    }
+
+    writeResult(result)
+
+    if (result.status === 'run' && result.to) {
+      await navigate(result.to)
+    }
+  } catch (error) {
+    writeResult({
+      status: 'unknown',
+      command: result.command,
+      message: error instanceof Error ? error.message : t('errors.UNKNOWN_ERROR'),
+    })
   }
 }
 

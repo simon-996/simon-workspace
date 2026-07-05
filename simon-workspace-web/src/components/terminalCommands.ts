@@ -1,4 +1,4 @@
-export type TerminalCommandStatus = 'run' | 'help' | 'unknown' | 'login-required' | 'forbidden'
+export type TerminalCommandStatus = 'run' | 'help' | 'unknown' | 'login-required' | 'forbidden' | 'login' | 'logout' | 'info' | 'invalid'
 
 export interface TerminalCommand {
   command: string
@@ -13,6 +13,7 @@ export interface TerminalCommandView extends TerminalCommand {
 
 export interface TerminalCommandContext {
   isAuthenticated: boolean
+  username?: string
   hasPermission: (permission: string) => boolean
 }
 
@@ -22,6 +23,7 @@ export interface TerminalCommandResult {
   message: string
   to?: string
   permission?: string
+  args?: string[]
 }
 
 export const terminalCommands: TerminalCommand[] = [
@@ -30,6 +32,8 @@ export const terminalCommands: TerminalCommand[] = [
   { command: 'blog', descriptionKey: 'terminal.commands.blog', to: '#blog' },
   { command: 'projects', descriptionKey: 'terminal.commands.projects', to: '#projects' },
   { command: 'login', descriptionKey: 'terminal.commands.login', to: '/login' },
+  { command: 'logout', descriptionKey: 'terminal.commands.logout' },
+  { command: 'whoami', descriptionKey: 'terminal.commands.whoami' },
   { command: 'workspace', descriptionKey: 'terminal.commands.workspace', to: '/workspace', permission: 'workspace:view' },
   { command: 'courses', descriptionKey: 'terminal.commands.courses', to: '/workspace/courses', permission: 'course:manage' },
   { command: 'site', descriptionKey: 'terminal.commands.site', to: '/workspace/site', permission: 'site:config' },
@@ -43,11 +47,17 @@ const fallbackMessages: Record<string, string> = {
   'terminal.loginRequired': 'login required: {permission}',
   'terminal.forbidden': 'permission denied: {permission}',
   'terminal.opening': 'opening {to}',
+  'terminal.loginUsage': 'usage: login <username> <password>',
+  'terminal.logoutReady': 'signing out',
+  'terminal.whoami': 'signed in as {username}',
+  'terminal.whoamiGuest': 'guest',
   'terminal.commands.help': 'show commands',
   'terminal.commands.about': 'open profile',
   'terminal.commands.blog': 'open blog',
   'terminal.commands.projects': 'open projects',
   'terminal.commands.login': 'sign in',
+  'terminal.commands.logout': 'sign out',
+  'terminal.commands.whoami': 'show account',
   'terminal.commands.workspace': 'open workspace',
   'terminal.commands.courses': 'manage courses',
   'terminal.commands.site': 'edit homepage',
@@ -74,7 +84,8 @@ export function evaluateTerminalCommand(
   context: TerminalCommandContext,
   t: TerminalTranslate = fallbackTranslate,
 ): TerminalCommandResult {
-  const commandName = input.trim().toLowerCase()
+  const parsed = parseTerminalInput(input)
+  const commandName = parsed.command
   const command = terminalCommands.find((item) => item.command === commandName)
 
   if (!command) {
@@ -90,6 +101,40 @@ export function evaluateTerminalCommand(
       status: 'help',
       command: command.command,
       message: terminalCommands.map((item) => item.command).join('  '),
+    }
+  }
+
+  if (command.command === 'login') {
+    if (parsed.args.length < 2) {
+      return {
+        status: 'invalid',
+        command: input.trim() || command.command,
+        message: t('terminal.loginUsage'),
+      }
+    }
+    return {
+      status: 'login',
+      command: `login ${parsed.args[0]} ******`,
+      args: parsed.args,
+      message: t('terminal.commands.login'),
+    }
+  }
+
+  if (command.command === 'logout') {
+    return {
+      status: 'logout',
+      command: command.command,
+      message: t('terminal.logoutReady'),
+    }
+  }
+
+  if (command.command === 'whoami') {
+    return {
+      status: 'info',
+      command: command.command,
+      message: context.isAuthenticated && context.username
+        ? t('terminal.whoami', { username: context.username })
+        : t('terminal.whoamiGuest'),
     }
   }
 
@@ -117,5 +162,20 @@ export function evaluateTerminalCommand(
     to: command.to,
     permission: command.permission,
     message: command.to ? t('terminal.opening', { to: command.to }) : t(command.descriptionKey),
+  }
+}
+
+export function parseTerminalInput(input: string) {
+  const parts = input.trim().match(/(?:[^\s"]+|"[^"]*")+/g) ?? []
+  const [command = '', ...args] = parts.map((part) => {
+    if (part.startsWith('"') && part.endsWith('"')) {
+      return part.slice(1, -1)
+    }
+    return part
+  })
+
+  return {
+    command: command.toLowerCase(),
+    args,
   }
 }

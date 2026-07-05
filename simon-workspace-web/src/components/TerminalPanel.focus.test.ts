@@ -11,6 +11,11 @@ describe('TerminalPanel focus behavior', () => {
     expect(source).toContain('window.requestAnimationFrame(focusInput)')
   })
 
+  it('starts with an empty command input instead of prefilling help', () => {
+    expect(source).toContain("const prompt = ref('')")
+    expect(source).not.toContain("const prompt = ref('help')")
+  })
+
   it('returns pointer interaction on the terminal surface to the command input', () => {
     expect(source).toContain('@pointerdown="focusInput"')
     expect(source).toContain('ref="commandInput"')

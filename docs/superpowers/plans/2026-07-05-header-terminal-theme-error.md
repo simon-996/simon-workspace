@@ -46,16 +46,16 @@ Commit: `feat(web): show account avatars consistently`
 - Modify: `simon-workspace-web/src/i18n/locales/zh-CN.ts`
 - Modify: `simon-workspace-web/src/i18n/locales/th-TH.ts`
 
-- [ ] **Step 1: Write failing command parsing and action tests**
+- [x] **Step 1: Write failing command parsing and action tests**
 
 Run: `npm run test -- src/components/terminalCommands.auth.test.ts src/components/TerminalPanel.focus.test.ts`
 Expected: FAIL because parameterized auth commands and empty default prompt are not implemented.
 
-- [ ] **Step 2: Implement parser and async command actions**
+- [x] **Step 2: Implement parser and async command actions**
 
 Add quoted argument parsing, async handlers for login/logout/whoami, and keep navigation permission-aware.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run: `npm run test -- src/components/terminalCommands.auth.test.ts src/components/TerminalPanel.focus.test.ts src/i18n/language.test.ts`
 Expected: PASS.
