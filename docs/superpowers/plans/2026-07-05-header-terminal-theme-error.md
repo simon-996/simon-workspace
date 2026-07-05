@@ -112,17 +112,17 @@ Commit: `fix(web): harden api error feedback`
 
 ### Task 5: Full Verification
 
-- [ ] **Step 1: Run frontend tests**
+- [x] **Step 1: Run frontend tests**
 
 Run: `npm run test`
 Expected: PASS.
 
-- [ ] **Step 2: Run frontend build**
+- [x] **Step 2: Run frontend build**
 
 Run: `npm run build`
 Expected: PASS, allowing the existing chunk size warning.
 
-- [ ] **Step 3: Push commits**
+- [x] **Step 3: Push commits**
 
 Run: `git push`
 Expected: `master -> master`.
