@@ -4,24 +4,47 @@ export function resolveAvatarUrl(
 ) {
   const url = value?.trim()
   if (!url) {
+    logAvatarUrl(value ?? '', '', 'empty')
     return ''
   }
 
   if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:') || url.startsWith('blob:')) {
+    logAvatarUrl(url, url, 'absolute')
     return url
   }
 
   if (url.startsWith('/api/')) {
+    logAvatarUrl(url, url, 'api-relative')
     return url
   }
 
   if (url.startsWith('/')) {
-    return joinUrl(apiBaseUrl, url)
+    const output = joinUrl(apiBaseUrl, url)
+    logAvatarUrl(url, output, 'root-relative')
+    return output
   }
 
-  return joinUrl(apiBaseUrl, url)
+  const output = joinUrl(apiBaseUrl, url)
+  logAvatarUrl(url, output, 'relative')
+  return output
 }
 
 function joinUrl(baseUrl: string, path: string) {
   return `${baseUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
+}
+
+function logAvatarUrl(input: string, output: string, reason: string) {
+  if (!avatarUrlDebugEnabled()) {
+    return
+  }
+
+  console.debug('[avatar-url]', { input, output, reason })
+}
+
+function avatarUrlDebugEnabled() {
+  try {
+    return globalThis.localStorage?.getItem('simon-workspace-avatar-debug') === '1'
+  } catch {
+    return false
+  }
 }

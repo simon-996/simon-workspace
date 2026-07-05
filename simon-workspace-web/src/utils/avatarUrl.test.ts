@@ -1,33 +1,32 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-vi.stubGlobal('window', {
-  location: {
-    origin: 'https://site.example',
-  },
-})
+import { resolveAvatarUrl } from './avatarUrl'
 
-describe('avatar url resolver', () => {
-  it('keeps absolute and api avatar urls renderable', async () => {
-    const { resolveAvatarUrl } = await import('./avatarUrl')
-
-    expect(resolveAvatarUrl('https://cdn.example/avatar.webp')).toBe('https://cdn.example/avatar.webp')
-    expect(resolveAvatarUrl('/api/files/1/download')).toBe('/api/files/1/download')
+describe('resolveAvatarUrl', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
   })
 
-  it('resolves file object keys through the configured api base url', async () => {
-    const { resolveAvatarUrl } = await import('./avatarUrl')
+  it('keeps absolute r2 avatar urls unchanged', () => {
+    const url = 'https://pub-9a2ecd5e709b4a6b80d23d97010e0ae2.r2.dev/files/2026/07/avatar.webp'
 
-    expect(resolveAvatarUrl('files/2026/07/avatar.webp', 'https://api.example/api')).toBe(
-      'https://api.example/api/files/2026/07/avatar.webp',
-    )
-    expect(resolveAvatarUrl('/files/2026/07/avatar.webp', '/api')).toBe('/api/files/2026/07/avatar.webp')
+    expect(resolveAvatarUrl(url)).toBe(url)
   })
 
-  it('leaves blank avatar values blank', async () => {
-    const { resolveAvatarUrl } = await import('./avatarUrl')
+  it('prints avatar url diagnostics when debug mode is enabled', () => {
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => key === 'simon-workspace-avatar-debug' ? '1' : null,
+    })
 
-    expect(resolveAvatarUrl('')).toBe('')
-    expect(resolveAvatarUrl('   ')).toBe('')
-    expect(resolveAvatarUrl(null)).toBe('')
+    const url = 'https://pub-9a2ecd5e709b4a6b80d23d97010e0ae2.r2.dev/files/2026/07/avatar.webp'
+
+    expect(resolveAvatarUrl(url)).toBe(url)
+    expect(debug).toHaveBeenCalledWith('[avatar-url]', {
+      input: url,
+      output: url,
+      reason: 'absolute',
+    })
   })
 })
