@@ -5,6 +5,7 @@ import {
   dateEnUS,
   dateThTH,
   dateZhCN,
+  darkTheme,
   enUS,
   type GlobalThemeOverrides,
   NConfigProvider,
@@ -13,7 +14,10 @@ import {
   zhCN,
 } from 'naive-ui'
 
+import { useThemeStore } from './stores/theme'
+
 const { locale } = useI18n()
+const theme = useThemeStore()
 
 const naiveLocale = computed(() => {
   if (locale.value === 'zh-CN') return zhCN
@@ -78,7 +82,12 @@ const themeOverrides: GlobalThemeOverrides = {
 </script>
 
 <template>
-  <NConfigProvider :locale="naiveLocale" :date-locale="naiveDateLocale" :theme-overrides="themeOverrides">
+  <NConfigProvider
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
+    :theme="theme.isDark ? darkTheme : null"
+    :theme-overrides="themeOverrides"
+  >
     <NMessageProvider>
       <router-view />
     </NMessageProvider>

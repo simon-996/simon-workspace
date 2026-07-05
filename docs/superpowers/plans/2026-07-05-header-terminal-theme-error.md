@@ -71,16 +71,16 @@ Commit: `feat(web): make homepage terminal actionable`
 - Modify: `simon-workspace-web/src/components/AppHeader.test.ts`
 - Modify: `simon-workspace-web/src/style.css`
 
-- [ ] **Step 1: Write failing theme store and header tests**
+- [x] **Step 1: Write failing theme store and header tests**
 
 Run: `npm run test -- src/stores/theme.test.ts src/components/AppHeader.test.ts`
 Expected: FAIL because theme state and switch do not exist.
 
-- [ ] **Step 2: Implement persistent light/dark theme**
+- [x] **Step 2: Implement persistent light/dark theme**
 
 Persist theme to localStorage, expose toggle/set helpers, wire Naive UI dark theme, and add a moon/sun switch in the header.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run: `npm run test -- src/stores/theme.test.ts src/components/AppHeader.test.ts`
 Expected: PASS.

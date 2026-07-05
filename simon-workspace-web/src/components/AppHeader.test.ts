@@ -9,6 +9,14 @@ describe('AppHeader', () => {
     expect(source).toContain('LanguageSwitcher')
   })
 
+  it('renders a global theme switch with moon and sun icons', () => {
+    expect(source).toContain('useThemeStore')
+    expect(source).toContain('theme-toggle')
+    expect(source).toContain('Moon')
+    expect(source).toContain('Sun')
+    expect(source).toContain('theme.toggleTheme')
+  })
+
   it('renders the current navigation item as disabled text', () => {
     expect(source).toContain('v-if="item.disabled"')
     expect(source).toContain('aria-current="page"')

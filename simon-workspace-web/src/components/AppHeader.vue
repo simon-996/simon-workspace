@@ -3,12 +3,13 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { NAvatar, NButton, NDropdown, NIcon } from 'naive-ui'
-import { ChevronDown, Menu2 } from '@vicons/tabler'
+import { ChevronDown, Menu2, Moon, Sun } from '@vicons/tabler'
 
 import AccountCenterModal from './AccountCenterModal.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { usePublicSiteConfig } from '../composables/usePublicSiteConfig'
 import { useAuthStore } from '../stores/auth'
+import { useThemeStore } from '../stores/theme'
 import { buildHeaderNavItems } from '../utils/appHeaderNav'
 import { resolveAvatarUrl } from '../utils/avatarUrl'
 
@@ -16,6 +17,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const theme = useThemeStore()
 const navOpen = ref(false)
 const accountCenterOpen = ref(false)
 const { site, loading, loadSite } = usePublicSiteConfig()
@@ -108,6 +110,18 @@ async function selectAccountAction(key: string | number) {
           </template>
         </nav>
 
+        <button
+          class="theme-toggle"
+          type="button"
+          :class="{ dark: theme.isDark }"
+          aria-label="Toggle theme"
+          @click="theme.toggleTheme"
+        >
+          <n-icon class="theme-icon moon" :component="Moon" />
+          <span class="theme-toggle-thumb"></span>
+          <n-icon class="theme-icon sun" :component="Sun" />
+        </button>
+
         <n-dropdown
           v-if="auth.isAuthenticated"
           trigger="click"
@@ -141,9 +155,9 @@ async function selectAccountAction(key: string | number) {
   position: sticky;
   top: 0;
   z-index: 30;
-  border-bottom: 1px solid rgba(223, 231, 235, 0.72);
-  background: rgba(251, 252, 252, 0.78);
-  color: #17212b;
+  border-bottom: 1px solid color-mix(in srgb, var(--sw-border) 72%, transparent);
+  background: color-mix(in srgb, var(--sw-surface-solid) 78%, transparent);
+  color: var(--sw-text);
   backdrop-filter: blur(18px);
 }
 
@@ -161,7 +175,7 @@ async function selectAccountAction(key: string | number) {
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  color: #17212b;
+  color: var(--sw-text);
   font-size: 14px;
   font-weight: 800;
 }
@@ -190,7 +204,7 @@ async function selectAccountAction(key: string | number) {
   min-height: 34px;
   border-radius: 8px;
   padding: 0 12px;
-  color: #667583;
+  color: var(--sw-muted);
   font-size: 13px;
   font-weight: 800;
   transition:
@@ -200,23 +214,68 @@ async function selectAccountAction(key: string | number) {
 }
 
 .app-nav-link:hover {
-  background: rgba(231, 244, 247, 0.74);
-  color: #105c76;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
   transform: translate3d(0, -1px, 0);
 }
 
 .app-nav-link.active {
-  background: #e7f4f7;
-  color: #105c76;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
   cursor: default;
+}
+
+.theme-toggle {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  width: 58px;
+  height: 30px;
+  border: 1px solid var(--sw-border);
+  border-radius: 999px;
+  background: var(--sw-surface-solid);
+  color: var(--sw-muted);
+  cursor: pointer;
+  padding: 0 7px;
+  box-shadow: var(--sw-shadow-soft);
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sw-accent);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-toggle.dark .theme-toggle-thumb {
+  transform: translateX(28px);
+}
+
+.theme-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 15px;
+}
+
+.theme-icon.moon {
+  justify-self: start;
+}
+
+.theme-icon.sun {
+  justify-self: end;
 }
 
 .account-button {
   --n-border-radius: 8px !important;
   max-width: 176px;
-  border-color: rgba(223, 231, 235, 0.92) !important;
-  background: rgba(255, 255, 255, 0.72) !important;
-  color: #536773 !important;
+  border-color: var(--sw-border) !important;
+  background: color-mix(in srgb, var(--sw-surface-solid) 72%, transparent) !important;
+  color: var(--sw-muted) !important;
   font-weight: 700;
   backdrop-filter: blur(16px);
 }
@@ -241,8 +300,8 @@ async function selectAccountAction(key: string | number) {
 
 .account-avatar {
   flex: 0 0 auto;
-  background: #e7f4f7;
-  color: #105c76;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
   font-size: 11px;
   font-weight: 800;
 }
@@ -276,10 +335,10 @@ async function selectAccountAction(key: string | number) {
 
 .menu-button {
   display: none;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
-  color: #17212b;
+  background: var(--sw-surface-solid);
+  color: var(--sw-text);
   cursor: pointer;
   font-size: 22px;
   padding: 8px 10px;
@@ -315,10 +374,10 @@ async function selectAccountAction(key: string | number) {
     z-index: 2;
     display: none;
     align-items: stretch;
-    border: 1px solid #d8e0e7;
+    border: 1px solid var(--sw-border);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 16px 38px rgba(32, 53, 66, 0.08);
+    background: color-mix(in srgb, var(--sw-surface-solid) 96%, transparent);
+    box-shadow: var(--sw-shadow-soft);
     padding: 12px;
     backdrop-filter: blur(18px);
   }
