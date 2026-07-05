@@ -234,9 +234,9 @@ function typeText(taskType: string) {
   align-items: center;
   column-gap: 12px;
   min-height: 86px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 16px;
 }
 
@@ -260,7 +260,7 @@ function typeText(taskType: string) {
 }
 
 .summary-grid strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 28px;
   font-weight: 800;
 }
@@ -271,9 +271,9 @@ function typeText(taskType: string) {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 12px;
 }
 
@@ -284,9 +284,9 @@ function typeText(taskType: string) {
 
 .table-panel {
   min-height: 360px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   overflow: hidden;
 }
 
@@ -301,7 +301,7 @@ function typeText(taskType: string) {
 }
 
 .history-table th {
-  border-bottom: 1px solid #d8e0e7;
+  border-bottom: 1px solid var(--sw-border);
   background: #f7f9fb;
   color: #5e7181;
   font-size: 12px;
@@ -327,7 +327,7 @@ function typeText(taskType: string) {
 
 .history-table td strong {
   display: block;
-  color: #111a23;
+  color: var(--sw-text);
   font-weight: 800;
 }
 
@@ -355,8 +355,8 @@ function typeText(taskType: string) {
 }
 
 .status-pill.failed {
-  background: #fff1e8;
-  color: #a5521f !important;
+  background: var(--sw-status-danger-bg);
+  color: var(--sw-danger) !important;
 }
 
 .status-pill.running,
@@ -389,7 +389,7 @@ function typeText(taskType: string) {
 }
 
 .empty-state strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 18px;
 }
 
@@ -414,7 +414,7 @@ function typeText(taskType: string) {
 }
 
 .detail-grid article {
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
   padding: 14px;
 }
@@ -424,7 +424,7 @@ function typeText(taskType: string) {
 .detail-grid pre {
   display: block;
   margin: 7px 0 0;
-  color: #111a23;
+  color: var(--sw-text);
 }
 
 .detail-grid pre {

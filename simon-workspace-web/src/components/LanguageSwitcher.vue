@@ -54,9 +54,9 @@ function selectLanguage(key: string | number) {
 .language-switcher {
   --n-border-radius: 8px !important;
   min-width: 0;
-  border-color: rgba(223, 231, 235, 0.92) !important;
-  background: rgba(255, 255, 255, 0.72) !important;
-  color: #536773 !important;
+  border-color: var(--sw-border) !important;
+  background: var(--sw-panel-bg) !important;
+  color: var(--sw-muted) !important;
   font-weight: 700;
   backdrop-filter: blur(16px);
 }

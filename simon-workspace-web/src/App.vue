@@ -31,7 +31,7 @@ const naiveDateLocale = computed(() => {
   return dateEnUS
 })
 
-const themeOverrides: GlobalThemeOverrides = {
+const themeOverrides = computed<GlobalThemeOverrides>(() => ({
   common: {
     fontFamily:
       'Outfit, Geist, Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif',
@@ -41,8 +41,8 @@ const themeOverrides: GlobalThemeOverrides = {
     primaryColorPressed: '#105c76',
     primaryColorSuppl: '#1d86a9',
     borderRadius: '8px',
-    borderColor: '#dfe7eb',
-    textColorBase: '#17212b',
+    borderColor: theme.isDark ? '#22303c' : '#dfe7eb',
+    textColorBase: theme.isDark ? '#f2f7fa' : '#17212b',
   },
   Button: {
     borderRadiusSmall: '8px',
@@ -78,7 +78,7 @@ const themeOverrides: GlobalThemeOverrides = {
   Modal: {
     borderRadius: '8px',
   },
-}
+}))
 </script>
 
 <template>

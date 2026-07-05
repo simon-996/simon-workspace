@@ -386,8 +386,8 @@ function revokeSelectedAvatarUrl() {
   flex-direction: column;
   gap: 16px;
   padding: 24px;
-  border-right: 1px solid #dfe6eb;
-  background: #f7f8f8;
+  border-right: 1px solid var(--sw-border);
+  background: var(--sw-surface-muted);
 }
 
 .account-summary-copy {
@@ -398,7 +398,7 @@ function revokeSelectedAvatarUrl() {
 
 .account-summary-copy strong {
   overflow: hidden;
-  color: #17212b;
+  color: var(--sw-text);
   font-size: 18px;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -408,7 +408,7 @@ function revokeSelectedAvatarUrl() {
 .account-summary-copy span,
 .account-summary-copy small {
   overflow: hidden;
-  color: #667583;
+  color: var(--sw-muted);
   font-size: 13px;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -453,14 +453,14 @@ function revokeSelectedAvatarUrl() {
 }
 
 .avatar-head strong {
-  color: #17212b;
+  color: var(--sw-text);
   font-size: 14px;
   line-height: 1.2;
 }
 
 .avatar-head span {
   overflow: hidden;
-  color: #667583;
+  color: var(--sw-muted);
   font-size: 13px;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -477,9 +477,9 @@ function revokeSelectedAvatarUrl() {
 .avatar-cropper {
   overflow: hidden;
   height: 316px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #eef2f4;
+  background: var(--sw-surface-muted);
 }
 
 .avatar-preview-panel {
@@ -490,7 +490,7 @@ function revokeSelectedAvatarUrl() {
 }
 
 .avatar-preview-panel span {
-  color: #667583;
+  color: var(--sw-muted);
   font-size: 12px;
   font-weight: 700;
 }
@@ -499,25 +499,25 @@ function revokeSelectedAvatarUrl() {
   overflow: hidden;
   width: 104px;
   height: 104px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 50%;
-  background: #f7f8f8;
+  background: var(--sw-surface-muted);
 }
 
 .avatar-empty {
   display: grid;
   align-items: center;
   min-height: 120px;
-  border: 1px dashed #c9d3dc;
+  border: 1px dashed var(--sw-border);
   border-radius: 8px;
-  background: #fbfcfc;
+  background: var(--sw-panel-bg);
   text-align: center;
 }
 
 .avatar-empty p {
   max-width: 320px;
   margin: 0 auto;
-  color: #667583;
+  color: var(--sw-muted);
   font-size: 13px;
   line-height: 1.6;
 }
@@ -544,7 +544,7 @@ function revokeSelectedAvatarUrl() {
     align-items: center;
     padding: 16px;
     border-right: 0;
-    border-bottom: 1px solid #dfe6eb;
+    border-bottom: 1px solid var(--sw-border);
   }
 
   .account-main {

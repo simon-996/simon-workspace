@@ -576,9 +576,9 @@ function statusText(status: string) {
   align-items: center;
   column-gap: 12px;
   min-height: 86px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 16px;
 }
 
@@ -604,7 +604,7 @@ function statusText(status: string) {
 
 .summary-grid strong {
   overflow: hidden;
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 24px;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -617,9 +617,9 @@ function statusText(status: string) {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 12px;
 }
 
@@ -639,9 +639,9 @@ function statusText(status: string) {
 
 .table-panel,
 .calendar-panel {
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   overflow: hidden;
 }
 
@@ -660,7 +660,7 @@ function statusText(status: string) {
 }
 
 .semester-table th {
-  border-bottom: 1px solid #d8e0e7;
+  border-bottom: 1px solid var(--sw-border);
   background: #f7f9fb;
   color: #5e7181;
   font-size: 12px;
@@ -690,7 +690,7 @@ function statusText(status: string) {
 
 .semester-table td strong {
   display: block;
-  color: #111a23;
+  color: var(--sw-text);
   font-weight: 800;
 }
 
@@ -736,7 +736,7 @@ function statusText(status: string) {
 
 .calendar-panel h2 {
   margin: 5px 0 0;
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 18px;
   font-weight: 800;
 }
@@ -749,7 +749,7 @@ function statusText(status: string) {
 
 .week-grid article {
   min-height: 86px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
   padding: 14px;
 }
@@ -774,7 +774,7 @@ function statusText(status: string) {
 }
 
 .week-grid strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 15px;
   font-weight: 800;
 }
@@ -819,7 +819,7 @@ function statusText(status: string) {
 
 .empty-state strong,
 .calendar-empty strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 18px;
 }
 
@@ -863,10 +863,10 @@ function statusText(status: string) {
 .date-input {
   width: 100%;
   height: 34px;
-  border: 1px solid #d5dde5;
+  border: 1px solid var(--sw-border);
   border-radius: 6px;
-  background: #ffffff;
-  color: #111a23;
+  background: var(--sw-surface-solid);
+  color: var(--sw-text);
   padding: 0 12px;
   outline: none;
 }

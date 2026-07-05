@@ -80,10 +80,8 @@ const pageTitle = computed(() => {
 <style scoped>
 .workspace-shell {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 88% 8%, rgba(22, 112, 143, 0.08), transparent 28%),
-    linear-gradient(180deg, #fbfcfc 0%, #f7f8f8 48%, #eef3f5 100%);
-  color: #17212b;
+  background: var(--sw-page-bg);
+  color: var(--sw-text);
 }
 
 .workspace-body {
@@ -98,9 +96,9 @@ const pageTitle = computed(() => {
   align-self: start;
   display: grid;
   min-height: calc(100dvh - 74px);
-  border-right: 1px solid rgba(223, 231, 235, 0.9);
-  background: rgba(255, 255, 255, 0.72);
-  color: #17212b;
+  border-right: 1px solid var(--sw-border);
+  background: var(--sw-panel-bg);
+  color: var(--sw-text);
   backdrop-filter: blur(24px);
 }
 
@@ -119,7 +117,7 @@ const pageTitle = computed(() => {
   min-height: 42px;
   border-radius: 8px;
   padding: 0 12px;
-  color: #667783;
+  color: var(--sw-muted);
   font-size: 13px;
   font-weight: 700;
   transition:
@@ -134,8 +132,8 @@ const pageTitle = computed(() => {
 
 .nav-link.router-link-exact-active,
 .nav-link:hover {
-  background: #e7f4f7;
-  color: #105c76;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
   transform: translate3d(2px, 0, 0);
 }
 
@@ -154,17 +152,17 @@ const pageTitle = computed(() => {
   gap: 18px;
   min-height: 64px;
   margin: -10px 0 22px;
-  border: 1px solid rgba(223, 231, 235, 0.86);
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 12px 36px rgba(32, 53, 66, 0.05);
+  background: var(--sw-panel-bg);
+  box-shadow: var(--sw-shadow-soft);
   padding: 12px 14px 12px 18px;
   backdrop-filter: blur(20px);
 }
 
 h1 {
   margin: 0;
-  color: #17212b;
+  color: var(--sw-text);
   font-size: clamp(22px, 2.2vw, 30px);
   font-weight: 700;
   line-height: 1.2;
@@ -212,8 +210,8 @@ h1 {
     z-index: 20;
     display: flex;
     min-height: 64px;
-    border-top: 1px solid #dfe7eb;
-    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid var(--sw-border);
+    background: var(--sw-panel-bg-strong);
     backdrop-filter: blur(16px);
     overflow-x: auto;
   }
@@ -225,7 +223,7 @@ h1 {
     align-content: center;
     gap: 3px;
     min-width: 0;
-    color: #637783;
+    color: var(--sw-muted);
     font-size: 11px;
     font-weight: 700;
   }
@@ -235,7 +233,7 @@ h1 {
   }
 
   .mobile-tabs a.router-link-exact-active {
-    color: #16708f;
+    color: var(--sw-accent);
   }
 }
 </style>

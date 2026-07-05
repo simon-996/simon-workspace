@@ -613,9 +613,9 @@ function typeText(type: string) {
   align-items: center;
   column-gap: 12px;
   min-height: 86px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 16px;
 }
 
@@ -641,7 +641,7 @@ function typeText(type: string) {
 }
 
 .summary-grid strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 28px;
   font-weight: 800;
 }
@@ -652,9 +652,9 @@ function typeText(type: string) {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 12px;
 }
 
@@ -682,9 +682,9 @@ function typeText(type: string) {
 .table-panel,
 .field-panel {
   min-height: 420px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   overflow: hidden;
 }
 
@@ -699,7 +699,7 @@ function typeText(type: string) {
 }
 
 .template-table th {
-  border-bottom: 1px solid #d8e0e7;
+  border-bottom: 1px solid var(--sw-border);
   background: #f7f9fb;
   color: #5e7181;
   font-size: 12px;
@@ -730,7 +730,7 @@ function typeText(type: string) {
 .template-table td strong,
 .field-panel h2 {
   display: block;
-  color: #111a23;
+  color: var(--sw-text);
   font-weight: 800;
 }
 
@@ -784,7 +784,7 @@ function typeText(type: string) {
   grid-template-columns: minmax(120px, 1fr) minmax(110px, 1fr) 108px 90px minmax(100px, 1fr) 96px 64px 38px;
   gap: 8px;
   align-items: end;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
   padding: 10px;
 }
@@ -822,7 +822,7 @@ function typeText(type: string) {
 
 .empty-state strong,
 .field-empty strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 18px;
 }
 
@@ -853,9 +853,9 @@ function typeText(type: string) {
 
 .file-input {
   width: 100%;
-  border: 1px solid #d5dde5;
+  border: 1px solid var(--sw-border);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 8px;
 }
 

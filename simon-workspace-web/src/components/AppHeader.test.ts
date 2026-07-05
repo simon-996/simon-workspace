@@ -12,6 +12,9 @@ describe('AppHeader', () => {
   it('renders a global theme switch with moon and sun icons', () => {
     expect(source).toContain('useThemeStore')
     expect(source).toContain('theme-toggle')
+    expect(source).toContain('theme-toggle-track')
+    expect(source).toContain('theme-toggle-indicator')
+    expect(source).toContain('active')
     expect(source).toContain('Moon')
     expect(source).toContain('Sun')
     expect(source).toContain('theme.toggleTheme')

@@ -117,9 +117,11 @@ async function selectAccountAction(key: string | number) {
           aria-label="Toggle theme"
           @click="theme.toggleTheme"
         >
-          <n-icon class="theme-icon moon" :component="Moon" />
-          <span class="theme-toggle-thumb"></span>
-          <n-icon class="theme-icon sun" :component="Sun" />
+          <span class="theme-toggle-track">
+            <span class="theme-toggle-indicator"></span>
+            <n-icon class="theme-icon moon" :class="{ active: theme.isDark }" :component="Moon" />
+            <n-icon class="theme-icon sun" :class="{ active: !theme.isDark }" :component="Sun" />
+          </span>
         </button>
 
         <n-dropdown
@@ -227,39 +229,70 @@ async function selectAccountAction(key: string | number) {
 
 .theme-toggle {
   position: relative;
-  display: inline-grid;
-  grid-template-columns: 1fr 1fr;
+  display: inline-flex;
   align-items: center;
-  width: 58px;
-  height: 30px;
-  border: 1px solid var(--sw-border);
+  width: 64px;
+  height: 32px;
+  border: 0;
   border-radius: 999px;
-  background: var(--sw-surface-solid);
-  color: var(--sw-muted);
+  background: transparent;
+  color: var(--sw-faint);
   cursor: pointer;
-  padding: 0 7px;
-  box-shadow: var(--sw-shadow-soft);
+  padding: 0;
 }
 
-.theme-toggle-thumb {
+.theme-toggle-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--sw-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sw-surface-solid) 88%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--sw-panel-bg-hover) 38%, transparent),
+    var(--sw-shadow-soft);
+  padding: 0 9px;
+  overflow: hidden;
+}
+
+.theme-toggle-indicator {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--sw-accent);
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid color-mix(in srgb, var(--sw-accent) 38%, var(--sw-border));
+  background: color-mix(in srgb, var(--sw-accent-soft) 72%, var(--sw-surface-solid));
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 color-mix(in srgb, var(--sw-panel-bg-hover) 65%, transparent);
+  transition:
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.theme-toggle.dark .theme-toggle-thumb {
-  transform: translateX(28px);
+.theme-toggle.dark .theme-toggle-indicator {
+  transform: translateX(31px);
 }
 
 .theme-icon {
   position: relative;
   z-index: 1;
   font-size: 15px;
+  opacity: 0.58;
+  transition:
+    color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-icon.active {
+  color: var(--sw-text);
+  opacity: 1;
 }
 
 .theme-icon.moon {
@@ -312,7 +345,7 @@ async function selectAccountAction(key: string | number) {
   background: linear-gradient(
     90deg,
     rgba(190, 203, 213, 0.34) 0%,
-    rgba(255, 255, 255, 0.86) 48%,
+    var(--sw-surface-solid) 48%,
     rgba(190, 203, 213, 0.34) 100%
   );
   background-size: 220% 100%;

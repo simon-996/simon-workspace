@@ -269,9 +269,9 @@ function textOrNull(value?: string | null) {
   align-items: center;
   column-gap: 12px;
   min-height: 86px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 16px;
 }
 
@@ -297,7 +297,7 @@ function textOrNull(value?: string | null) {
 
 .summary-grid strong {
   overflow: hidden;
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 24px;
   font-weight: 800;
   text-overflow: ellipsis;
@@ -309,9 +309,9 @@ function textOrNull(value?: string | null) {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 12px;
 }
 
@@ -330,9 +330,9 @@ function textOrNull(value?: string | null) {
 
 .config-panel {
   min-height: 420px;
-  border: 1px solid #d8e0e7;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--sw-surface-solid);
   padding: 18px;
 }
 
@@ -387,7 +387,7 @@ function textOrNull(value?: string | null) {
 }
 
 .switch-item strong {
-  color: #111a23;
+  color: var(--sw-text);
   font-size: 14px;
   font-weight: 800;
 }

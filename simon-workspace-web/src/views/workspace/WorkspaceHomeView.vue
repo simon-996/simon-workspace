@@ -48,10 +48,10 @@ const modules = [
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  border: 1px solid #dfe7eb;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #edf2f4;
-  box-shadow: 0 14px 36px rgba(32, 53, 66, 0.05);
+  background: var(--sw-border-soft);
+  box-shadow: var(--sw-shadow-soft);
 }
 
 .status-card {
@@ -61,7 +61,7 @@ const modules = [
   min-height: 132px;
   border: 0;
   border-radius: 0;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--sw-panel-bg-strong);
   padding: 18px;
   transition:
     background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -69,7 +69,7 @@ const modules = [
 }
 
 .status-card:hover {
-  background: #ffffff;
+  background: var(--sw-panel-bg-hover);
   transform: translate3d(0, -2px, 0);
 }
 
@@ -79,14 +79,14 @@ const modules = [
   width: 42px;
   height: 42px;
   border-radius: 8px;
-  background: #e7f4f7;
-  color: #16708f;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
   font-size: 22px;
 }
 
 .status-card span,
 .home-band span {
-  color: #657783;
+  color: var(--sw-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -95,7 +95,7 @@ const modules = [
 
 .status-card h2 {
   margin: 6px 0 0;
-  color: #17212b;
+  color: var(--sw-text);
   font-size: 18px;
   font-weight: 700;
 }
@@ -104,23 +104,23 @@ const modules = [
   display: grid;
   grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
   gap: 22px;
-  border: 1px solid #dfe7eb;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 14px 36px rgba(32, 53, 66, 0.05);
+  background: var(--sw-panel-bg);
+  box-shadow: var(--sw-shadow-soft);
   padding: 22px;
 }
 
 .home-band h2 {
   margin: 6px 0 0;
-  color: #17212b;
+  color: var(--sw-text);
   font-size: 22px;
   font-weight: 700;
 }
 
 .home-band p {
   margin: 0;
-  color: #657783;
+  color: var(--sw-muted);
   font-size: 15px;
   line-height: 1.7;
 }

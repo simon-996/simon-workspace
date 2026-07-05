@@ -194,8 +194,8 @@ function updateViewport() {
   --intro-details-gap: 28px;
   --intro-details-lift: clamp(96px, 10vw, 124px);
   --brief-opacity: 1;
-  background: #f7f8f8;
-  color: #17212b;
+  background: var(--sw-bg);
+  color: var(--sw-text);
   overscroll-behavior: contain;
 }
 
@@ -207,9 +207,7 @@ function updateViewport() {
   min-height: 100dvh;
   height: 100dvh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 72% 42%, rgba(27, 131, 168, 0.08), transparent 28%),
-    linear-gradient(180deg, #fbfcfc 0%, #f7f8f8 58%, #eef3f5 100%);
+  background: var(--sw-page-bg);
 }
 
 .skeleton-line {
@@ -218,7 +216,7 @@ function updateViewport() {
   background: linear-gradient(
     90deg,
     rgba(190, 203, 213, 0.34) 0%,
-    rgba(255, 255, 255, 0.86) 48%,
+    var(--sw-surface-solid) 48%,
     rgba(190, 203, 213, 0.34) 100%
   );
   background-size: 220% 100%;
@@ -251,7 +249,7 @@ function updateViewport() {
 
 .intro-kicker {
   margin: 0 0 16px;
-  color: #1b83a8;
+  color: var(--sw-accent);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0;
@@ -260,7 +258,7 @@ function updateViewport() {
 
 h1 {
   margin: 0;
-  color: #111a23;
+  color: var(--sw-text);
   font-size: clamp(52px, 8vw, 104px);
   font-weight: 800;
   letter-spacing: 0;
@@ -270,7 +268,7 @@ h1 {
 .intro-short {
   max-width: 480px;
   margin: 28px 0 0;
-  color: #536675;
+  color: var(--sw-muted);
   font-size: clamp(18px, 2.2vw, 26px);
   font-weight: 700;
   line-height: 1.55;
@@ -369,7 +367,7 @@ h1 {
 
 .load-note {
   margin: 16px 0 0;
-  color: #9a642c;
+  color: var(--sw-warning);
   font-size: 13px;
   font-weight: 800;
 }
@@ -395,13 +393,13 @@ h1 {
 .intro-details p {
   max-width: 820px;
   margin: 0;
-  color: #536675;
+  color: var(--sw-muted);
   font-size: 13px;
   line-height: 1.58;
 }
 
 .intro-details .intro-lead {
-  color: #17212b;
+  color: var(--sw-text);
   font-size: clamp(17px, 1.7vw, 22px);
   font-weight: 850;
   line-height: 1.35;
@@ -418,10 +416,10 @@ h1 {
 .terminal-skeleton {
   min-height: 410px;
   overflow: hidden;
-  border: 1px solid #22303a;
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: #101923;
-  box-shadow: 0 24px 70px rgba(17, 26, 35, 0.16);
+  background: var(--sw-surface-solid);
+  box-shadow: var(--sw-shadow);
 }
 
 .terminal-skeleton .skeleton-line {
@@ -438,7 +436,7 @@ h1 {
   display: flex;
   align-items: center;
   height: 64px;
-  border-bottom: 1px solid #22303a;
+  border-bottom: 1px solid var(--sw-border);
   padding: 0 22px;
 }
 
@@ -471,13 +469,13 @@ h1 {
   justify-self: start;
   gap: 5px;
   margin-top: 2px;
-  border-bottom: 1px solid #9ccddd;
+  border-bottom: 1px solid var(--sw-accent);
   padding-bottom: 8px;
 }
 
 .contact-link span,
 .tech-grid span {
-  color: #668093;
+  color: var(--sw-muted);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0;
@@ -485,7 +483,7 @@ h1 {
 }
 
 .contact-link strong {
-  color: #1b83a8;
+  color: var(--sw-accent);
   font-size: 16px;
   font-weight: 850;
 }
@@ -501,12 +499,12 @@ h1 {
   display: grid;
   gap: 6px;
   align-content: start;
-  border-top: 1px solid #d8e0e7;
+  border-top: 1px solid var(--sw-border);
   padding-top: 10px;
 }
 
 .tech-grid strong {
-  color: #17212b;
+  color: var(--sw-text);
   font-size: 14px;
   font-weight: 850;
   line-height: 1.35;

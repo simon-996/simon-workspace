@@ -86,10 +86,8 @@ async function submitLogin() {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at 80% 22%, rgba(22, 112, 143, 0.08), transparent 28%),
-    linear-gradient(180deg, #fbfcfc 0%, #f7f8f8 52%, #eef3f5 100%);
-  color: #17212b;
+  background: var(--sw-page-bg);
+  color: var(--sw-text);
   overflow: hidden;
 }
 
@@ -99,8 +97,8 @@ async function submitLogin() {
   pointer-events: none;
   content: "";
   background:
-    linear-gradient(90deg, rgba(23, 33, 43, 0.04) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(23, 33, 43, 0.03) 1px, transparent 1px);
+    linear-gradient(90deg, var(--sw-grid-line) 1px, transparent 1px),
+    linear-gradient(180deg, var(--sw-grid-line-soft) 1px, transparent 1px);
   background-size: 96px 96px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.72), transparent 70%);
 }
@@ -120,10 +118,10 @@ async function submitLogin() {
   display: grid;
   gap: 18px;
   width: min(100%, 420px);
-  border: 1px solid rgba(223, 231, 235, 0.95);
+  border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 18px 55px rgba(32, 53, 66, 0.08);
+  background: var(--sw-panel-bg);
+  box-shadow: var(--sw-shadow);
   padding: 26px;
   backdrop-filter: blur(20px);
   animation: login-panel-in 580ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -131,7 +129,7 @@ async function submitLogin() {
 
 label span {
   margin: 0;
-  color: #657783;
+  color: var(--sw-muted);
   font-family: "JetBrains Mono", Consolas, monospace;
   font-size: 12px;
   font-weight: 700;
