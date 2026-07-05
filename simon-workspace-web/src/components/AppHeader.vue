@@ -133,12 +133,14 @@ async function selectAccountAction(key: string | number) {
           <n-button class="account-button" secondary size="small" :aria-label="t('common.account')">
             <template #icon>
               <n-avatar
+                v-if="accountAvatarUrl"
                 class="account-avatar"
                 round
                 :size="22"
-                :src="accountAvatarUrl || undefined"
+                :src="accountAvatarUrl"
                 :data-avatar-src="accountAvatarUrl"
-              >
+              />
+              <n-avatar v-else class="account-avatar" round :size="22" data-avatar-src="">
                 {{ accountInitial }}
               </n-avatar>
             </template>

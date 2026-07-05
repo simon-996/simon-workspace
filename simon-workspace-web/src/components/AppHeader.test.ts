@@ -45,6 +45,8 @@ describe('AppHeader', () => {
     expect(source).toContain('data-avatar-src')
     expect(source).toContain('resolveAvatarUrl')
     expect(source).toContain('account-avatar')
+    expect(source).toContain('v-if="accountAvatarUrl"')
+    expect(source).toContain('v-else')
     expect(source).toContain('accountOptions')
     expect(source).toContain("key: 'profile'")
     expect(source).not.toContain("key: 'workspace'")

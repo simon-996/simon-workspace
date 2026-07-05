@@ -247,7 +247,8 @@ function revokeSelectedAvatarUrl() {
   >
     <div class="account-layout">
       <aside class="account-summary">
-        <n-avatar round :size="76" :src="avatarPreview || undefined" :data-avatar-src="avatarPreview">
+        <n-avatar v-if="avatarPreview" round :size="76" :src="avatarPreview" :data-avatar-src="avatarPreview" />
+        <n-avatar v-else round :size="76" data-avatar-src="">
           {{ accountInitial }}
         </n-avatar>
         <div class="account-summary-copy">
@@ -278,7 +279,8 @@ function revokeSelectedAvatarUrl() {
           <n-tab-pane name="avatar" :tab="t('account.tabs.avatar')">
             <section class="avatar-panel">
               <div class="avatar-head">
-                <n-avatar round :size="64" :src="avatarPreview || undefined" :data-avatar-src="avatarPreview">
+                <n-avatar v-if="avatarPreview" round :size="64" :src="avatarPreview" :data-avatar-src="avatarPreview" />
+                <n-avatar v-else round :size="64" data-avatar-src="">
                   {{ accountInitial }}
                 </n-avatar>
                 <div>
