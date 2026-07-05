@@ -6,6 +6,7 @@ import { NButton, NIcon, NInput, useMessage } from 'naive-ui'
 import { ArrowRight, Command, Terminal2 } from '@vicons/tabler'
 
 import AppHeader from '../components/AppHeader.vue'
+import { notifyAppError } from '../api/errorMessage'
 import { useAuthStore } from '../stores/auth'
 
 const { t } = useI18n()
@@ -33,7 +34,7 @@ async function submitLogin() {
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/workspace'
     await router.replace(redirect)
   } catch (error) {
-    message.error(error instanceof Error ? error.message : t('login.failed'))
+    notifyAppError(error, message, t)
   } finally {
     submitting.value = false
   }

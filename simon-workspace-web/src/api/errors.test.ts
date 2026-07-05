@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { messages } from '../i18n/messages'
 import {
   AppError,
+  toAppError,
   translateAppError,
   unwrapApiResponse,
   type ApiResponse,
@@ -53,6 +54,24 @@ describe('api errors', () => {
     })
 
     expect(translated).toBe('Service unavailable. Trace: trace-2')
+  })
+
+  it('normalizes network, timeout, and non-standard server failures', () => {
+    expect(toAppError({ isAxiosError: true, message: 'Network Error' }).errorCode).toBe('NETWORK_ERROR')
+    expect(toAppError({ isAxiosError: true, code: 'ECONNABORTED', message: 'timeout' }).errorCode)
+      .toBe('REQUEST_TIMEOUT')
+
+    const serverError = toAppError({
+      isAxiosError: true,
+      message: 'Request failed with status code 502',
+      response: {
+        status: 502,
+        data: '<html>Bad Gateway</html>',
+      },
+    })
+
+    expect(serverError.errorCode).toBe('INTERNAL_ERROR')
+    expect(serverError.status).toBe(502)
   })
 
   it('defines shared error translations for every supported locale', () => {

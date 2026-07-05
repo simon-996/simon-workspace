@@ -99,6 +99,12 @@ export function toAppError(error: unknown): AppError {
         message: error.message,
       })
     }
+
+    return new AppError({
+      status: error.response.status,
+      errorCode: error.response.status >= 500 ? 'INTERNAL_ERROR' : 'BAD_REQUEST',
+      message: error.message,
+    })
   }
 
   if (error instanceof Error) {

@@ -95,16 +95,16 @@ Commit: `feat(web): add global theme switch`
 - Create: `simon-workspace-web/src/api/errorMessage.test.ts`
 - Modify: components/stores that catch API errors and show messages.
 
-- [ ] **Step 1: Write failing error normalization tests**
+- [x] **Step 1: Write failing error normalization tests**
 
 Run: `npm run test -- src/api/errors.test.ts src/api/errorMessage.test.ts`
 Expected: FAIL for network/down backend/non-standard error coverage.
 
-- [ ] **Step 2: Implement normalized error display helper**
+- [x] **Step 2: Implement normalized error display helper**
 
 Ensure no response maps to `NETWORK_ERROR`, timeout maps to `REQUEST_TIMEOUT`, backend `errorCode` maps through i18n, and unknown HTTP responses still show usable messages.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run: `npm run test -- src/api/errors.test.ts src/api/errorMessage.test.ts src/i18n/language.test.ts`
 Expected: PASS.

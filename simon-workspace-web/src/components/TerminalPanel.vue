@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
+import { translateAppError } from '../api/errors'
 import {
   evaluateTerminalCommand,
   getTerminalCommands,
@@ -77,7 +78,7 @@ async function execute(command = prompt.value) {
     writeResult({
       status: 'unknown',
       command: result.command,
-      message: error instanceof Error ? error.message : t('errors.UNKNOWN_ERROR'),
+      message: translateAppError(error, t),
     })
   }
 }
