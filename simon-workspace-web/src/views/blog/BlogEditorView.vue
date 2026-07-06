@@ -39,6 +39,7 @@ const tags = ref<string[]>([])
 const content = ref('')
 const saving = ref(false)
 const uploadingImages = ref(false)
+const uploadingImagePreview = ref('')
 const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
@@ -49,6 +50,7 @@ const categoryOptions = computed(() => categories.value.map((item) => ({ label: 
 const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 
 onMounted(async () => {
+  document.addEventListener('click', captureBlogImageUploadPreview, true)
   const ok = await auth.restore()
   if (!ok || !auth.hasPermission('blog:post:create')) {
     await router.push('/login?redirect=/blog/new')
@@ -62,6 +64,7 @@ watch(uploadingImages, (uploading) => {
 })
 
 onBeforeUnmount(() => {
+  document.removeEventListener('click', captureBlogImageUploadPreview, true)
   document.body.classList.remove(blogImageUploadingClass)
 })
 
@@ -124,6 +127,18 @@ function importMarkdown(file: File) {
   reader.readAsText(file)
 }
 
+function captureBlogImageUploadPreview(event: MouseEvent) {
+  const target = event.target instanceof Element ? event.target : null
+  const uploadButton = target?.closest('.md-editor-modal-clip .md-editor-btn')
+  if (!uploadButton) {
+    return
+  }
+
+  const modal = uploadButton.closest('.md-editor-modal-clip')
+  const image = modal?.querySelector<HTMLImageElement>('.md-editor-clip-cropper img[src]')
+  uploadingImagePreview.value = image?.src || ''
+}
+
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   uploadingImages.value = true
   try {
@@ -137,6 +152,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     message.error(error instanceof Error ? error.message : t('blog.messages.imageUploadFailed'))
   } finally {
     uploadingImages.value = false
+    uploadingImagePreview.value = ''
   }
 }
 </script>
@@ -224,8 +240,14 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     <Teleport to="body">
       <Transition name="uploading-fade">
         <div v-if="uploadingImages" class="blog-image-crop-upload-overlay" role="status" aria-live="polite">
-          <n-spin size="small" />
-          <span>{{ t('blog.editor.uploadingImage') }}</span>
+          <div class="blog-image-crop-upload-card">
+            <img v-if="uploadingImagePreview" :src="uploadingImagePreview" alt="">
+            <div v-else class="blog-image-crop-upload-placeholder" />
+            <div>
+              <n-spin size="small" />
+              <span>{{ t('blog.editor.uploadingImage') }}</span>
+            </div>
+          </div>
         </div>
       </Transition>
     </Teleport>
@@ -349,25 +371,44 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   pointer-events: none;
 }
 
-.blog-image-crop-upload-overlay span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 42px;
+.blog-image-crop-upload-card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(260px, calc(100vw - 56px));
   border: 1px solid var(--sw-border);
   border-radius: 8px;
   background: color-mix(in srgb, var(--sw-surface-solid) 90%, transparent);
   box-shadow: var(--sw-shadow-soft);
   color: var(--sw-text);
-  padding: 0 14px;
-  font-size: 13px;
-  font-weight: 800;
+  padding: 14px;
   backdrop-filter: blur(14px);
 }
 
-.blog-image-crop-upload-overlay :deep(.n-spin) {
-  position: absolute;
-  margin-top: -66px;
+.blog-image-crop-upload-card img,
+.blog-image-crop-upload-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--sw-border);
+  border-radius: 6px;
+  background: var(--sw-surface-muted);
+  object-fit: contain;
+}
+
+.blog-image-crop-upload-placeholder {
+  background:
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--sw-surface-solid) 42%, transparent), transparent),
+    var(--sw-surface-muted);
+  background-size: 180% 100%;
+  animation: blog-crop-uploading 1.2s ease-in-out infinite;
+}
+
+.blog-image-crop-upload-card div:last-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 :global(body.blog-image-uploading .md-editor-modal-clip .md-editor-modal-body) {
@@ -375,19 +416,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 }
 
 :global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip) {
-  min-height: 260px;
-  opacity: 0.58;
   pointer-events: none;
-  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip-main),
-:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip-preview) {
-  background:
-    linear-gradient(90deg, transparent, color-mix(in srgb, var(--sw-surface-solid) 42%, transparent), transparent),
-    var(--sw-surface-muted);
-  background-size: 180% 100%;
-  animation: blog-crop-uploading 1.2s ease-in-out infinite;
 }
 
 :global(body.blog-image-uploading .md-editor-modal-clip .md-editor-modal-func) {
