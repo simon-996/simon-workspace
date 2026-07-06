@@ -20,9 +20,11 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain('catch (error)')
   })
 
-  it('stacks mobile editor actions without cramming three buttons into one row', () => {
-    expect(editorSource).toContain('.editor-actions {\n    grid-template-columns: repeat(2, minmax(0, 1fr));')
-    expect(editorSource).toContain('.import-button {\n    grid-column: 1 / -1;')
+  it('keeps the editor compact and places mobile actions in one row', () => {
+    expect(editorSource).toContain('padding: 72px 0 42px;')
+    expect(editorSource).toContain('padding: 64px 0 28px;')
+    expect(editorSource).toContain('.editor-actions {\n    grid-template-columns: repeat(3, minmax(0, 1fr));')
+    expect(editorSource).not.toContain('grid-column: 1 / -1;')
   })
 
   it('shows a soft waiting state while images upload', () => {

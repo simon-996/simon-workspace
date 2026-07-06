@@ -260,7 +260,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 .editor-layout {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 92px 0 42px;
+  padding: 72px 0 42px;
 }
 
 .editor-layout header {
@@ -391,6 +391,10 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 }
 
 @media (max-width: 920px) {
+  .editor-layout {
+    padding: 64px 0 28px;
+  }
+
   .editor-layout header,
   .editor-actions {
     display: grid;
@@ -398,17 +402,13 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   }
 
   .editor-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .editor-actions .n-button,
   .import-button {
     width: 100%;
     justify-content: center;
-  }
-
-  .import-button {
-    grid-column: 1 / -1;
   }
 
   .meta-panel {
