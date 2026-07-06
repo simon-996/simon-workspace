@@ -24,6 +24,8 @@ public record CourseResponse(
         String syllabus,
         String description,
         String status,
+        Boolean publicVisible,
+        Integer publicSortOrder,
         LocalDateTime createdTime,
         LocalDateTime updatedTime
 ) {
@@ -47,6 +49,8 @@ public record CourseResponse(
                 course.syllabus(),
                 course.description(),
                 course.status(),
+                course.publicVisible(),
+                course.publicSortOrder(),
                 course.createdTime(),
                 course.updatedTime()
         );

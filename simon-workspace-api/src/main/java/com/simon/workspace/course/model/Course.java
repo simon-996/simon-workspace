@@ -22,6 +22,8 @@ public record Course(
         String syllabus,
         String description,
         String status,
+        Boolean publicVisible,
+        Integer publicSortOrder,
         LocalDateTime createdTime,
         LocalDateTime updatedTime
 ) {

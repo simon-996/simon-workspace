@@ -87,6 +87,18 @@ public class FileResourceService {
         );
     }
 
+    public FileDownload publicDownload(long id) {
+        FileResource fileResource = findPublicRequired(id);
+        WorkspaceStorageProvider provider = storageProviderRegistry.provider(fileResource.storageProvider());
+        StorageObjectDownload object = provider.download(objectKeyOf(fileResource));
+        return new FileDownload(
+                object.resource(),
+                fileResource.originalFilename(),
+                fileResource.contentType(),
+                object.fileSize() > 0 ? object.fileSize() : fileResource.fileSize()
+        );
+    }
+
     @Transactional
     public void delete(long id) {
         long ownerUserId = AuthContextHolder.requireUser().id();
@@ -201,6 +213,18 @@ public class FileResourceService {
         ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("文件不存在或无权访问"));
     }
 
+    private FileResource findPublicRequired(long id) {
+        return jdbcTemplate.query("""
+                        SELECT *
+                        FROM file_resource
+                        WHERE id = ? AND visibility = 'PUBLIC' AND status = 'ACTIVE' AND deleted = 0
+                        LIMIT 1
+                        """,
+                (rs, rowNum) -> FileResourceRowMapper.map(rs),
+                id
+        ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("文件不存在或不是公开文件"));
+    }
+
     private FileResource findRequired(long id) {
         return jdbcTemplate.query("""
                         SELECT *
@@ -229,7 +253,8 @@ public class FileResourceService {
         String normalized = sourceType.trim().toUpperCase(Locale.ROOT);
         if (!"UPLOAD".equals(normalized) && !"GENERATED".equals(normalized)
                 && !"TEMPLATE".equals(normalized) && !"AVATAR".equals(normalized)
-                && !"BLOG_EDITOR".equals(normalized) && !"OTHER".equals(normalized)) {
+                && !"BLOG_EDITOR".equals(normalized) && !"COURSE_MATERIAL".equals(normalized)
+                && !"OTHER".equals(normalized)) {
             throw new IllegalArgumentException("文件来源类型不合法");
         }
         return normalized;

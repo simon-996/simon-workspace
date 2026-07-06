@@ -48,17 +48,19 @@ public class FileResourceController {
     @SaCheckPermission("file:manage")
     public ResponseEntity<Resource> download(@PathVariable long id) {
         FileDownload download = fileResourceService.download(id);
-        return ResponseEntity.ok()
-                .contentLength(download.fileSize())
-                .contentType(mediaType(download.contentType()))
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment()
-                                .filename(download.originalFilename(), StandardCharsets.UTF_8)
-                                .build()
-                                .toString()
-                )
-                .body(download.resource());
+        return buildFileResponse(download, true);
+    }
+
+    @GetMapping("/public/{id}/download")
+    public ResponseEntity<Resource> publicDownload(@PathVariable long id) {
+        FileDownload download = fileResourceService.publicDownload(id);
+        return buildFileResponse(download, true);
+    }
+
+    @GetMapping("/public/{id}/view")
+    public ResponseEntity<Resource> publicView(@PathVariable long id) {
+        FileDownload download = fileResourceService.publicDownload(id);
+        return buildFileResponse(download, false);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -87,5 +89,17 @@ public class FileResourceController {
         } catch (InvalidMediaTypeException exception) {
             return MediaType.APPLICATION_OCTET_STREAM;
         }
+    }
+
+    private ResponseEntity<Resource> buildFileResponse(FileDownload download, boolean attachment) {
+        ContentDisposition disposition = attachment
+                ? ContentDisposition.attachment().filename(download.originalFilename(), StandardCharsets.UTF_8).build()
+                : ContentDisposition.inline().filename(download.originalFilename(), StandardCharsets.UTF_8).build();
+        return ResponseEntity.ok()
+                .contentLength(download.fileSize())
+                .contentType(mediaType(download.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .header("X-Content-Type-Options", "nosniff")
+                .body(download.resource());
     }
 }

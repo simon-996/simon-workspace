@@ -30,6 +30,8 @@ final class CourseRowMapper {
                 rs.getString("syllabus"),
                 rs.getString("description"),
                 rs.getString("status"),
+                rs.getBoolean("public_visible"),
+                rs.getInt("public_sort_order"),
                 rs.getTimestamp("created_time").toLocalDateTime(),
                 rs.getTimestamp("updated_time").toLocalDateTime()
         );

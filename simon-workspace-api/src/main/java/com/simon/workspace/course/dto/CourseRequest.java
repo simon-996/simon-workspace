@@ -35,6 +35,8 @@ public record CourseRequest(
         String assessmentMethod,
         String syllabus,
         String description,
-        String status
+        String status,
+        Boolean publicVisible,
+        Integer publicSortOrder
 ) {
 }

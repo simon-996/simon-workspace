@@ -2,6 +2,8 @@ package com.simon.workspace.course;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
+import com.simon.workspace.course.dto.CourseMaterialRequest;
+import com.simon.workspace.course.dto.CourseMaterialResponse;
 import com.simon.workspace.course.dto.CourseRequest;
 import com.simon.workspace.course.dto.CourseResponse;
 import jakarta.validation.Valid;
@@ -51,6 +53,34 @@ public class CourseController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable long id) {
         courseService.delete(id);
+        return ApiResponse.ok(null);
+    }
+
+    @GetMapping("/{id}/materials")
+    public ApiResponse<List<CourseMaterialResponse>> listMaterials(@PathVariable long id) {
+        return ApiResponse.ok(courseService.listMaterials(id));
+    }
+
+    @PostMapping("/{id}/materials")
+    public ApiResponse<CourseMaterialResponse> createMaterial(
+            @PathVariable long id,
+            @RequestBody CourseMaterialRequest request
+    ) {
+        return ApiResponse.ok(courseService.createMaterial(id, request));
+    }
+
+    @PutMapping("/{id}/materials/{materialId}")
+    public ApiResponse<CourseMaterialResponse> updateMaterial(
+            @PathVariable long id,
+            @PathVariable long materialId,
+            @RequestBody CourseMaterialRequest request
+    ) {
+        return ApiResponse.ok(courseService.updateMaterial(id, materialId, request));
+    }
+
+    @DeleteMapping("/{id}/materials/{materialId}")
+    public ApiResponse<Void> deleteMaterial(@PathVariable long id, @PathVariable long materialId) {
+        courseService.deleteMaterial(id, materialId);
         return ApiResponse.ok(null);
     }
 }
