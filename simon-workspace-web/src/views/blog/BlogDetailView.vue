@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
@@ -20,6 +21,7 @@ import { useThemeStore } from '../../stores/theme'
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
+const { t } = useI18n()
 const auth = useAuthStore()
 const theme = useThemeStore()
 const post = ref<BlogPostDetail | null>(null)
@@ -44,7 +46,7 @@ async function load() {
     post.value = postData
     comments.value = commentData
   } catch (error) {
-    message.error(error instanceof Error ? error.message : 'Failed to load post')
+    message.error(error instanceof Error ? error.message : t('blog.messages.postLoadFailed'))
   } finally {
     loading.value = false
   }
@@ -58,7 +60,7 @@ async function submitComment() {
     comment.value = ''
     await load()
   } catch (error) {
-    message.error(error instanceof Error ? error.message : 'Failed to comment')
+    message.error(error instanceof Error ? error.message : t('blog.messages.commentFailed'))
   } finally {
     submitting.value = false
   }
@@ -74,10 +76,10 @@ async function submitComment() {
           <template #icon>
             <n-icon :component="ArrowLeft" />
           </template>
-          Blog
+          {{ t('blog.detail.back') }}
         </n-button>
         <header>
-          <span>{{ post.category?.name || 'Uncategorized' }}</span>
+          <span>{{ post.category?.name || t('blog.list.uncategorized') }}</span>
           <h1>{{ post.title }}</h1>
           <p>{{ post.summary }}</p>
         </header>
@@ -85,17 +87,18 @@ async function submitComment() {
         <MdPreview :model-value="post.contentMd" :theme="theme.isDark ? 'dark' : 'light'" preview-theme="github" />
 
         <section class="comments">
-          <h2>Comments</h2>
+          <h2>{{ t('blog.detail.comments') }}</h2>
           <div v-if="auth.isAuthenticated" class="comment-box">
-            <n-input v-model:value="comment" type="textarea" placeholder="Write a comment" />
+            <n-input v-model:value="comment" type="textarea" :placeholder="t('blog.detail.commentPlaceholder')" />
             <n-button type="primary" :loading="submitting" @click="submitComment">
               <template #icon>
                 <n-icon :component="Send" />
               </template>
-              Send
+              {{ t('blog.detail.send') }}
             </n-button>
           </div>
-          <p v-else class="signin-hint">Sign in to comment.</p>
+          <p v-else class="signin-hint">{{ t('blog.detail.signInToComment') }}</p>
+          <p v-if="!comments.length" class="signin-hint">{{ t('blog.detail.noComments') }}</p>
           <div v-for="item in comments" :key="item.id" class="comment-item">
             <strong>{{ item.authorName }}</strong>
             <span>{{ item.createdTime ? item.createdTime.slice(0, 16).replace('T', ' ') : '' }}</span>
@@ -115,15 +118,15 @@ async function submitComment() {
 }
 
 .post-detail {
-  width: min(880px, calc(100% - 32px));
+  width: min(820px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 96px 0 72px;
+  padding: 92px 0 72px;
 }
 
 .post-detail header {
   border-bottom: 1px solid var(--sw-border);
   margin-bottom: 24px;
-  padding: 22px 0 26px;
+  padding: 18px 0 22px;
 }
 
 .post-detail header span {
@@ -134,13 +137,15 @@ async function submitComment() {
 
 .post-detail h1 {
   margin: 10px 0;
-  font-size: clamp(34px, 6vw, 64px);
-  line-height: 1;
+  font-size: clamp(28px, 5vw, 44px);
+  line-height: 1.08;
 }
 
 .post-detail header p,
 .signin-hint {
   color: var(--sw-muted);
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 .comments {
@@ -151,6 +156,7 @@ async function submitComment() {
 
 .comments h2 {
   margin: 0 0 14px;
+  font-size: 20px;
 }
 
 .comment-box {

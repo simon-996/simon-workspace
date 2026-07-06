@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -26,6 +27,7 @@ import { useThemeStore } from '../../stores/theme'
 
 const router = useRouter()
 const message = useMessage()
+const { locale, t } = useI18n()
 const auth = useAuthStore()
 const theme = useThemeStore()
 const categories = ref<BlogCategory[]>([])
@@ -41,6 +43,7 @@ const blogEditorSourceType = 'BLOG_EDITOR'
 
 const canManageCategory = computed(() => auth.hasPermission('blog:category:manage'))
 const categoryOptions = computed(() => categories.value.map((item) => ({ label: item.name, value: item.id })))
+const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 
 onMounted(async () => {
   const ok = await auth.restore()
@@ -57,7 +60,7 @@ async function loadCategories() {
 
 async function save(status: 'DRAFT' | 'PUBLISHED') {
   if (!title.value.trim() || !content.value.trim()) {
-    message.warning('Title and content are required')
+    message.warning(t('blog.messages.titleContentRequired'))
     return
   }
   saving.value = true
@@ -70,10 +73,10 @@ async function save(status: 'DRAFT' | 'PUBLISHED') {
       contentMd: content.value,
       status,
     })
-    message.success(status === 'PUBLISHED' ? 'Published' : 'Draft saved')
+    message.success(status === 'PUBLISHED' ? t('blog.messages.published') : t('blog.messages.draftSaved'))
     await router.push(`/blog/${post.id}`)
   } catch (error) {
-    message.error(error instanceof Error ? error.message : 'Failed to save post')
+    message.error(error instanceof Error ? error.message : t('blog.messages.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -91,13 +94,13 @@ async function addCategory() {
     await loadCategories()
     categoryId.value = category.id
   } catch (error) {
-    message.error(error instanceof Error ? error.message : 'Failed to create category')
+    message.error(error instanceof Error ? error.message : t('blog.messages.categoryCreateFailed'))
   }
 }
 
 function importMarkdown(file: File) {
   if (!file.name.toLowerCase().endsWith('.md')) {
-    message.warning('Only .md files are supported')
+    message.warning(t('blog.messages.markdownOnly'))
     return
   }
   const reader = new FileReader()
@@ -126,8 +129,8 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     <section class="editor-layout">
       <header>
         <div>
-          <span>New Post</span>
-          <h1>Write in Markdown.</h1>
+          <span>{{ t('blog.editor.kicker') }}</span>
+          <h1>{{ t('blog.editor.title') }}</h1>
         </div>
         <div class="editor-actions">
           <input
@@ -143,23 +146,30 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           >
           <label class="import-button" for="md-import">
             <n-icon :component="Upload" />
-            Import
+            {{ t('blog.editor.importMd') }}
           </label>
           <n-button secondary :loading="saving" @click="save('DRAFT')">
             <template #icon>
               <n-icon :component="DeviceFloppy" />
             </template>
-            Draft
+            {{ t('blog.editor.draft') }}
           </n-button>
-          <n-button type="primary" :loading="saving" @click="save('PUBLISHED')">Publish</n-button>
+          <n-button type="primary" :loading="saving" @click="save('PUBLISHED')">
+            {{ t('blog.editor.publish') }}
+          </n-button>
         </div>
       </header>
 
       <section class="meta-panel">
-        <n-input v-model:value="title" placeholder="Title" />
-        <n-input v-model:value="summary" placeholder="Summary" />
+        <n-input v-model:value="title" :placeholder="t('blog.editor.titlePlaceholder')" />
+        <n-input v-model:value="summary" :placeholder="t('blog.editor.summaryPlaceholder')" />
         <div class="category-row">
-          <n-select v-model:value="categoryId" clearable :options="categoryOptions" placeholder="Category" />
+          <n-select
+            v-model:value="categoryId"
+            clearable
+            :options="categoryOptions"
+            :placeholder="t('blog.editor.categoryPlaceholder')"
+          />
           <n-button v-if="canManageCategory" secondary @click="categoryModal = true">
             <template #icon>
               <n-icon :component="Plus" />
@@ -171,7 +181,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           multiple
           tag
           filterable
-          placeholder="Tags"
+          :placeholder="t('blog.editor.tagsPlaceholder')"
           :options="tags.map(tag => ({ label: tag, value: tag }))"
         />
       </section>
@@ -180,16 +190,25 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
         v-model="content"
         class="markdown-editor"
         :theme="theme.isDark ? 'dark' : 'light'"
-        language="en-US"
+        :language="editorLanguage"
         preview-theme="github"
         :on-upload-img="onUploadImg"
       />
     </section>
 
-    <n-modal v-model:show="categoryModal" preset="card" title="New category" class="category-modal">
+    <n-modal
+      v-model:show="categoryModal"
+      preset="card"
+      :title="t('blog.editor.newCategory')"
+      class="category-modal"
+    >
       <div class="modal-form">
-        <n-input v-model:value="categoryName" placeholder="Category name" @keyup.enter="addCategory" />
-        <n-button type="primary" @click="addCategory">Create</n-button>
+        <n-input
+          v-model:value="categoryName"
+          :placeholder="t('blog.editor.categoryNamePlaceholder')"
+          @keyup.enter="addCategory"
+        />
+        <n-button type="primary" @click="addCategory">{{ t('common.actions.create') }}</n-button>
       </div>
     </n-modal>
   </main>
@@ -205,7 +224,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 .editor-layout {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 96px 0 42px;
+  padding: 92px 0 42px;
 }
 
 .editor-layout header {
@@ -225,7 +244,8 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 
 .editor-layout h1 {
   margin: 6px 0 0;
-  font-size: clamp(30px, 5vw, 54px);
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.08;
 }
 
 .editor-actions,
