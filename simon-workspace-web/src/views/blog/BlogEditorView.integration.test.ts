@@ -30,4 +30,11 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain('uploading-overlay')
     expect(editorSource).toContain("t('blog.editor.uploadingImage')")
   })
+
+  it('keeps the md editor crop modal stable while image uploads', () => {
+    expect(editorSource).toContain('blogImageUploadingClass')
+    expect(editorSource).toContain('blog-image-crop-upload-overlay')
+    expect(editorSource).toContain('body.blog-image-uploading .md-editor-modal-clip')
+    expect(editorSource).toContain('document.body.classList.toggle')
+  })
 })

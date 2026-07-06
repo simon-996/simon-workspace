@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { MdEditor } from 'md-editor-v3'
@@ -42,6 +42,7 @@ const uploadingImages = ref(false)
 const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
+const blogImageUploadingClass = 'blog-image-uploading'
 
 const canManageCategory = computed(() => auth.hasPermission('blog:category:manage'))
 const categoryOptions = computed(() => categories.value.map((item) => ({ label: item.name, value: item.id })))
@@ -54,6 +55,14 @@ onMounted(async () => {
     return
   }
   await loadCategories()
+})
+
+watch(uploadingImages, (uploading) => {
+  document.body.classList.toggle(blogImageUploadingClass, uploading)
+})
+
+onBeforeUnmount(() => {
+  document.body.classList.remove(blogImageUploadingClass)
 })
 
 async function loadCategories() {
@@ -212,6 +221,15 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
       </div>
     </section>
 
+    <Teleport to="body">
+      <Transition name="uploading-fade">
+        <div v-if="uploadingImages" class="blog-image-crop-upload-overlay" role="status" aria-live="polite">
+          <n-spin size="small" />
+          <span>{{ t('blog.editor.uploadingImage') }}</span>
+        </div>
+      </Transition>
+    </Teleport>
+
     <n-modal
       v-model:show="categoryModal"
       preset="card"
@@ -322,6 +340,61 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   backdrop-filter: blur(14px);
 }
 
+.blog-image-crop-upload-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.blog-image-crop-upload-overlay span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sw-surface-solid) 90%, transparent);
+  box-shadow: var(--sw-shadow-soft);
+  color: var(--sw-text);
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 800;
+  backdrop-filter: blur(14px);
+}
+
+.blog-image-crop-upload-overlay :deep(.n-spin) {
+  position: absolute;
+  margin-top: -66px;
+}
+
+:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-modal-body) {
+  position: relative;
+}
+
+:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip) {
+  min-height: 260px;
+  opacity: 0.58;
+  pointer-events: none;
+  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip-main),
+:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip-preview) {
+  background:
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--sw-surface-solid) 42%, transparent), transparent),
+    var(--sw-surface-muted);
+  background-size: 180% 100%;
+  animation: blog-crop-uploading 1.2s ease-in-out infinite;
+}
+
+:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-modal-func) {
+  pointer-events: none;
+  opacity: 0.44;
+}
+
 .uploading-fade-enter-active,
 .uploading-fade-leave-active {
   transition:
@@ -333,6 +406,16 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 .uploading-fade-leave-to {
   opacity: 0;
   transform: translate3d(0, -4px, 0);
+}
+
+@keyframes blog-crop-uploading {
+  from {
+    background-position: 120% 0;
+  }
+
+  to {
+    background-position: -120% 0;
+  }
 }
 
 .modal-form {
@@ -367,6 +450,11 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 
   .meta-panel {
     grid-template-columns: 1fr;
+  }
+
+  .blog-image-crop-upload-overlay {
+    align-items: start;
+    padding-top: min(42vh, 260px);
   }
 }
 </style>
