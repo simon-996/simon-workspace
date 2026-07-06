@@ -260,7 +260,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 .editor-layout {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 0 0 42px;
+  padding: 10px 0 42px;
 }
 
 .editor-layout header {
