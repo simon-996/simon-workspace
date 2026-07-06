@@ -43,6 +43,12 @@ class DeploymentConfigurationTests {
     }
 
     @Test
+    void multipartUploadLimitSupportsBlogEditorImages() {
+        assertThat(environment.getProperty("spring.servlet.multipart.max-file-size")).isEqualTo("20MB");
+        assertThat(environment.getProperty("spring.servlet.multipart.max-request-size")).isEqualTo("30MB");
+    }
+
+    @Test
     void corsAllowsConfiguredFrontendOrigin() throws Exception {
         mockMvc.perform(get("/api/health")
                         .header("Origin", "https://www.simon996.com"))

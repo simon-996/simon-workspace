@@ -14,4 +14,9 @@ describe('BlogEditorView', () => {
     expect(editorSource).not.toContain('Write in Markdown.')
     expect(editorSource).not.toContain('Title and content are required')
   })
+
+  it('shows an error when editor image upload fails', () => {
+    expect(editorSource).toContain("t('blog.messages.imageUploadFailed')")
+    expect(editorSource).toContain('catch (error)')
+  })
 })

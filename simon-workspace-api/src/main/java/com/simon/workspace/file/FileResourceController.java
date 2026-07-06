@@ -24,7 +24,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/files")
-@SaCheckPermission("file:manage")
 public class FileResourceController {
 
     private final FileResourceService fileResourceService;
@@ -34,16 +33,19 @@ public class FileResourceController {
     }
 
     @GetMapping
+    @SaCheckPermission("file:manage")
     public ApiResponse<List<FileResourceResponse>> list(@RequestParam(required = false) String keyword) {
         return ApiResponse.ok(fileResourceService.list(keyword));
     }
 
     @GetMapping("/{id}")
+    @SaCheckPermission("file:manage")
     public ApiResponse<FileResourceResponse> detail(@PathVariable long id) {
         return ApiResponse.ok(fileResourceService.detail(id));
     }
 
     @GetMapping("/{id}/download")
+    @SaCheckPermission("file:manage")
     public ResponseEntity<Resource> download(@PathVariable long id) {
         FileDownload download = fileResourceService.download(id);
         return ResponseEntity.ok()
@@ -69,6 +71,7 @@ public class FileResourceController {
     }
 
     @DeleteMapping("/{id}")
+    @SaCheckPermission("file:manage")
     public ApiResponse<Void> delete(@PathVariable long id) {
         fileResourceService.delete(id);
         return ApiResponse.ok(null);

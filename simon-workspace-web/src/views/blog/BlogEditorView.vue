@@ -114,12 +114,16 @@ function importMarkdown(file: File) {
 }
 
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
-  const urls: string[] = []
-  for (const file of files) {
-    const resource = await uploadBlogEditorImage(file, blogEditorSourceType)
-    urls.push(resource.publicUrl || `/api/files/${resource.id}/download`)
+  try {
+    const urls: string[] = []
+    for (const file of files) {
+      const resource = await uploadBlogEditorImage(file, blogEditorSourceType)
+      urls.push(resource.publicUrl || `/api/files/${resource.id}/download`)
+    }
+    callback(urls)
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : t('blog.messages.imageUploadFailed'))
   }
-  callback(urls)
 }
 </script>
 

@@ -130,6 +130,7 @@ export default {
       draftSaved: 'Draft saved',
       saveFailed: 'Failed to save post',
       categoryCreateFailed: 'Failed to create category',
+      imageUploadFailed: 'Failed to upload image',
       markdownOnly: 'Only .md files are supported',
     },
   },

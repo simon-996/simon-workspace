@@ -23,4 +23,17 @@ class FileResourceServiceSourceTypeTests {
 
         assertThat(sourceType).isEqualTo("AVATAR");
     }
+
+    @Test
+    void acceptsBlogEditorAsAFileSourceType() {
+        FileResourceService service = new FileResourceService(
+                mock(JdbcTemplate.class),
+                mock(StorageProviderStateService.class),
+                mock(StorageProviderRegistry.class)
+        );
+
+        String sourceType = ReflectionTestUtils.invokeMethod(service, "normalizeSourceType", "blog_editor");
+
+        assertThat(sourceType).isEqualTo("BLOG_EDITOR");
+    }
 }

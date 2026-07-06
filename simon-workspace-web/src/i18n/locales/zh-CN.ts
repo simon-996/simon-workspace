@@ -130,6 +130,7 @@ export default {
       draftSaved: '草稿已保存',
       saveFailed: '文章保存失败',
       categoryCreateFailed: '分类创建失败',
+      imageUploadFailed: '图片上传失败',
       markdownOnly: '仅支持 .md 文件',
     },
   },

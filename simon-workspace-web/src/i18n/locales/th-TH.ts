@@ -130,6 +130,7 @@ export default {
       draftSaved: 'บันทึกฉบับร่างแล้ว',
       saveFailed: 'บันทึกบทความไม่สำเร็จ',
       categoryCreateFailed: 'สร้างหมวดหมู่ไม่สำเร็จ',
+      imageUploadFailed: 'อัปโหลดรูปภาพไม่สำเร็จ',
       markdownOnly: 'รองรับเฉพาะไฟล์ .md',
     },
   },
