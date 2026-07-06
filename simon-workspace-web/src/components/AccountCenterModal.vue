@@ -580,6 +580,10 @@ function revokeSelectedAvatarUrl() {
     grid-template-columns: 1fr;
   }
 
+  .avatar-preview-panel {
+    order: -1;
+  }
+
   .avatar-cropper {
     height: min(340px, calc(100vw - 64px));
   }
