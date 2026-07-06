@@ -15,6 +15,7 @@ public record SiteConfigRequest(
         String githubUrl,
         Boolean profileVisible,
         Boolean blogVisible,
+        Boolean courseVisible,
         Boolean projectsVisible,
         Boolean workspaceEntryVisible
 ) {

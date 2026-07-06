@@ -20,6 +20,8 @@ export interface Course {
   syllabus?: string | null
   description?: string | null
   status: 'ACTIVE' | 'ARCHIVED' | string
+  publicVisible?: boolean
+  publicSortOrder?: number
   createdTime?: string
   updatedTime?: string
 }
@@ -42,6 +44,46 @@ export interface CoursePayload {
   syllabus?: string | null
   description?: string | null
   status?: string | null
+  publicVisible?: boolean | null
+  publicSortOrder?: number | null
+}
+
+export interface CourseMaterial {
+  id: string
+  courseId: string
+  section: 'DOCUMENT' | 'COURSEWARE' | 'RESOURCE' | string
+  materialType: 'FILE' | 'LINK' | string
+  fileId?: string | null
+  externalUrl?: string | null
+  title: string
+  description?: string | null
+  sortOrder: number
+  status: 'ACTIVE' | 'DISABLED' | string
+  originalFilename?: string | null
+  publicUrl?: string | null
+  contentType?: string | null
+  fileExtension?: string | null
+  fileSize?: number | null
+  createdTime?: string | null
+  updatedTime?: string | null
+}
+
+export interface CourseMaterialPayload {
+  section: string
+  materialType: string
+  fileId?: string | number | null
+  externalUrl?: string | null
+  title: string
+  description?: string | null
+  sortOrder?: number | null
+  status?: string | null
+}
+
+export interface PublicCourseDetail {
+  course: Course
+  documents: CourseMaterial[]
+  courseware: CourseMaterial[]
+  resources: CourseMaterial[]
 }
 
 export interface ClassInfo {
@@ -332,6 +374,48 @@ export async function updateCourse(id: string, payload: CoursePayload) {
 
 export async function deleteCourse(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/courses/${id}`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchCourseMaterials(courseId: string) {
+  const response = await http.get<ApiResponse<CourseMaterial[]>>(`/courses/${courseId}/materials`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function createCourseMaterial(courseId: string, payload: CourseMaterialPayload) {
+  const response = await http.post<ApiResponse<CourseMaterial>>(`/courses/${courseId}/materials`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function updateCourseMaterial(courseId: string, materialId: string, payload: CourseMaterialPayload) {
+  const response = await http.put<ApiResponse<CourseMaterial>>(`/courses/${courseId}/materials/${materialId}`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function deleteCourseMaterial(courseId: string, materialId: string) {
+  const response = await http.delete<ApiResponse<null>>(`/courses/${courseId}/materials/${materialId}`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchPublicCourses() {
+  const response = await http.get<ApiResponse<Course[]>>('/public/courses')
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchPublicCourseDetail(id: string) {
+  const response = await http.get<ApiResponse<PublicCourseDetail>>(`/public/courses/${id}`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function uploadCourseMaterialFile(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await http.post<ApiResponse<FileResource>>('/files', formData, {
+    params: {
+      sourceType: 'COURSE_MATERIAL',
+      visibility: 'PUBLIC',
+    },
+  })
   return unwrapApiResponse(response.data)
 }
 

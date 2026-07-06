@@ -1,7 +1,8 @@
-export type HeaderNavKey = 'home' | 'blog' | 'projects' | 'login' | 'workspace'
+export type HeaderNavKey = 'home' | 'blog' | 'courses' | 'projects' | 'login' | 'workspace'
 
 export interface HeaderSiteVisibility {
   blogVisible?: boolean
+  courseVisible?: boolean
   projectsVisible?: boolean
   workspaceEntryVisible?: boolean
 }
@@ -27,6 +28,7 @@ export function buildHeaderNavItems(input: BuildHeaderNavItemsInput): HeaderNavI
   const hash = input.hash ?? ''
   const isHome = path === '/' && hash === ''
   const isBlog = path === '/blog' || path.startsWith('/blog/')
+  const isCourses = path === '/courses' || path.startsWith('/courses/')
   const isProjects = path === '/' && hash === '#projects'
   const isLogin = input.name === 'login' || path === '/login'
   const isWorkspace = path === '/workspace' || path.startsWith('/workspace/')
@@ -47,6 +49,14 @@ export function buildHeaderNavItems(input: BuildHeaderNavItemsInput): HeaderNavI
       active: isBlog,
       disabled: isBlog,
       visible: Boolean(input.site?.blogVisible),
+    },
+    {
+      key: 'courses',
+      to: '/courses',
+      labelKey: 'home.courses',
+      active: isCourses,
+      disabled: isCourses,
+      visible: Boolean(input.site?.courseVisible),
     },
     {
       key: 'projects',

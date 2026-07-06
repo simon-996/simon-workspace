@@ -10,16 +10,23 @@ import {
   NPopconfirm,
   NSelect,
   NSpin,
+  NSwitch,
   useMessage,
 } from 'naive-ui'
 import { AlertTriangle, Edit, Plus, Refresh, Search, Trash } from '@vicons/tabler'
 
 import {
   createCourse,
+  createCourseMaterial,
   deleteCourse,
+  deleteCourseMaterial,
   fetchCourses,
+  fetchCourseMaterials,
   updateCourse,
+  updateCourseMaterial,
+  uploadCourseMaterialFile,
   type Course,
+  type CourseMaterial,
   type CoursePayload,
 } from '../../api/workspace'
 
@@ -33,6 +40,14 @@ const saving = ref(false)
 const error = ref('')
 const modalVisible = ref(false)
 const editingId = ref<string | null>(null)
+const selectedCourse = ref<Course | null>(null)
+const materials = ref<CourseMaterial[]>([])
+const materialsLoading = ref(false)
+const materialSaving = ref(false)
+const materialError = ref('')
+const activeSection = ref('DOCUMENT')
+const selectedFile = ref<File | null>(null)
+const editingMaterialId = ref<string | null>(null)
 
 const statusOptions = computed(() => [
   { label: t('common.states.active'), value: 'ACTIVE' },
@@ -57,12 +72,38 @@ const form = reactive({
   syllabus: '',
   description: '',
   status: 'ACTIVE',
+  publicVisible: false,
+  publicSortOrder: 0,
+})
+
+const materialForm = reactive({
+  title: '',
+  description: '',
+  section: 'DOCUMENT',
+  materialType: 'FILE',
+  externalUrl: '',
+  sortOrder: 0,
+  status: 'ACTIVE',
 })
 
 const activeCount = computed(() => courses.value.filter((course) => course.status === 'ACTIVE').length)
 const archivedCount = computed(() => courses.value.filter((course) => course.status === 'ARCHIVED').length)
 const totalHours = computed(() => courses.value.reduce((sum, course) => sum + (course.totalHours ?? 0), 0))
 const modalTitle = computed(() => (editingId.value ? t('workspace.courses.modal.edit') : t('workspace.courses.modal.create')))
+const materialSections = computed(() => [
+  { label: t('workspace.courses.materials.sections.documents'), value: 'DOCUMENT' },
+  { label: t('workspace.courses.materials.sections.courseware'), value: 'COURSEWARE' },
+  { label: t('workspace.courses.materials.sections.resources'), value: 'RESOURCE' },
+])
+const materialTypeOptions = computed(() => [
+  { label: t('workspace.courses.materials.types.file'), value: 'FILE' },
+  { label: t('workspace.courses.materials.types.link'), value: 'LINK' },
+])
+const materialStatusOptions = computed(() => [
+  { label: t('workspace.courses.materials.status.active'), value: 'ACTIVE' },
+  { label: t('workspace.courses.materials.status.disabled'), value: 'DISABLED' },
+])
+const filteredMaterials = computed(() => materials.value.filter((item) => item.section === activeSection.value))
 
 onMounted(() => {
   void loadCourses()
@@ -73,6 +114,9 @@ async function loadCourses() {
   error.value = ''
   try {
     courses.value = await fetchCourses(keyword.value.trim())
+    if (selectedCourse.value) {
+      selectedCourse.value = courses.value.find((course) => course.id === selectedCourse.value?.id) ?? null
+    }
   } catch (err) {
     error.value = err instanceof Error ? err.message : t('workspace.courses.messages.loadFailed')
     message.error(error.value)
@@ -106,6 +150,8 @@ function openEdit(course: Course) {
   form.syllabus = course.syllabus ?? ''
   form.description = course.description ?? ''
   form.status = course.status || 'ACTIVE'
+  form.publicVisible = Boolean(course.publicVisible)
+  form.publicSortOrder = course.publicSortOrder ?? 0
   modalVisible.value = true
 }
 
@@ -132,6 +178,10 @@ async function submitCourse() {
     }
     modalVisible.value = false
     await loadCourses()
+    if (selectedCourse.value?.id === course.id) {
+      selectedCourse.value = null
+      materials.value = []
+    }
   } catch (err) {
     message.error(err instanceof Error ? err.message : t('workspace.courses.messages.saveFailed'))
   } finally {
@@ -167,6 +217,8 @@ function resetForm() {
   form.syllabus = ''
   form.description = ''
   form.status = 'ACTIVE'
+  form.publicVisible = false
+  form.publicSortOrder = 0
 }
 
 function buildPayload(): CoursePayload {
@@ -188,6 +240,8 @@ function buildPayload(): CoursePayload {
     syllabus: textOrNull(form.syllabus),
     description: textOrNull(form.description),
     status: form.status,
+    publicVisible: form.publicVisible,
+    publicSortOrder: form.publicSortOrder ?? 0,
   }
 }
 
@@ -198,6 +252,133 @@ function textOrNull(value: string) {
 
 function statusText(status: string) {
   return status === 'ARCHIVED' ? t('common.states.archived') : t('common.states.active')
+}
+
+function materialStatusText(status: string) {
+  return status === 'DISABLED' ? t('workspace.courses.materials.status.disabled') : t('workspace.courses.materials.status.active')
+}
+
+function materialMeta(item: CourseMaterial) {
+  if (item.materialType === 'LINK') {
+    return item.externalUrl || '-'
+  }
+  return item.originalFilename || item.publicUrl || '-'
+}
+
+async function selectCourseMaterials(course: Course) {
+  selectedCourse.value = course
+  activeSection.value = 'DOCUMENT'
+  resetMaterialForm('DOCUMENT')
+  await loadMaterials()
+}
+
+async function loadMaterials() {
+  if (!selectedCourse.value) return
+  materialsLoading.value = true
+  materialError.value = ''
+  try {
+    materials.value = await fetchCourseMaterials(selectedCourse.value.id)
+  } catch (err) {
+    materialError.value = err instanceof Error ? err.message : t('workspace.courses.materials.messages.loadFailed')
+    message.error(materialError.value)
+  } finally {
+    materialsLoading.value = false
+  }
+}
+
+function setMaterialSection(section: string) {
+  activeSection.value = section
+  resetMaterialForm(section)
+}
+
+function onMaterialFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  selectedFile.value = input.files?.[0] ?? null
+}
+
+async function submitMaterial() {
+  if (!selectedCourse.value) return
+  if (!materialForm.title.trim()) {
+    message.warning(t('workspace.courses.materials.messages.titleRequired'))
+    return
+  }
+  const editingItem = editingMaterialId.value
+    ? materials.value.find((item) => item.id === editingMaterialId.value)
+    : null
+  if (materialForm.materialType === 'FILE' && !selectedFile.value && !editingItem?.fileId) {
+    message.warning(t('workspace.courses.materials.messages.fileRequired'))
+    return
+  }
+  if (materialForm.materialType === 'LINK' && !materialForm.externalUrl.trim()) {
+    message.warning(t('workspace.courses.materials.messages.linkRequired'))
+    return
+  }
+
+  materialSaving.value = true
+  try {
+    const file = materialForm.materialType === 'FILE' && selectedFile.value
+      ? await uploadCourseMaterialFile(selectedFile.value)
+      : null
+    const payload = {
+      section: materialForm.section,
+      materialType: materialForm.materialType,
+      fileId: materialForm.materialType === 'FILE' ? (file?.id ?? editingItem?.fileId ?? null) : null,
+      externalUrl: materialForm.materialType === 'LINK' ? textOrNull(materialForm.externalUrl) : null,
+      title: materialForm.title.trim(),
+      description: textOrNull(materialForm.description),
+      sortOrder: materialForm.sortOrder ?? 0,
+      status: materialForm.status,
+    }
+    if (editingMaterialId.value) {
+      await updateCourseMaterial(selectedCourse.value.id, editingMaterialId.value, payload)
+      message.success(t('workspace.courses.materials.messages.updated'))
+    } else {
+      await createCourseMaterial(selectedCourse.value.id, payload)
+      message.success(t('workspace.courses.materials.messages.created'))
+    }
+    resetMaterialForm(activeSection.value)
+    await loadMaterials()
+  } catch (err) {
+    message.error(err instanceof Error ? err.message : t('workspace.courses.materials.messages.saveFailed'))
+  } finally {
+    materialSaving.value = false
+  }
+}
+
+function openEditMaterial(item: CourseMaterial) {
+  editingMaterialId.value = item.id
+  activeSection.value = item.section
+  materialForm.title = item.title ?? ''
+  materialForm.description = item.description ?? ''
+  materialForm.section = item.section
+  materialForm.materialType = item.materialType
+  materialForm.externalUrl = item.externalUrl ?? ''
+  materialForm.sortOrder = item.sortOrder ?? 0
+  materialForm.status = item.status || 'ACTIVE'
+  selectedFile.value = null
+}
+
+async function confirmDeleteMaterial(item: CourseMaterial) {
+  if (!selectedCourse.value) return
+  try {
+    await deleteCourseMaterial(selectedCourse.value.id, item.id)
+    message.success(t('workspace.courses.materials.messages.deleted'))
+    await loadMaterials()
+  } catch (err) {
+    message.error(err instanceof Error ? err.message : t('workspace.courses.materials.messages.deleteFailed'))
+  }
+}
+
+function resetMaterialForm(section = activeSection.value) {
+  materialForm.title = ''
+  materialForm.description = ''
+  materialForm.section = section
+  materialForm.materialType = 'FILE'
+  materialForm.externalUrl = ''
+  materialForm.sortOrder = 0
+  materialForm.status = 'ACTIVE'
+  selectedFile.value = null
+  editingMaterialId.value = null
 }
 </script>
 
@@ -281,6 +462,7 @@ function statusText(status: string) {
               <th>{{ t('workspace.courses.table.majorGrade') }}</th>
               <th>{{ t('workspace.courses.table.hours') }}</th>
               <th>{{ t('workspace.courses.table.credit') }}</th>
+              <th>{{ t('workspace.courses.table.visibility') }}</th>
               <th>{{ t('workspace.courses.table.status') }}</th>
               <th>{{ t('workspace.courses.table.updatedTime') }}</th>
               <th>{{ t('workspace.courses.table.actions') }}</th>
@@ -302,6 +484,11 @@ function statusText(status: string) {
               </td>
               <td>{{ course.credit ?? '-' }}</td>
               <td>
+                <span class="status-pill" :class="{ archived: !course.publicVisible }">
+                  {{ course.publicVisible ? t('workspace.courses.table.public') : t('workspace.courses.table.private') }}
+                </span>
+              </td>
+              <td>
                 <span class="status-pill" :class="{ archived: course.status === 'ARCHIVED' }">
                   {{ statusText(course.status) }}
                 </span>
@@ -309,6 +496,9 @@ function statusText(status: string) {
               <td>{{ course.updatedTime ? course.updatedTime.slice(0, 10) : '-' }}</td>
               <td>
                 <div class="row-actions">
+                  <n-button quaternary size="small" @click="selectCourseMaterials(course)">
+                    {{ t('workspace.courses.materials.manage') }}
+                  </n-button>
                   <n-button quaternary size="small" @click="openEdit(course)">
                     <template #icon>
                       <n-icon :component="Edit" />
@@ -336,6 +526,118 @@ function statusText(status: string) {
       </div>
     </section>
 
+    <section v-if="selectedCourse" class="materials-panel">
+      <header class="materials-head">
+        <div>
+          <span>{{ t('workspace.courses.materials.kicker') }}</span>
+          <h2>{{ selectedCourse.courseName }}</h2>
+        </div>
+        <n-button secondary class="icon-button" @click="loadMaterials">
+          <template #icon>
+            <n-icon :component="Refresh" />
+          </template>
+          {{ t('common.actions.refresh') }}
+        </n-button>
+      </header>
+
+      <div class="section-tabs">
+        <button
+          v-for="section in materialSections"
+          :key="section.value"
+          type="button"
+          :class="{ active: activeSection === section.value }"
+          @click="setMaterialSection(section.value)"
+        >
+          {{ section.label }}
+        </button>
+      </div>
+
+      <form class="material-form" @submit.prevent="submitMaterial">
+        <label class="field">
+          <span>{{ t('workspace.courses.materials.fields.title') }}</span>
+          <n-input v-model:value="materialForm.title" :placeholder="t('workspace.courses.materials.fields.titlePlaceholder')" />
+        </label>
+        <label class="field">
+          <span>{{ t('workspace.courses.materials.fields.type') }}</span>
+          <n-select v-model:value="materialForm.materialType" :options="materialTypeOptions" />
+        </label>
+        <label v-if="materialForm.materialType === 'LINK'" class="field span-2">
+          <span>{{ t('workspace.courses.materials.fields.url') }}</span>
+          <n-input v-model:value="materialForm.externalUrl" placeholder="https://" />
+        </label>
+        <label v-else class="field span-2">
+          <span>{{ t('workspace.courses.materials.fields.file') }}</span>
+          <input class="file-input" type="file" @change="onMaterialFileChange" />
+        </label>
+        <label class="field">
+          <span>{{ t('workspace.courses.materials.fields.sortOrder') }}</span>
+          <n-input-number v-model:value="materialForm.sortOrder" :min="0" />
+        </label>
+        <label class="field">
+          <span>{{ t('workspace.courses.materials.fields.status') }}</span>
+          <n-select v-model:value="materialForm.status" :options="materialStatusOptions" />
+        </label>
+        <label class="field">
+          <span>{{ t('workspace.courses.materials.fields.description') }}</span>
+          <n-input v-model:value="materialForm.description" :placeholder="t('workspace.courses.materials.fields.descriptionPlaceholder')" />
+        </label>
+        <div class="form-actions span-2">
+          <n-button v-if="editingMaterialId" @click="resetMaterialForm(activeSection)">
+            {{ t('common.actions.cancel') }}
+          </n-button>
+          <n-button type="primary" attr-type="submit" :loading="materialSaving">
+            {{ editingMaterialId ? t('workspace.courses.materials.actions.update') : t('workspace.courses.materials.actions.add') }}
+          </n-button>
+        </div>
+      </form>
+
+      <div v-if="materialError" class="error-state compact">
+        <span>{{ materialError }}</span>
+        <n-button size="small" tertiary @click="loadMaterials">{{ t('common.actions.retry') }}</n-button>
+      </div>
+
+      <n-spin v-else-if="materialsLoading" :show="materialsLoading">
+        <div class="skeleton-table compact">
+          <span v-for="index in 3" :key="index" />
+        </div>
+      </n-spin>
+
+      <div v-else-if="filteredMaterials.length === 0" class="empty-materials">
+        {{ t('workspace.courses.materials.empty') }}
+      </div>
+
+      <div v-else class="materials-list">
+        <article v-for="item in filteredMaterials" :key="item.id" class="material-row">
+          <div>
+            <strong>{{ item.title }}</strong>
+            <span>{{ materialMeta(item) }}</span>
+          </div>
+          <span class="status-pill" :class="{ archived: item.status !== 'ACTIVE' }">
+            {{ materialStatusText(item.status) }}
+          </span>
+          <n-button quaternary size="small" @click="openEditMaterial(item)">
+            <template #icon>
+              <n-icon :component="Edit" />
+            </template>
+          </n-button>
+          <n-popconfirm
+            :positive-text="t('common.actions.delete')"
+            :negative-text="t('common.actions.cancel')"
+            @positive-click="confirmDeleteMaterial(item)"
+          >
+            <template #trigger>
+              <n-button quaternary size="small" type="error">
+                <template #icon>
+                  <n-icon :component="Trash" />
+                </template>
+              </n-button>
+            </template>
+            {{ t('workspace.courses.materials.messages.deleteConfirm') }}
+          </n-popconfirm>
+        </article>
+      </div>
+    </section>
+
     <n-modal v-model:show="modalVisible" preset="card" :title="modalTitle" class="course-modal">
       <form class="course-form" @submit.prevent="submitCourse">
         <label class="field span-2">
@@ -351,6 +653,16 @@ function statusText(status: string) {
         <label class="field">
           <span>{{ t('workspace.courses.form.status') }}</span>
           <n-select v-model:value="form.status" :options="statusOptions" />
+        </label>
+
+        <label class="field switch-field">
+          <span>{{ t('workspace.courses.form.publicVisible') }}</span>
+          <n-switch v-model:value="form.publicVisible" />
+        </label>
+
+        <label class="field">
+          <span>{{ t('workspace.courses.form.publicSortOrder') }}</span>
+          <n-input-number v-model:value="form.publicSortOrder" :min="0" />
         </label>
 
         <label class="field">
@@ -507,7 +819,7 @@ function statusText(status: string) {
 
 .course-table {
   width: 100%;
-  min-width: 920px;
+  min-width: 1020px;
   border-collapse: collapse;
 }
 
@@ -601,6 +913,115 @@ function statusText(status: string) {
   animation: shimmer 1.2s ease-in-out infinite;
 }
 
+.materials-panel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-surface-solid);
+  padding: 16px;
+}
+
+.materials-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.materials-head span {
+  color: #16708f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.materials-head h2 {
+  margin: 4px 0 0;
+  color: var(--sw-text);
+  font-size: 20px;
+}
+
+.section-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.section-tabs button {
+  min-height: 34px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sw-muted);
+  cursor: pointer;
+  padding: 0 14px;
+  font-weight: 800;
+}
+
+.section-tabs button.active {
+  border-color: transparent;
+  background: var(--sw-text);
+  color: var(--sw-surface-solid);
+}
+
+.material-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  border-top: 1px solid var(--sw-border);
+  padding-top: 14px;
+}
+
+.file-input {
+  min-height: 34px;
+  border: 1px dashed var(--sw-border);
+  border-radius: 8px;
+  color: var(--sw-muted);
+  padding: 8px;
+}
+
+.materials-list {
+  display: grid;
+  gap: 8px;
+}
+
+.material-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid var(--sw-border);
+  padding: 12px 0 4px;
+}
+
+.material-row strong,
+.material-row span {
+  display: block;
+}
+
+.material-row strong {
+  color: var(--sw-text);
+  font-size: 14px;
+}
+
+.material-row span {
+  margin-top: 4px;
+  color: var(--sw-muted);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.empty-materials {
+  border-top: 1px solid var(--sw-border);
+  color: var(--sw-muted);
+  padding: 18px 0 4px;
+  text-align: center;
+}
+
+.compact {
+  min-height: 120px;
+}
+
 .course-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -610,6 +1031,10 @@ function statusText(status: string) {
 .field {
   display: grid;
   gap: 7px;
+}
+
+.switch-field {
+  align-content: center;
 }
 
 .field :deep(.n-input-number) {
@@ -643,7 +1068,18 @@ function statusText(status: string) {
 @media (max-width: 860px) {
   .summary-grid,
   .toolbar,
+  .material-form,
   .course-form {
+    grid-template-columns: 1fr;
+  }
+
+  .materials-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .material-row {
+    align-items: stretch;
     grid-template-columns: 1fr;
   }
 

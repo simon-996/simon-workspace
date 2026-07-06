@@ -12,6 +12,7 @@ export interface SiteConfig {
   githubUrl?: string | null
   profileVisible: boolean
   blogVisible: boolean
+  courseVisible: boolean
   projectsVisible: boolean
   workspaceEntryVisible: boolean
   updatedTime?: string
@@ -27,6 +28,7 @@ export interface SiteConfigPayload {
   githubUrl?: string | null
   profileVisible: boolean
   blogVisible: boolean
+  courseVisible: boolean
   projectsVisible: boolean
   workspaceEntryVisible: boolean
 }

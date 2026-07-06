@@ -88,4 +88,25 @@ describe('buildHeaderNavItems', () => {
       disabled: true,
     })
   })
+
+  it('shows courses as a public top-level page when enabled', () => {
+    const items = buildHeaderNavItems({
+      path: '/courses/3',
+      name: 'course-detail',
+      hash: '',
+      authenticated: false,
+      site: {
+        courseVisible: true,
+        blogVisible: false,
+        projectsVisible: false,
+        workspaceEntryVisible: false,
+      },
+    })
+
+    expect(items.find((item) => item.key === 'courses')).toMatchObject({
+      to: '/courses',
+      active: true,
+      disabled: true,
+    })
+  })
 })

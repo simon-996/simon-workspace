@@ -29,6 +29,7 @@ const form = reactive<SiteConfigPayload>({
   githubUrl: '',
   profileVisible: true,
   blogVisible: true,
+  courseVisible: true,
   projectsVisible: true,
   workspaceEntryVisible: false,
 })
@@ -36,6 +37,7 @@ const form = reactive<SiteConfigPayload>({
 const visibleCount = computed(() => [
   form.profileVisible,
   form.blogVisible,
+  form.courseVisible,
   form.projectsVisible,
   form.workspaceEntryVisible,
 ].filter(Boolean).length)
@@ -85,6 +87,7 @@ async function submitConfig() {
       githubUrl: textOrNull(form.githubUrl),
       profileVisible: form.profileVisible,
       blogVisible: form.blogVisible,
+      courseVisible: form.courseVisible,
       projectsVisible: form.projectsVisible,
       workspaceEntryVisible: form.workspaceEntryVisible,
     })
@@ -108,6 +111,7 @@ function syncForm(data: SiteConfig) {
   form.githubUrl = data.githubUrl ?? ''
   form.profileVisible = data.profileVisible
   form.blogVisible = data.blogVisible
+  form.courseVisible = data.courseVisible
   form.projectsVisible = data.projectsVisible
   form.workspaceEntryVisible = data.workspaceEntryVisible
 }
@@ -223,6 +227,13 @@ function textOrNull(value?: string | null) {
                 <small>{{ t('workspace.site.switches.blogHelp') }}</small>
               </span>
               <n-switch v-model:value="form.blogVisible" />
+            </label>
+            <label class="switch-item">
+              <span>
+                <strong>{{ t('workspace.site.switches.courses') }}</strong>
+                <small>{{ t('workspace.site.switches.coursesHelp') }}</small>
+              </span>
+              <n-switch v-model:value="form.courseVisible" />
             </label>
             <label class="switch-item">
               <span>

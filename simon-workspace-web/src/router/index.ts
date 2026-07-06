@@ -6,6 +6,9 @@ import WorkspaceView from '../views/WorkspaceView.vue'
 import BlogDetailView from '../views/blog/BlogDetailView.vue'
 import BlogEditorView from '../views/blog/BlogEditorView.vue'
 import BlogListView from '../views/blog/BlogListView.vue'
+import PublicCourseDetailView from '../views/course/PublicCourseDetailView.vue'
+import PublicCourseListView from '../views/course/PublicCourseListView.vue'
+import PublicMarkdownView from '../views/course/PublicMarkdownView.vue'
 import BlogManagementView from '../views/workspace/BlogManagementView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
@@ -145,6 +148,21 @@ export const router = createRouter({
       path: '/blog',
       name: 'blog',
       component: BlogListView,
+    },
+    {
+      path: '/courses',
+      name: 'courses',
+      component: PublicCourseListView,
+    },
+    {
+      path: '/courses/:id',
+      name: 'course-detail',
+      component: PublicCourseDetailView,
+    },
+    {
+      path: '/courses/:id/materials/:materialId/read',
+      name: 'course-markdown',
+      component: PublicMarkdownView,
     },
     {
       path: '/blog/new',

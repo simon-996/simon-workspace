@@ -13,6 +13,7 @@ public record SiteConfigResponse(
         String githubUrl,
         boolean profileVisible,
         boolean blogVisible,
+        boolean courseVisible,
         boolean projectsVisible,
         boolean workspaceEntryVisible,
         LocalDateTime updatedTime

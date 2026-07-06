@@ -25,6 +25,7 @@ class SiteConfigServiceTests {
                 true,
                 true,
                 true,
+                true,
                 false
         );
 

@@ -42,6 +42,7 @@ public class SiteConfigService {
                             github_url = ?,
                             profile_visible = ?,
                             blog_visible = ?,
+                            course_visible = ?,
                             projects_visible = ?,
                             workspace_entry_visible = ?
                         WHERE id = ? AND deleted = 0
@@ -55,6 +56,7 @@ public class SiteConfigService {
                 blankToNull(request.githubUrl()),
                 bool(request.profileVisible(), true),
                 bool(request.blogVisible(), true),
+                bool(request.courseVisible(), true),
                 bool(request.projectsVisible(), true),
                 bool(request.workspaceEntryVisible(), false),
                 DEFAULT_CONFIG_ID
@@ -66,7 +68,7 @@ public class SiteConfigService {
     private SiteConfigResponse findConfig() {
         return jdbcTemplate.query("""
                         SELECT id, site_title, owner_name, hero_title, hero_subtitle, owner_role,
-                               contact_email, github_url, profile_visible, blog_visible, projects_visible,
+                               contact_email, github_url, profile_visible, blog_visible, course_visible, projects_visible,
                                workspace_entry_visible, updated_time
                         FROM site_config
                         WHERE id = ? AND deleted = 0
@@ -89,6 +91,7 @@ public class SiteConfigService {
                 rs.getString("github_url"),
                 rs.getBoolean("profile_visible"),
                 rs.getBoolean("blog_visible"),
+                rs.getBoolean("course_visible"),
                 rs.getBoolean("projects_visible"),
                 rs.getBoolean("workspace_entry_visible"),
                 rs.getTimestamp("updated_time").toLocalDateTime()
