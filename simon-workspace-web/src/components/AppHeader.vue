@@ -165,20 +165,21 @@ async function selectAccountAction(key: string | number) {
   position: sticky;
   top: 0;
   z-index: 30;
-  border-bottom: 1px solid color-mix(in srgb, var(--sw-border) 72%, transparent);
-  background: color-mix(in srgb, var(--sw-surface-solid) 78%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--sw-border) 64%, transparent);
+  background: var(--sw-surface-glass);
   color: var(--sw-text);
   user-select: none;
-  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 28px rgba(28, 48, 58, 0.045);
+  backdrop-filter: blur(20px);
 }
 
 .app-header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 16px;
   width: min(1120px, calc(100% - 48px));
-  min-height: 74px;
+  min-height: 66px;
   margin: 0 auto;
 }
 
@@ -200,7 +201,7 @@ async function selectAccountAction(key: string | number) {
 .app-header-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
 }
 
 .app-nav {
@@ -212,16 +213,16 @@ async function selectAccountAction(key: string | number) {
 .app-nav-link {
   display: inline-flex;
   align-items: center;
-  min-height: 34px;
+  min-height: 32px;
   border-radius: 8px;
-  padding: 0 12px;
+  padding: 0 10px;
   color: var(--sw-muted);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   transition:
-    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    background-color var(--sw-motion-standard),
+    color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
 }
 
 .app-nav-link:hover {
@@ -257,9 +258,9 @@ async function selectAccountAction(key: string | number) {
   align-items: center;
   width: 100%;
   height: 100%;
-  border: 1px solid var(--sw-border);
+  border: 1px solid color-mix(in srgb, var(--sw-border) 84%, transparent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--sw-surface-solid) 88%, transparent);
+  background: var(--sw-surface-glass);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--sw-panel-bg-hover) 38%, transparent),
     var(--sw-shadow-soft);
@@ -280,9 +281,9 @@ async function selectAccountAction(key: string | number) {
     0 8px 18px rgba(0, 0, 0, 0.12),
     inset 0 1px 0 color-mix(in srgb, var(--sw-panel-bg-hover) 65%, transparent);
   transition:
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform var(--sw-motion-standard),
+    background-color var(--sw-motion-standard),
+    border-color var(--sw-motion-standard);
 }
 
 .theme-toggle.dark .theme-toggle-indicator {
@@ -295,8 +296,8 @@ async function selectAccountAction(key: string | number) {
   font-size: 15px;
   opacity: 0.58;
   transition:
-    color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    color var(--sw-motion-standard),
+    opacity var(--sw-motion-standard);
 }
 
 .theme-icon.active {
@@ -316,7 +317,7 @@ async function selectAccountAction(key: string | number) {
   --n-border-radius: 8px !important;
   max-width: 176px;
   border-color: var(--sw-border) !important;
-  background: color-mix(in srgb, var(--sw-surface-solid) 72%, transparent) !important;
+  background: var(--sw-surface-glass) !important;
   color: var(--sw-muted) !important;
   font-weight: 700;
   backdrop-filter: blur(16px);
@@ -379,7 +380,7 @@ async function selectAccountAction(key: string | number) {
   display: none;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: var(--sw-surface-solid);
+  background: var(--sw-surface-glass);
   color: var(--sw-text);
   cursor: pointer;
   font-size: 22px;
@@ -389,7 +390,7 @@ async function selectAccountAction(key: string | number) {
 @media (max-width: 900px) {
   .app-header-inner {
     width: min(100% - 32px, 560px);
-    min-height: 68px;
+    min-height: 64px;
   }
 
   .app-brand {
@@ -410,7 +411,7 @@ async function selectAccountAction(key: string | number) {
 
   .app-nav {
     position: absolute;
-    top: 68px;
+    top: 64px;
     right: 16px;
     left: 16px;
     z-index: 2;
@@ -418,7 +419,7 @@ async function selectAccountAction(key: string | number) {
     align-items: stretch;
     border: 1px solid var(--sw-border);
     border-radius: 8px;
-    background: color-mix(in srgb, var(--sw-surface-solid) 96%, transparent);
+    background: var(--sw-surface-glass);
     box-shadow: var(--sw-shadow-soft);
     padding: 12px;
     backdrop-filter: blur(18px);

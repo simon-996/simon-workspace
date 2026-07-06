@@ -104,9 +104,6 @@ function updateViewport() {
             <p class="intro-short">{{ t('home.intro.shortLine') }}</p>
 
             <div class="intro-details">
-              <p class="intro-lead">{{ t('home.intro.lead') }}</p>
-              <p>{{ t('home.intro.body') }}</p>
-              <p>{{ t('home.intro.philosophy') }}</p>
               <a class="contact-link" :href="contactHref">
                 <span v-if="contactLabel">{{ contactLabel }}</span>
                 <strong>{{ contactEmail }}</strong>
@@ -233,7 +230,7 @@ function updateViewport() {
   height: 100%;
   min-height: 0;
   margin: 0 auto;
-  padding: clamp(18px, 3dvh, 34px) 0 7dvh;
+  padding: clamp(16px, 3dvh, 30px) 0 7dvh;
 }
 
 .intro-column {
@@ -259,7 +256,7 @@ function updateViewport() {
 h1 {
   margin: 0;
   color: var(--sw-text);
-  font-size: clamp(52px, 8vw, 104px);
+  font-size: 84px;
   font-weight: 800;
   letter-spacing: 0;
   line-height: 0.92;
@@ -267,11 +264,11 @@ h1 {
 
 .intro-short {
   max-width: 480px;
-  margin: 28px 0 0;
+  margin: 24px 0 0;
   color: var(--sw-muted);
-  font-size: clamp(18px, 2.2vw, 26px);
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1.55;
+  line-height: 1.48;
   opacity: var(--brief-opacity);
   will-change: opacity;
 }
@@ -327,8 +324,8 @@ h1 {
   top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift));
   left: 0;
   display: grid;
-  gap: 10px;
-  width: min(820px, 80vw);
+  gap: 18px;
+  width: min(560px, 80vw);
   opacity: var(--details-opacity);
   pointer-events: none;
   transform: translate3d(0, var(--details-y), 0) scale(var(--details-scale));
@@ -390,26 +387,12 @@ h1 {
   pointer-events: auto;
 }
 
-.intro-details p {
-  max-width: 820px;
-  margin: 0;
-  color: var(--sw-muted);
-  font-size: 13px;
-  line-height: 1.58;
-}
-
-.intro-details .intro-lead {
-  color: var(--sw-text);
-  font-size: clamp(17px, 1.7vw, 22px);
-  font-weight: 850;
-  line-height: 1.35;
-}
-
 .terminal-stage {
   z-index: 1;
   transform: translate3d(var(--terminal-x), var(--terminal-y), 0) scale(var(--terminal-scale));
   transform-origin: center center;
   opacity: var(--terminal-opacity);
+  filter: saturate(1.02);
   will-change: transform, opacity;
 }
 
@@ -465,12 +448,27 @@ h1 {
 }
 
 .contact-link {
-  display: inline-grid;
+  display: inline-flex;
+  align-items: center;
   justify-self: start;
-  gap: 5px;
+  gap: 10px;
   margin-top: 2px;
-  border-bottom: 1px solid var(--sw-accent);
-  padding-bottom: 8px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-surface-glass);
+  box-shadow: var(--sw-shadow-soft);
+  padding: 10px 12px;
+  backdrop-filter: blur(16px);
+  transition:
+    border-color var(--sw-motion-standard),
+    background-color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
+}
+
+.contact-link:hover {
+  border-color: color-mix(in srgb, var(--sw-accent) 32%, var(--sw-border));
+  background: var(--sw-panel-bg-hover);
+  transform: translate3d(0, -1px, 0);
 }
 
 .contact-link span,
@@ -484,14 +482,19 @@ h1 {
 
 .contact-link strong {
   color: var(--sw-accent);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 850;
 }
 
 .tech-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-border-soft);
+  box-shadow: var(--sw-shadow-soft);
   margin-top: 0;
 }
 
@@ -499,8 +502,8 @@ h1 {
   display: grid;
   gap: 6px;
   align-content: start;
-  border-top: 1px solid var(--sw-border);
-  padding-top: 10px;
+  background: var(--sw-panel-bg-strong);
+  padding: 12px;
 }
 
 .tech-grid strong {
@@ -585,7 +588,7 @@ h1 {
   }
 
   h1 {
-    font-size: clamp(48px, 18vw, 86px);
+    font-size: 64px;
   }
 
   .intro-details {
@@ -631,20 +634,15 @@ h1 {
   }
 
   .intro-details {
-    gap: 10px;
+    gap: 12px;
   }
 
   .intro-skeleton-details {
     gap: 10px;
   }
 
-  .intro-details p {
-    font-size: 13px;
-    line-height: 1.58;
-  }
-
-  .intro-details .intro-lead {
-    font-size: 16px;
+  h1 {
+    font-size: 48px;
   }
 
   .contact-link strong {

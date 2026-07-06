@@ -2,18 +2,20 @@
 @import "tailwindcss";
 
 :root {
-  --sw-bg: #f7f8f8;
-  --sw-bg-soft: #eef3f5;
-  --sw-surface: rgba(255, 255, 255, 0.82);
+  --sw-bg: #f8faf9;
+  --sw-bg-soft: #eef4f2;
+  --sw-surface: rgba(255, 255, 255, 0.84);
   --sw-surface-solid: #ffffff;
-  --sw-surface-muted: #f4f7f8;
+  --sw-surface-muted: #f3f7f6;
+  --sw-surface-glass: color-mix(in srgb, var(--sw-surface-solid) 74%, transparent);
   --sw-page-bg:
-    radial-gradient(circle at 82% 12%, rgba(22, 112, 143, 0.07), transparent 28%),
-    linear-gradient(180deg, #fbfcfc 0%, var(--sw-bg) 46%, var(--sw-bg-soft) 100%);
+    linear-gradient(90deg, var(--sw-grid-line) 1px, transparent 1px),
+    linear-gradient(180deg, #fcfdfd 0%, var(--sw-bg) 48%, var(--sw-bg-soft) 100%);
+  --sw-page-bg-size: 32px 32px, auto;
   --sw-grid-line: rgba(23, 33, 43, 0.04);
   --sw-grid-line-soft: rgba(23, 33, 43, 0.03);
-  --sw-panel-bg: rgba(255, 255, 255, 0.82);
-  --sw-panel-bg-strong: rgba(255, 255, 255, 0.9);
+  --sw-panel-bg: rgba(255, 255, 255, 0.84);
+  --sw-panel-bg-strong: rgba(255, 255, 255, 0.94);
   --sw-panel-bg-hover: #ffffff;
   --sw-table-head-bg: rgba(247, 249, 250, 0.78);
   --sw-table-row-hover: rgba(245, 250, 251, 0.9);
@@ -23,18 +25,20 @@
   --sw-status-danger-bg: #fff1ed;
   --sw-status-muted-bg: #eef2f4;
   --sw-status-muted-text: #64727c;
-  --sw-border: #dfe7eb;
-  --sw-border-soft: #edf2f4;
-  --sw-text: #17212b;
-  --sw-muted: #657783;
+  --sw-border: #d8e4e6;
+  --sw-border-soft: #ecf2f2;
+  --sw-text: #16232a;
+  --sw-muted: #627780;
   --sw-faint: #8a9aa4;
-  --sw-accent: #16708f;
-  --sw-accent-soft: #e7f4f7;
-  --sw-success: #28734d;
-  --sw-warning: #a35f19;
+  --sw-accent: #176f84;
+  --sw-accent-soft: #e4f3f2;
+  --sw-success: #2f7351;
+  --sw-warning: #9a6424;
   --sw-danger: #a33d35;
-  --sw-shadow: 0 18px 55px rgba(32, 53, 66, 0.08);
-  --sw-shadow-soft: 0 14px 36px rgba(32, 53, 66, 0.05);
+  --sw-focus-ring: 0 0 0 3px rgba(23, 111, 132, 0.14);
+  --sw-motion-standard: 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  --sw-shadow: 0 20px 58px rgba(28, 48, 58, 0.09);
+  --sw-shadow-soft: 0 12px 34px rgba(28, 48, 58, 0.055);
   color: var(--sw-text);
   background: var(--sw-bg);
   font-family:
@@ -52,9 +56,11 @@
   --sw-surface: rgba(12, 19, 27, 0.9);
   --sw-surface-solid: #0d151e;
   --sw-surface-muted: #111c27;
+  --sw-surface-glass: color-mix(in srgb, var(--sw-surface-solid) 78%, transparent);
   --sw-page-bg:
-    radial-gradient(circle at 82% 12%, rgba(106, 190, 216, 0.09), transparent 30%),
+    linear-gradient(90deg, var(--sw-grid-line) 1px, transparent 1px),
     linear-gradient(180deg, #05080d 0%, var(--sw-bg) 48%, var(--sw-bg-soft) 100%);
+  --sw-page-bg-size: 32px 32px, auto;
   --sw-grid-line: rgba(238, 245, 248, 0.045);
   --sw-grid-line-soft: rgba(238, 245, 248, 0.032);
   --sw-panel-bg: rgba(13, 21, 30, 0.84);
@@ -78,6 +84,8 @@
   --sw-success: #6fd09a;
   --sw-warning: #e7ad62;
   --sw-danger: #e17b70;
+  --sw-focus-ring: 0 0 0 3px rgba(106, 190, 216, 0.18);
+  --sw-motion-standard: 240ms cubic-bezier(0.16, 1, 0.3, 1);
   --sw-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
   --sw-shadow-soft: 0 16px 44px rgba(0, 0, 0, 0.28);
   color-scheme: dark;
@@ -92,6 +100,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: var(--sw-page-bg);
+  background-size: var(--sw-page-bg-size);
   color: var(--sw-text);
 }
 
@@ -121,14 +130,19 @@ a {
 .n-base-selection,
 .n-switch {
   transition:
-    border-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 240ms cubic-bezier(0.16, 1, 0.3, 1);
+    border-color var(--sw-motion-standard),
+    box-shadow var(--sw-motion-standard),
+    transform var(--sw-motion-standard),
+    background-color var(--sw-motion-standard);
 }
 
 .n-button:active {
   transform: translateY(1px) scale(0.99);
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 0;
+  box-shadow: var(--sw-focus-ring);
 }
 
 .n-modal .n-card {

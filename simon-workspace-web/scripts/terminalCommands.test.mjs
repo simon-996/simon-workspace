@@ -43,6 +43,10 @@ describe('terminal commands', () => {
   it('keeps course management behind course permission', () => {
     expect(terminalCommands).toContainEqual(expect.objectContaining({
       command: 'courses',
+      to: '/courses',
+    }))
+    expect(terminalCommands).toContainEqual(expect.objectContaining({
+      command: 'courses-admin',
       permission: 'course:manage',
     }))
   })

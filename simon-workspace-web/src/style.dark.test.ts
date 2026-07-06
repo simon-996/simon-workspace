@@ -6,6 +6,7 @@ import appSource from './App.vue?raw'
 import accountSource from './components/AccountCenterModal.vue?raw'
 import headerSource from './components/AppHeader.vue?raw'
 import languageSource from './components/LanguageSwitcher.vue?raw'
+import terminalSource from './components/TerminalPanel.vue?raw'
 import homeSource from './views/HomeView.vue?raw'
 import loginSource from './views/LoginView.vue?raw'
 import workspaceSource from './views/WorkspaceView.vue?raw'
@@ -31,11 +32,22 @@ describe('global dark theme styles', () => {
 
   it('keeps primary shells and shared controls on theme variables', () => {
     expect(appSource).toContain('computed<GlobalThemeOverrides>')
-    expect(appSource).toContain("theme.isDark ? '#f2f7fa' : '#17212b'")
+    expect(appSource).toContain("theme.isDark ? '#f2f7fa' : '#16232a'")
     expect(headerSource).toContain('var(--sw-panel-bg-hover)')
-    expect(languageSource).toContain('background: var(--sw-panel-bg)')
+    expect(languageSource).toContain('background: var(--sw-surface-glass)')
     expect(accountSource).toContain('background: var(--sw-surface-muted)')
     expect(homeSource).toContain('background: var(--sw-page-bg)')
     expect(workspaceSource).toContain('background: var(--sw-page-bg)')
+  })
+
+  it('keeps the polished UI compact and token driven', () => {
+    expect(styles).toContain('--sw-surface-glass:')
+    expect(styles).toContain('--sw-focus-ring:')
+    expect(headerSource).toContain('var(--sw-surface-glass)')
+    expect(languageSource).toContain('var(--sw-surface-glass)')
+    expect(terminalSource).toContain('--terminal-bg:')
+    expect(homeSource).not.toContain('intro-lead')
+    expect(homeSource).not.toContain("t('home.intro.body')")
+    expect(homeSource).not.toContain("t('home.intro.philosophy')")
   })
 })

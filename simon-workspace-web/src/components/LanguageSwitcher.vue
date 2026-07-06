@@ -55,7 +55,7 @@ function selectLanguage(key: string | number) {
   --n-border-radius: 8px !important;
   min-width: 0;
   border-color: var(--sw-border) !important;
-  background: var(--sw-panel-bg) !important;
+  background: var(--sw-surface-glass) !important;
   color: var(--sw-muted) !important;
   font-weight: 700;
   backdrop-filter: blur(16px);
