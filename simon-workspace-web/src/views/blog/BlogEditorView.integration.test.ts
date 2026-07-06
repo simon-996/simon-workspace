@@ -31,14 +31,12 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain("t('blog.editor.uploadingImage')")
   })
 
-  it('keeps the md editor crop modal stable while image uploads', () => {
+  it('hides the md editor crop modal immediately while image uploads', () => {
     expect(editorSource).toContain('blogImageUploadingClass')
-    expect(editorSource).toContain('uploadingImagePreview')
-    expect(editorSource).toContain('captureBlogImageUploadPreview')
-    expect(editorSource).toContain('blog-image-crop-upload-overlay')
-    expect(editorSource).toContain('blog-image-crop-upload-card')
     expect(editorSource).toContain('body.blog-image-uploading .md-editor-modal-clip')
+    expect(editorSource).toContain('display: none !important')
     expect(editorSource).toContain('document.body.classList.toggle')
-    expect(editorSource).not.toContain('body.blog-image-uploading .md-editor-modal-clip .md-editor-clip) {\n  min-height')
+    expect(editorSource).not.toContain('uploadingImagePreview')
+    expect(editorSource).not.toContain('blog-image-crop-upload-card')
   })
 })

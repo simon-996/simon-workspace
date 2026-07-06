@@ -39,7 +39,6 @@ const tags = ref<string[]>([])
 const content = ref('')
 const saving = ref(false)
 const uploadingImages = ref(false)
-const uploadingImagePreview = ref('')
 const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
@@ -50,7 +49,6 @@ const categoryOptions = computed(() => categories.value.map((item) => ({ label: 
 const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 
 onMounted(async () => {
-  document.addEventListener('click', captureBlogImageUploadPreview, true)
   const ok = await auth.restore()
   if (!ok || !auth.hasPermission('blog:post:create')) {
     await router.push('/login?redirect=/blog/new')
@@ -64,7 +62,6 @@ watch(uploadingImages, (uploading) => {
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', captureBlogImageUploadPreview, true)
   document.body.classList.remove(blogImageUploadingClass)
 })
 
@@ -127,18 +124,6 @@ function importMarkdown(file: File) {
   reader.readAsText(file)
 }
 
-function captureBlogImageUploadPreview(event: MouseEvent) {
-  const target = event.target instanceof Element ? event.target : null
-  const uploadButton = target?.closest('.md-editor-modal-clip .md-editor-btn')
-  if (!uploadButton) {
-    return
-  }
-
-  const modal = uploadButton.closest('.md-editor-modal-clip')
-  const image = modal?.querySelector<HTMLImageElement>('.md-editor-clip-cropper img[src]')
-  uploadingImagePreview.value = image?.src || ''
-}
-
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   uploadingImages.value = true
   try {
@@ -152,7 +137,6 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     message.error(error instanceof Error ? error.message : t('blog.messages.imageUploadFailed'))
   } finally {
     uploadingImages.value = false
-    uploadingImagePreview.value = ''
   }
 }
 </script>
@@ -236,21 +220,6 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
         </Transition>
       </div>
     </section>
-
-    <Teleport to="body">
-      <Transition name="uploading-fade">
-        <div v-if="uploadingImages" class="blog-image-crop-upload-overlay" role="status" aria-live="polite">
-          <div class="blog-image-crop-upload-card">
-            <img v-if="uploadingImagePreview" :src="uploadingImagePreview" alt="">
-            <div v-else class="blog-image-crop-upload-placeholder" />
-            <div>
-              <n-spin size="small" />
-              <span>{{ t('blog.editor.uploadingImage') }}</span>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
 
     <n-modal
       v-model:show="categoryModal"
@@ -362,66 +331,8 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   backdrop-filter: blur(14px);
 }
 
-.blog-image-crop-upload-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10020;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-}
-
-.blog-image-crop-upload-card {
-  display: grid;
-  justify-items: center;
-  gap: 12px;
-  width: min(260px, calc(100vw - 56px));
-  border: 1px solid var(--sw-border);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--sw-surface-solid) 90%, transparent);
-  box-shadow: var(--sw-shadow-soft);
-  color: var(--sw-text);
-  padding: 14px;
-  backdrop-filter: blur(14px);
-}
-
-.blog-image-crop-upload-card img,
-.blog-image-crop-upload-placeholder {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  border: 1px solid var(--sw-border);
-  border-radius: 6px;
-  background: var(--sw-surface-muted);
-  object-fit: contain;
-}
-
-.blog-image-crop-upload-placeholder {
-  background:
-    linear-gradient(90deg, transparent, color-mix(in srgb, var(--sw-surface-solid) 42%, transparent), transparent),
-    var(--sw-surface-muted);
-  background-size: 180% 100%;
-  animation: blog-crop-uploading 1.2s ease-in-out infinite;
-}
-
-.blog-image-crop-upload-card div:last-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-modal-body) {
-  position: relative;
-}
-
-:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-clip) {
-  pointer-events: none;
-}
-
-:global(body.blog-image-uploading .md-editor-modal-clip .md-editor-modal-func) {
-  pointer-events: none;
-  opacity: 0.44;
+:global(body.blog-image-uploading .md-editor-modal-clip) {
+  display: none !important;
 }
 
 .uploading-fade-enter-active,
@@ -435,16 +346,6 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
 .uploading-fade-leave-to {
   opacity: 0;
   transform: translate3d(0, -4px, 0);
-}
-
-@keyframes blog-crop-uploading {
-  from {
-    background-position: 120% 0;
-  }
-
-  to {
-    background-position: -120% 0;
-  }
 }
 
 .modal-form {
@@ -481,9 +382,5 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     grid-template-columns: 1fr;
   }
 
-  .blog-image-crop-upload-overlay {
-    align-items: start;
-    padding-top: min(42vh, 260px);
-  }
 }
 </style>
