@@ -60,8 +60,6 @@ function openPost(post: BlogPostSummary) {
     <section class="blog-hero">
       <div>
         <span>{{ t('blog.list.kicker') }}</span>
-        <h1>{{ t('blog.list.title') }}</h1>
-        <p>{{ t('blog.list.subtitle') }}</p>
       </div>
       <n-button v-if="canWrite" type="primary" @click="router.push('/blog/new')">
         <template #icon>
@@ -126,7 +124,6 @@ function openPost(post: BlogPostSummary) {
       </section>
       <section v-else class="empty-blog">
           <strong>{{ t('blog.list.emptyTitle') }}</strong>
-          <span>{{ t('blog.list.emptyText') }}</span>
       </section>
     </n-spin>
     </section>
@@ -159,21 +156,6 @@ function openPost(post: BlogPostSummary) {
   font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
-}
-
-.blog-hero h1 {
-  max-width: 560px;
-  margin: 6px 0 0;
-  font-size: clamp(28px, 4vw, 44px);
-  line-height: 1.04;
-}
-
-.blog-hero p {
-  max-width: 520px;
-  margin: 10px 0 0;
-  color: var(--sw-muted);
-  font-size: 14px;
-  line-height: 1.7;
 }
 
 .blog-layout {

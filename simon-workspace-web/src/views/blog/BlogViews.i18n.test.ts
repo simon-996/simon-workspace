@@ -31,4 +31,10 @@ describe('blog views i18n', () => {
       expect(combined).not.toContain(text)
     }
   })
+
+  it('keeps the blog index visually minimal', () => {
+    expect(listSource).not.toContain("t('blog.list.title')")
+    expect(listSource).not.toContain("t('blog.list.subtitle')")
+    expect(listSource).not.toContain("t('blog.list.emptyText')")
+  })
 })
