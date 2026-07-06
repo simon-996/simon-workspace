@@ -120,6 +120,7 @@ export default {
       tagsPlaceholder: 'Tags',
       newCategory: 'New category',
       categoryNamePlaceholder: 'Category name',
+      uploadingImage: 'Uploading image...',
     },
     messages: {
       loadFailed: 'Failed to load blog',

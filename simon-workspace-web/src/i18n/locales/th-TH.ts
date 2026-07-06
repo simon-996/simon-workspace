@@ -120,6 +120,7 @@ export default {
       tagsPlaceholder: 'แท็ก',
       newCategory: 'หมวดหมู่ใหม่',
       categoryNamePlaceholder: 'ชื่อหมวดหมู่',
+      uploadingImage: 'กำลังอัปโหลดรูปภาพ...',
     },
     messages: {
       loadFailed: 'โหลดบล็อกไม่สำเร็จ',

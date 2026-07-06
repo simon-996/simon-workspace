@@ -120,6 +120,7 @@ export default {
       tagsPlaceholder: '标签',
       newCategory: '新建分类',
       categoryNamePlaceholder: '分类名称',
+      uploadingImage: '图片上传中...',
     },
     messages: {
       loadFailed: '博客加载失败',

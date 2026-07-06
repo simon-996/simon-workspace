@@ -10,6 +10,7 @@ import {
   NInput,
   NModal,
   NSelect,
+  NSpin,
   useMessage,
 } from 'naive-ui'
 import { DeviceFloppy, Plus, Upload } from '@vicons/tabler'
@@ -37,6 +38,7 @@ const categoryId = ref<string | null>(null)
 const tags = ref<string[]>([])
 const content = ref('')
 const saving = ref(false)
+const uploadingImages = ref(false)
 const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
@@ -114,6 +116,7 @@ function importMarkdown(file: File) {
 }
 
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
+  uploadingImages.value = true
   try {
     const urls: string[] = []
     for (const file of files) {
@@ -123,6 +126,8 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     callback(urls)
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.imageUploadFailed'))
+  } finally {
+    uploadingImages.value = false
   }
 }
 </script>
@@ -189,14 +194,22 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
         />
       </section>
 
-      <MdEditor
-        v-model="content"
-        class="markdown-editor"
-        :theme="theme.isDark ? 'dark' : 'light'"
-        :language="editorLanguage"
-        preview-theme="github"
-        :on-upload-img="onUploadImg"
-      />
+      <div class="editor-stage">
+        <MdEditor
+          v-model="content"
+          class="markdown-editor"
+          :theme="theme.isDark ? 'dark' : 'light'"
+          :language="editorLanguage"
+          preview-theme="github"
+          :on-upload-img="onUploadImg"
+        />
+        <Transition name="uploading-fade">
+          <div v-if="uploadingImages" class="uploading-overlay" role="status" aria-live="polite">
+            <n-spin size="small" />
+            <span>{{ t('blog.editor.uploadingImage') }}</span>
+          </div>
+        </Transition>
+      </div>
     </section>
 
     <n-modal
@@ -279,10 +292,47 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   margin-bottom: 12px;
 }
 
+.editor-stage {
+  position: relative;
+}
+
 .markdown-editor {
   min-height: 620px;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.uploading-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sw-surface-solid) 88%, transparent);
+  box-shadow: var(--sw-shadow-soft);
+  color: var(--sw-text);
+  padding: 0 12px;
+  font-size: 12px;
+  font-weight: 800;
+  backdrop-filter: blur(14px);
+}
+
+.uploading-fade-enter-active,
+.uploading-fade-leave-active {
+  transition:
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.uploading-fade-enter-from,
+.uploading-fade-leave-to {
+  opacity: 0;
+  transform: translate3d(0, -4px, 0);
 }
 
 .modal-form {

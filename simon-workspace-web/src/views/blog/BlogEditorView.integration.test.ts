@@ -24,4 +24,10 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain('.editor-actions {\n    grid-template-columns: repeat(2, minmax(0, 1fr));')
     expect(editorSource).toContain('.import-button {\n    grid-column: 1 / -1;')
   })
+
+  it('shows a soft waiting state while images upload', () => {
+    expect(editorSource).toContain('uploadingImages')
+    expect(editorSource).toContain('uploading-overlay')
+    expect(editorSource).toContain("t('blog.editor.uploadingImage')")
+  })
 })
