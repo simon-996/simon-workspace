@@ -43,6 +43,12 @@ public class BlogController {
         return ApiResponse.ok(blogService.categories());
     }
 
+    @GetMapping("/manage/categories")
+    @SaCheckPermission("blog:category:manage")
+    public ApiResponse<List<BlogCategoryResponse>> manageCategories() {
+        return ApiResponse.ok(blogService.manageCategories());
+    }
+
     @PostMapping("/categories")
     @SaCheckPermission("blog:category:manage")
     public ApiResponse<BlogCategoryResponse> createCategory(@Valid @RequestBody BlogCategoryRequest request) {

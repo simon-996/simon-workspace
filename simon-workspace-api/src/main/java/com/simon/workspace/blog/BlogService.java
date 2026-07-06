@@ -34,21 +34,29 @@ public class BlogService {
 
     public List<BlogCategoryResponse> categories() {
         return jdbcTemplate.query("""
-                        SELECT *
-                        FROM blog_category
-                        WHERE deleted = 0 AND status = 'ACTIVE'
-                        ORDER BY sort_order ASC, id ASC
+                        SELECT c.*,
+                               COUNT(p.id) AS post_count
+                        FROM blog_category c
+                        LEFT JOIN blog_post p ON p.category_id = c.id AND p.deleted = 0
+                        WHERE c.deleted = 0 AND c.status = 'ACTIVE'
+                        GROUP BY c.id
+                        ORDER BY c.sort_order ASC, c.id ASC
                         """,
-                (rs, rowNum) -> new BlogCategoryResponse(
-                        String.valueOf(rs.getLong("id")),
-                        rs.getString("name"),
-                        rs.getString("slug"),
-                        rs.getString("description"),
-                        rs.getInt("sort_order"),
-                        rs.getString("status"),
-                        rs.getTimestamp("created_time").toLocalDateTime(),
-                        rs.getTimestamp("updated_time").toLocalDateTime()
-                )
+                (rs, rowNum) -> categoryFromRow(rs)
+        );
+    }
+
+    public List<BlogCategoryResponse> manageCategories() {
+        return jdbcTemplate.query("""
+                        SELECT c.*,
+                               COUNT(p.id) AS post_count
+                        FROM blog_category c
+                        LEFT JOIN blog_post p ON p.category_id = c.id AND p.deleted = 0
+                        WHERE c.deleted = 0
+                        GROUP BY c.id
+                        ORDER BY c.sort_order ASC, c.id ASC
+                        """,
+                (rs, rowNum) -> categoryFromRow(rs)
         );
     }
 
@@ -97,7 +105,18 @@ public class BlogService {
 
     @Transactional
     public void deleteCategory(long id) {
-        jdbcTemplate.update("UPDATE blog_category SET deleted = 1 WHERE id = ? AND deleted = 0", id);
+        Integer postCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM blog_post WHERE category_id = ? AND deleted = 0",
+                Integer.class,
+                id
+        );
+        if (postCount != null && postCount > 0) {
+            throw new IllegalArgumentException("分类下仍有文章，不能删除");
+        }
+        int affected = jdbcTemplate.update("UPDATE blog_category SET deleted = 1 WHERE id = ? AND deleted = 0", id);
+        if (affected == 0) {
+            throw new IllegalArgumentException("分类不存在");
+        }
     }
 
     public List<BlogTagResponse> tags(String keyword) {
@@ -177,23 +196,31 @@ public class BlogService {
 
     protected BlogCategoryResponse category(long id) {
         return jdbcTemplate.query("""
-                        SELECT *
-                        FROM blog_category
-                        WHERE id = ? AND deleted = 0
+                        SELECT c.*,
+                               COUNT(p.id) AS post_count
+                        FROM blog_category c
+                        LEFT JOIN blog_post p ON p.category_id = c.id AND p.deleted = 0
+                        WHERE c.id = ? AND c.deleted = 0
+                        GROUP BY c.id
                         LIMIT 1
                         """,
-                (rs, rowNum) -> new BlogCategoryResponse(
-                        String.valueOf(rs.getLong("id")),
-                        rs.getString("name"),
-                        rs.getString("slug"),
-                        rs.getString("description"),
-                        rs.getInt("sort_order"),
-                        rs.getString("status"),
-                        rs.getTimestamp("created_time").toLocalDateTime(),
-                        rs.getTimestamp("updated_time").toLocalDateTime()
-                ),
+                (rs, rowNum) -> categoryFromRow(rs),
                 id
         ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("分类不存在"));
+    }
+
+    protected BlogCategoryResponse categoryFromRow(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return new BlogCategoryResponse(
+                String.valueOf(rs.getLong("id")),
+                rs.getString("name"),
+                rs.getString("slug"),
+                rs.getString("description"),
+                rs.getInt("sort_order"),
+                rs.getString("status"),
+                rs.getLong("post_count"),
+                rs.getTimestamp("created_time").toLocalDateTime(),
+                rs.getTimestamp("updated_time").toLocalDateTime()
+        );
     }
 
     protected String uniqueSlug(String table, Long id, String slug, String fallback) {
@@ -254,6 +281,7 @@ public class BlogService {
                 rs.getString("category_description"),
                 rs.getInt("category_sort_order"),
                 rs.getString("category_status"),
+                0L,
                 created == null ? null : created.toLocalDateTime(),
                 updated == null ? null : updated.toLocalDateTime()
         );

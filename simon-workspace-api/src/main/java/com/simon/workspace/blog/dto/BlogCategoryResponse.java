@@ -9,6 +9,7 @@ public record BlogCategoryResponse(
         String description,
         Integer sortOrder,
         String status,
+        Long postCount,
         LocalDateTime createdTime,
         LocalDateTime updatedTime
 ) {

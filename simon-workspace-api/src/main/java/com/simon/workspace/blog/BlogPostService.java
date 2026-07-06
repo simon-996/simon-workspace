@@ -35,6 +35,7 @@ public class BlogPostService extends BlogService {
         String title = required(request.title(), "文章标题不能为空");
         String content = required(request.contentMd(), "文章内容不能为空");
         String status = normalizeStatus(request.status(), "DRAFT", List.of("DRAFT", "PUBLISHED"));
+        validatePublishCategory(request.categoryId(), status);
         String slug = id == null ? uniqueSlug("blog_post", null, request.slug(), title) : uniqueSlug("blog_post", id, request.slug(), title);
         Long postId = id == null
                 ? insertPost(user.id(), title, request.summary(), slug, request.categoryId(), content, status)
@@ -98,6 +99,20 @@ public class BlogPostService extends BlogService {
             return statement;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
+    }
+
+    private void validatePublishCategory(Long categoryId, String status) {
+        if (categoryId == null || !"PUBLISHED".equals(status)) {
+            return;
+        }
+        Integer activeCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM blog_category WHERE id = ? AND status = 'ACTIVE' AND deleted = 0",
+                Integer.class,
+                categoryId
+        );
+        if (activeCount == null || activeCount == 0) {
+            throw new IllegalArgumentException("停用分类不能发布文章");
+        }
     }
 
     private long updatePost(
