@@ -121,6 +121,7 @@ export default {
       newCategory: 'หมวดหมู่ใหม่',
       categoryNamePlaceholder: 'ชื่อหมวดหมู่',
       uploadingImage: 'กำลังอัปโหลดรูปภาพ...',
+      processingImage: 'กำลังประมวลผลรูปภาพ...',
     },
     messages: {
       loadFailed: 'โหลดบล็อกไม่สำเร็จ',

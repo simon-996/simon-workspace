@@ -39,6 +39,7 @@ const tags = ref<string[]>([])
 const content = ref('')
 const saving = ref(false)
 const uploadingImages = ref(false)
+const uploadProgress = ref(0)
 const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
@@ -126,17 +127,22 @@ function importMarkdown(file: File) {
 
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   uploadingImages.value = true
+  uploadProgress.value = 0
   try {
     const urls: string[] = []
-    for (const file of files) {
-      const resource = await uploadBlogEditorImage(file, blogEditorSourceType)
+    for (const [index, file] of files.entries()) {
+      const resource = await uploadBlogEditorImage(file, blogEditorSourceType, (progress) => {
+        uploadProgress.value = Math.round(((index + (progress / 100)) / files.length) * 100)
+      })
       urls.push(resource.publicUrl || `/api/files/${resource.id}/download`)
     }
+    uploadProgress.value = 100
     callback(urls)
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.imageUploadFailed'))
   } finally {
     uploadingImages.value = false
+    uploadProgress.value = 0
   }
 }
 </script>
@@ -214,8 +220,13 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
         />
         <Transition name="uploading-fade">
           <div v-if="uploadingImages" class="uploading-overlay" role="status" aria-live="polite">
-            <n-spin size="small" />
-            <span>{{ t('blog.editor.uploadingImage') }}</span>
+            <div class="uploading-copy">
+              <n-spin size="small" />
+              <span>{{ uploadProgress >= 100 ? t('blog.editor.processingImage') : t('blog.editor.uploadingImage') }}</span>
+            </div>
+            <div class="upload-progress-track" aria-hidden="true">
+              <span class="upload-progress-bar" :style="{ width: `${uploadProgress}%` }" />
+            </div>
           </div>
         </Transition>
       </div>
@@ -316,19 +327,41 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   top: 12px;
   right: 12px;
   z-index: 5;
-  display: inline-flex;
-  align-items: center;
+  display: grid;
   gap: 8px;
-  min-height: 36px;
+  width: 190px;
+  min-height: 52px;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
   background: color-mix(in srgb, var(--sw-surface-solid) 88%, transparent);
   box-shadow: var(--sw-shadow-soft);
   color: var(--sw-text);
-  padding: 0 12px;
+  padding: 10px 12px;
   font-size: 12px;
   font-weight: 800;
   backdrop-filter: blur(14px);
+}
+
+.uploading-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.upload-progress-track {
+  overflow: hidden;
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sw-border) 58%, transparent);
+}
+
+.upload-progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sw-accent);
+  transition: width 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :global(body.blog-image-uploading .md-editor-modal-clip) {

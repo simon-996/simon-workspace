@@ -121,6 +121,7 @@ export default {
       newCategory: 'New category',
       categoryNamePlaceholder: 'Category name',
       uploadingImage: 'Uploading image...',
+      processingImage: 'Processing image...',
     },
     messages: {
       loadFailed: 'Failed to load blog',

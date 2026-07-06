@@ -29,6 +29,9 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain('uploadingImages')
     expect(editorSource).toContain('uploading-overlay')
     expect(editorSource).toContain("t('blog.editor.uploadingImage')")
+    expect(editorSource).toContain('uploadProgress')
+    expect(editorSource).toContain('upload-progress-bar')
+    expect(editorSource).toContain("t('blog.editor.processingImage')")
   })
 
   it('hides the md editor crop modal immediately while image uploads', () => {

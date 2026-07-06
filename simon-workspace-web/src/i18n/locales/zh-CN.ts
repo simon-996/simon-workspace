@@ -121,6 +121,7 @@ export default {
       newCategory: '新建分类',
       categoryNamePlaceholder: '分类名称',
       uploadingImage: '图片上传中...',
+      processingImage: '图片处理中...',
     },
     messages: {
       loadFailed: '博客加载失败',

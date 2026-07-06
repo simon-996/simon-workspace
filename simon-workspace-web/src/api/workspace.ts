@@ -476,13 +476,21 @@ export async function uploadAvatarResource(file: File) {
   return unwrapApiResponse(response.data)
 }
 
-export async function uploadBlogEditorImage(file: File, sourceType = 'BLOG_EDITOR') {
+export async function uploadBlogEditorImage(
+  file: File,
+  sourceType = 'BLOG_EDITOR',
+  onProgress?: (progress: number) => void,
+) {
   const formData = new FormData()
   formData.append('file', file)
   const response = await http.post<ApiResponse<FileResource>>('/files', formData, {
     params: {
       sourceType,
       visibility: 'PUBLIC',
+    },
+    onUploadProgress: (event) => {
+      if (!event.total) return
+      onProgress?.(Math.min(100, Math.round((event.loaded / event.total) * 100)))
     },
   })
   return unwrapApiResponse(response.data)
