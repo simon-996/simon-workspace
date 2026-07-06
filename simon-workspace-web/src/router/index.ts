@@ -3,6 +3,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import WorkspaceView from '../views/WorkspaceView.vue'
+import BlogDetailView from '../views/blog/BlogDetailView.vue'
+import BlogEditorView from '../views/blog/BlogEditorView.vue'
+import BlogListView from '../views/blog/BlogListView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
 import FileCenterView from '../views/workspace/FileCenterView.vue'
@@ -127,6 +130,25 @@ export const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/blog',
+      name: 'blog',
+      component: BlogListView,
+    },
+    {
+      path: '/blog/new',
+      name: 'blog-new',
+      component: BlogEditorView,
+      meta: {
+        requiresAuth: true,
+        permission: 'blog:post:create',
+      },
+    },
+    {
+      path: '/blog/:id',
+      name: 'blog-detail',
+      component: BlogDetailView,
     },
   ],
 })

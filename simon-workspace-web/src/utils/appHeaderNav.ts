@@ -26,7 +26,7 @@ export function buildHeaderNavItems(input: BuildHeaderNavItemsInput): HeaderNavI
   const path = input.path
   const hash = input.hash ?? ''
   const isHome = path === '/' && hash === ''
-  const isBlog = path === '/' && hash === '#blog'
+  const isBlog = path === '/blog' || path.startsWith('/blog/')
   const isProjects = path === '/' && hash === '#projects'
   const isLogin = input.name === 'login' || path === '/login'
   const isWorkspace = path === '/workspace' || path.startsWith('/workspace/')
@@ -42,7 +42,7 @@ export function buildHeaderNavItems(input: BuildHeaderNavItemsInput): HeaderNavI
     },
     {
       key: 'blog',
-      to: '/#blog',
+      to: '/blog',
       labelKey: 'home.blog',
       active: isBlog,
       disabled: isBlog,

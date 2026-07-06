@@ -29,7 +29,7 @@ export interface TerminalCommandResult {
 export const terminalCommands: TerminalCommand[] = [
   { command: 'help', descriptionKey: 'terminal.commands.help' },
   { command: 'about', descriptionKey: 'terminal.commands.about', to: '#about' },
-  { command: 'blog', descriptionKey: 'terminal.commands.blog', to: '#blog' },
+  { command: 'blog', descriptionKey: 'terminal.commands.blog', to: '/blog' },
   { command: 'projects', descriptionKey: 'terminal.commands.projects', to: '#projects' },
   { command: 'login', descriptionKey: 'terminal.commands.login', to: '/login' },
   { command: 'logout', descriptionKey: 'terminal.commands.logout' },

@@ -188,6 +188,62 @@ export interface FileResource {
   updatedTime?: string
 }
 
+export interface BlogCategory {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  sortOrder: number
+  status: string
+}
+
+export interface BlogTag {
+  id: string
+  name: string
+  slug: string
+  usageCount: number
+}
+
+export interface BlogPostSummary {
+  id: string
+  title: string
+  summary?: string | null
+  slug: string
+  status: string
+  authorName: string
+  category?: BlogCategory | null
+  tags: BlogTag[]
+  viewCount: number
+  commentCount: number
+  publishedTime?: string | null
+  updatedTime?: string | null
+}
+
+export interface BlogPostDetail extends BlogPostSummary {
+  contentMd: string
+  createdTime?: string | null
+}
+
+export interface BlogPostPayload {
+  title: string
+  summary?: string | null
+  slug?: string | null
+  categoryId?: number | string | null
+  tags: string[]
+  contentMd: string
+  status: 'DRAFT' | 'PUBLISHED'
+}
+
+export interface BlogComment {
+  id: string
+  postId: string
+  parentId?: string | null
+  authorName: string
+  content: string
+  status: string
+  createdTime?: string | null
+}
+
 export interface StorageProviderState {
   providerCode: string
   providerType: string
@@ -419,6 +475,18 @@ export async function uploadAvatarResource(file: File) {
   return unwrapApiResponse(response.data)
 }
 
+export async function uploadBlogEditorImage(file: File, sourceType = 'BLOG_EDITOR') {
+  const formData = new FormData()
+  formData.append('file', file)
+  const response = await http.post<ApiResponse<FileResource>>('/files', formData, {
+    params: {
+      sourceType,
+      visibility: 'PUBLIC',
+    },
+  })
+  return unwrapApiResponse(response.data)
+}
+
 export async function deleteFileResource(id: string) {
   const response = await http.delete<ApiResponse<null>>(`/files/${id}`)
   return unwrapApiResponse(response.data)
@@ -488,5 +556,69 @@ export async function fetchSecurityRoles() {
 
 export async function updateSecurityUserRoles(id: string, payload: UpdateUserRolesPayload) {
   const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/roles`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchBlogCategories() {
+  const response = await http.get<ApiResponse<BlogCategory[]>>('/blog/categories')
+  return unwrapApiResponse(response.data)
+}
+
+export async function createBlogCategory(payload: {
+  name: string
+  slug?: string | null
+  description?: string | null
+  sortOrder?: number | null
+  status?: string | null
+}) {
+  const response = await http.post<ApiResponse<BlogCategory>>('/blog/categories', payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchBlogTags(keyword?: string) {
+  const response = await http.get<ApiResponse<BlogTag[]>>('/blog/tags', {
+    params: {
+      keyword: keyword || undefined,
+    },
+  })
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchBlogPosts(params?: { keyword?: string; categoryId?: string | number | null; tag?: string }) {
+  const response = await http.get<ApiResponse<BlogPostSummary[]>>('/blog/posts', {
+    params: {
+      keyword: params?.keyword || undefined,
+      categoryId: params?.categoryId || undefined,
+      tag: params?.tag || undefined,
+    },
+  })
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchBlogPostDetail(id: string) {
+  const response = await http.get<ApiResponse<BlogPostDetail>>(`/blog/posts/${id}`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function createBlogPost(payload: BlogPostPayload) {
+  const response = await http.post<ApiResponse<BlogPostDetail>>('/blog/posts', payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function updateBlogPost(id: string, payload: BlogPostPayload) {
+  const response = await http.put<ApiResponse<BlogPostDetail>>(`/blog/posts/${id}`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchBlogComments(id: string) {
+  const response = await http.get<ApiResponse<BlogComment[]>>(`/blog/posts/${id}/comments`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function createBlogComment(id: string, content: string, parentId?: string | null) {
+  const response = await http.post<ApiResponse<BlogComment>>(`/blog/posts/${id}/comments`, {
+    content,
+    parentId: parentId || null,
+  })
   return unwrapApiResponse(response.data)
 }

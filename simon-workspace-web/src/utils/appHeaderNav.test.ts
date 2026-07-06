@@ -68,4 +68,24 @@ describe('buildHeaderNavItems', () => {
       disabled: true,
     })
   })
+
+  it('treats blog as a real top-level page instead of a home anchor', () => {
+    const items = buildHeaderNavItems({
+      path: '/blog',
+      name: 'blog',
+      hash: '',
+      authenticated: true,
+      site: {
+        blogVisible: true,
+        projectsVisible: false,
+        workspaceEntryVisible: false,
+      },
+    })
+
+    expect(items.find((item) => item.key === 'blog')).toMatchObject({
+      to: '/blog',
+      active: true,
+      disabled: true,
+    })
+  })
 })
