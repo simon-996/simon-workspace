@@ -13,6 +13,8 @@ describe('blog views i18n', () => {
       expect(locale.blog.list.title).toBeTruthy()
       expect(locale.blog.detail.comments).toBeTruthy()
       expect(locale.blog.editor.publish).toBeTruthy()
+      expect(locale.blog.editor.backToBlog).toBeTruthy()
+      expect(locale.blog.editor.leaveConfirm).toBeTruthy()
       expect(locale.blog.messages.loadFailed).toBeTruthy()
     }
   })

@@ -11,8 +11,16 @@ describe('BlogEditorView', () => {
 
   it('uses i18n keys for editor operation text', () => {
     expect(editorSource).toContain("t('blog.editor.publish')")
+    expect(editorSource).toContain("t('blog.editor.backToBlog')")
     expect(editorSource).not.toContain('Write in Markdown.')
     expect(editorSource).not.toContain('Title and content are required')
+  })
+
+  it('keeps writing inside the blog flow and protects unsaved edits', () => {
+    expect(editorSource).toContain('onBeforeRouteLeave')
+    expect(editorSource).toContain('hasUnsavedChanges')
+    expect(editorSource).toContain('backToBlog')
+    expect(editorSource).toContain("t('blog.editor.leaveConfirm')")
   })
 
   it('shows an error when editor image upload fails', () => {

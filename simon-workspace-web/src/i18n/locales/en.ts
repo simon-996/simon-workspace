@@ -111,6 +111,8 @@ export default {
     editor: {
       kicker: 'New Post',
       title: 'Write in Markdown',
+      backToBlog: 'Blog',
+      leaveConfirm: 'Discard this draft and leave?',
       importMd: 'Import',
       draft: 'Draft',
       publish: 'Publish',

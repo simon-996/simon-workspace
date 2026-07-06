@@ -111,6 +111,8 @@ export default {
     editor: {
       kicker: '新文章',
       title: '使用 Markdown 写作',
+      backToBlog: '博客',
+      leaveConfirm: '离开后未保存的内容会丢失，确定返回吗？',
       importMd: '导入',
       draft: '草稿',
       publish: '发布',

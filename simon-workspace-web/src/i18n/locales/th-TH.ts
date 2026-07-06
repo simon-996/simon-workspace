@@ -111,6 +111,8 @@ export default {
     editor: {
       kicker: 'บทความใหม่',
       title: 'เขียนด้วย Markdown',
+      backToBlog: 'บล็อก',
+      leaveConfirm: 'ออกจากหน้านี้และทิ้งฉบับร่างที่ยังไม่ได้บันทึก?',
       importMd: 'นำเข้า',
       draft: 'ฉบับร่าง',
       publish: 'เผยแพร่',

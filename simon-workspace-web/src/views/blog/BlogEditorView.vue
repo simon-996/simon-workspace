@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import {
@@ -13,7 +13,7 @@ import {
   NSpin,
   useMessage,
 } from 'naive-ui'
-import { DeviceFloppy, Plus, Upload } from '@vicons/tabler'
+import { ArrowLeft, DeviceFloppy, Plus, Upload } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
 import {
@@ -44,10 +44,21 @@ const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
 const blogImageUploadingClass = 'blog-image-uploading'
+let bypassUnsavedGuard = false
 
 const canManageCategory = computed(() => auth.hasPermission('blog:category:manage'))
 const categoryOptions = computed(() => categories.value.map((item) => ({ label: item.name, value: item.id })))
 const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
+const hasUnsavedChanges = computed(() => {
+  return Boolean(
+    title.value.trim()
+    || summary.value.trim()
+    || categoryId.value
+    || tags.value.length
+    || content.value.trim()
+    || categoryName.value.trim(),
+  )
+})
 
 onMounted(async () => {
   const ok = await auth.restore()
@@ -66,8 +77,26 @@ onBeforeUnmount(() => {
   document.body.classList.remove(blogImageUploadingClass)
 })
 
+onBeforeRouteLeave((_to, _from, next) => {
+  if (bypassUnsavedGuard || !hasUnsavedChanges.value) {
+    next()
+    return
+  }
+
+  if (window.confirm(t('blog.editor.leaveConfirm'))) {
+    next()
+    return
+  }
+
+  next(false)
+})
+
 async function loadCategories() {
   categories.value = await fetchBlogCategories()
+}
+
+async function backToBlog() {
+  await router.push('/blog')
 }
 
 async function save(status: 'DRAFT' | 'PUBLISHED') {
@@ -86,6 +115,7 @@ async function save(status: 'DRAFT' | 'PUBLISHED') {
       status,
     })
     message.success(status === 'PUBLISHED' ? t('blog.messages.published') : t('blog.messages.draftSaved'))
+    bypassUnsavedGuard = true
     await router.push(`/blog/${post.id}`)
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.saveFailed'))
@@ -152,8 +182,15 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     <AppHeader />
     <section class="editor-layout">
       <header>
-        <div>
-          <span>{{ t('blog.editor.kicker') }}</span>
+        <div class="editor-context">
+          <n-button quaternary class="blog-back-button" @click="backToBlog">
+            <template #icon>
+              <n-icon :component="ArrowLeft" />
+            </template>
+            {{ t('blog.editor.backToBlog') }}
+          </n-button>
+          <span aria-hidden="true">/</span>
+          <strong>{{ t('blog.editor.kicker') }}</strong>
         </div>
         <div class="editor-actions">
           <input
@@ -271,17 +308,28 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   margin-bottom: 16px;
 }
 
-.editor-layout header span {
+.editor-context {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editor-context span,
+.editor-context strong {
   color: var(--sw-muted);
   font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.editor-layout h1 {
-  margin: 6px 0 0;
-  font-size: clamp(26px, 4vw, 40px);
-  line-height: 1.08;
+.editor-context strong {
+  color: var(--sw-text);
+}
+
+.blog-back-button {
+  --n-border-radius: 6px !important;
+  min-width: 0;
 }
 
 .editor-actions,
@@ -399,6 +447,10 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
   .editor-actions {
     display: grid;
     align-items: stretch;
+  }
+
+  .editor-context {
+    justify-content: start;
   }
 
   .editor-actions {
