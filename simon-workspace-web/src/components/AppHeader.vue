@@ -168,6 +168,7 @@ async function selectAccountAction(key: string | number) {
   border-bottom: 1px solid color-mix(in srgb, var(--sw-border) 72%, transparent);
   background: color-mix(in srgb, var(--sw-surface-solid) 78%, transparent);
   color: var(--sw-text);
+  user-select: none;
   backdrop-filter: blur(18px);
 }
 

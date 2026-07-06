@@ -32,6 +32,10 @@ describe('AppHeader', () => {
     expect(source).toContain('watch(')
   })
 
+  it('prevents accidental text selection in the navigation bar', () => {
+    expect(source).toContain('user-select: none')
+  })
+
   it('restores auth state so the shared header can show the current account', () => {
     expect(source).toContain('useRouter')
     expect(source).toContain('void auth.restore()')
