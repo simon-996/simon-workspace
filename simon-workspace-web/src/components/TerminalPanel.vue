@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
+import { useThemeStore } from '../stores/theme'
+import { setAppLanguage } from '../i18n'
 import { translateAppError } from '../api/errors'
 import {
   evaluateTerminalCommand,
@@ -22,6 +24,7 @@ const props = withDefaults(defineProps<TerminalPanelProps>(), {
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
+const theme = useThemeStore()
 const prompt = ref('')
 const commandInput = ref<HTMLInputElement | null>(null)
 const initialLine = computed(() => t('terminal.initialLine'))
@@ -34,10 +37,12 @@ const commandContext = computed(() => ({
 }))
 
 const commandRows = computed(() =>
-  getTerminalCommands(t).map((command) => ({
-    ...command,
-    state: commandState(command),
-  })),
+  getTerminalCommands(t)
+    .filter((command) => command.featured)
+    .map((command) => ({
+      ...command,
+      state: commandState(command),
+    })),
 )
 
 watch(initialLine, (value, oldValue) => {
@@ -69,6 +74,29 @@ async function execute(command = prompt.value) {
       return
     }
 
+    if (result.status === 'theme') {
+      if (result.themeMode === 'toggle') {
+        theme.toggleTheme()
+      } else if (result.themeMode) {
+        theme.setTheme(result.themeMode)
+      }
+      writeResult({ ...result, message: t('terminal.themeChanged', { mode: theme.mode }) })
+      return
+    }
+
+    if (result.status === 'language' && result.language) {
+      setAppLanguage(result.language)
+      writeResult({ ...result, message: t('terminal.languageChanged', { language: result.language }) })
+      return
+    }
+
+    if (result.status === 'clear') {
+      lines.value = [initialLine.value]
+      prompt.value = ''
+      window.requestAnimationFrame(focusInput)
+      return
+    }
+
     writeResult(result)
 
     if (result.status === 'run' && result.to) {
@@ -84,11 +112,12 @@ async function execute(command = prompt.value) {
 }
 
 function writeResult(result: TerminalCommandResult) {
+  const outputLines = result.message.split('\n').filter(Boolean)
   lines.value = [
-    ...lines.value.slice(-4),
+    ...lines.value.slice(-8),
     `$ ${result.command}`,
-    result.message,
-  ]
+    ...outputLines,
+  ].slice(-12)
   prompt.value = ''
   window.requestAnimationFrame(focusInput)
 }
@@ -133,16 +162,17 @@ function focusInput() {
         </p>
       </div>
 
-      <div class="command-list">
+      <div class="command-list" :aria-label="t('terminal.quickCommandsAria')">
         <button
           v-for="item in commandRows"
           :key="item.command"
           type="button"
           :class="item.state"
+          :aria-label="item.description"
+          :title="item.description"
           @click="execute(item.command)"
         >
           <span>{{ item.command }}</span>
-          <small>{{ item.description }}</small>
         </button>
       </div>
 
@@ -163,20 +193,54 @@ function focusInput() {
 <style scoped>
 .terminal {
   overflow: hidden;
-  border: 1px solid rgba(43, 60, 73, 0.18);
+  --terminal-bg: rgba(255, 255, 255, 0.82);
+  --terminal-bg-strong: rgba(255, 255, 255, 0.95);
+  --terminal-border: rgba(32, 53, 66, 0.12);
+  --terminal-border-strong: rgba(22, 112, 143, 0.18);
+  --terminal-text: #17212b;
+  --terminal-muted: #627481;
+  --terminal-faint: #8a9aa4;
+  --terminal-accent: #16708f;
+  --terminal-accent-soft: rgba(22, 112, 143, 0.08);
+  --terminal-line-bg: rgba(247, 250, 251, 0.76);
+  --terminal-shadow: 0 24px 64px rgba(35, 55, 68, 0.13);
+  border: 1px solid var(--terminal-border);
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(18, 27, 36, 0.96), rgba(12, 19, 27, 0.98)),
-    #111923;
-  box-shadow: 0 24px 54px rgba(26, 43, 56, 0.22);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(245, 249, 250, 0.84)),
+    var(--terminal-bg);
+  box-shadow: var(--terminal-shadow);
+  backdrop-filter: blur(18px);
+  transition:
+    border-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:global(:root[data-theme="dark"]) .terminal {
+  --terminal-bg: rgba(13, 21, 30, 0.86);
+  --terminal-bg-strong: rgba(16, 25, 35, 0.96);
+  --terminal-border: rgba(222, 231, 237, 0.1);
+  --terminal-border-strong: rgba(106, 190, 216, 0.24);
+  --terminal-text: #e9f2f6;
+  --terminal-muted: #9aaeb9;
+  --terminal-faint: #6f8593;
+  --terminal-accent: #6abed8;
+  --terminal-accent-soft: rgba(106, 190, 216, 0.14);
+  --terminal-line-bg: rgba(8, 13, 19, 0.42);
+  --terminal-shadow: 0 26px 72px rgba(0, 0, 0, 0.34);
+  background:
+    linear-gradient(180deg, rgba(18, 27, 36, 0.92), rgba(12, 19, 27, 0.96)),
+    var(--terminal-bg);
 }
 
 .terminal-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(222, 231, 237, 0.1);
-  padding: 15px 18px;
+  border-bottom: 1px solid var(--terminal-border);
+  padding: 13px 16px;
 }
 
 .terminal-bar strong,
@@ -187,22 +251,22 @@ function focusInput() {
 }
 
 .terminal-bar strong {
-  color: #d9eef7;
+  color: var(--terminal-text);
   font-size: 13px;
   font-weight: 800;
 }
 
 .terminal-bar span {
-  color: #86a0af;
+  color: var(--terminal-faint);
   font-size: 12px;
 }
 
 .terminal-body {
   display: grid;
-  gap: 20px;
+  gap: 14px;
   min-height: 420px;
-  padding: 20px;
-  color: #dce6ec;
+  padding: 16px;
+  color: var(--terminal-text);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -210,51 +274,63 @@ function focusInput() {
 .terminal-output {
   display: grid;
   align-content: end;
-  min-height: 118px;
-  border-bottom: 1px solid rgba(222, 231, 237, 0.08);
-  padding-bottom: 18px;
+  gap: 3px;
+  min-height: 170px;
+  border: 1px solid var(--terminal-border);
+  border-radius: 8px;
+  background: var(--terminal-line-bg);
+  padding: 14px;
 }
 
 .terminal-output p {
   margin: 0;
-  color: #aab8c2;
+  color: var(--terminal-muted);
+  word-break: break-word;
 }
 
 .terminal-output p:nth-last-child(2) {
-  color: #59b6d7;
+  color: var(--terminal-accent);
 }
 
 .terminal-output p:last-child {
-  color: #e9f2f6;
+  color: var(--terminal-text);
 }
 
 .command-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
 }
 
 .command-list button {
-  display: grid;
-  gap: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
-  border: 1px solid rgba(222, 231, 237, 0.1);
+  min-height: 31px;
+  border: 1px solid var(--terminal-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  color: #dce6ec;
+  background: var(--terminal-bg-strong);
+  color: var(--terminal-muted);
   cursor: pointer;
-  padding: 10px;
+  padding: 0 11px;
   text-align: left;
-  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  transition:
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .command-list button:hover {
-  border-color: rgba(89, 182, 215, 0.45);
-  background: rgba(89, 182, 215, 0.08);
+  border-color: var(--terminal-border-strong);
+  background: var(--terminal-accent-soft);
+  color: var(--terminal-accent);
+  transform: translate3d(0, -1px, 0);
 }
 
 .command-list button:active {
-  transform: translateY(1px);
+  transform: translate3d(0, 1px, 0);
 }
 
 .command-list button.login,
@@ -264,22 +340,14 @@ function focusInput() {
 
 .command-list button.ready span,
 .command-list button.public span {
-  color: #59b6d7;
+  color: currentColor;
 }
 
 .command-list span {
   overflow: hidden;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   text-overflow: ellipsis;
-}
-
-.command-list small {
-  overflow: hidden;
-  color: #81919b;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .prompt-line {
@@ -288,10 +356,14 @@ function focusInput() {
   align-items: center;
   gap: 10px;
   margin: 0;
+  border: 1px solid var(--terminal-border);
+  border-radius: 8px;
+  background: var(--terminal-bg-strong);
+  padding: 10px 12px;
 }
 
 .prompt-line span {
-  color: #59b6d7;
+  color: var(--terminal-accent);
   font-weight: 800;
 }
 
@@ -300,7 +372,7 @@ function focusInput() {
   border: 0;
   outline: 0;
   background: transparent;
-  color: #edf6fa;
+  color: var(--terminal-text);
   font-size: 13px;
 }
 
@@ -317,16 +389,17 @@ function focusInput() {
   }
 
   .terminal-output {
-    min-height: 86px;
-    padding-bottom: 12px;
+    min-height: 132px;
+    padding: 12px;
   }
 
   .command-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .command-list button {
-    padding: 9px;
+    min-height: 30px;
+    padding: 0 10px;
   }
 }
 </style>
