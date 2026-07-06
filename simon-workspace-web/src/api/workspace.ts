@@ -195,6 +195,7 @@ export interface BlogCategory {
   description?: string | null
   sortOrder: number
   status: string
+  postCount?: number | null
 }
 
 export interface BlogTag {
@@ -564,6 +565,11 @@ export async function fetchBlogCategories() {
   return unwrapApiResponse(response.data)
 }
 
+export async function fetchBlogManageCategories() {
+  const response = await http.get<ApiResponse<BlogCategory[]>>('/blog/manage/categories')
+  return unwrapApiResponse(response.data)
+}
+
 export async function createBlogCategory(payload: {
   name: string
   slug?: string | null
@@ -572,6 +578,25 @@ export async function createBlogCategory(payload: {
   status?: string | null
 }) {
   const response = await http.post<ApiResponse<BlogCategory>>('/blog/categories', payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function updateBlogCategory(
+  id: string,
+  payload: {
+    name: string
+    slug?: string | null
+    description?: string | null
+    sortOrder?: number | null
+    status?: string | null
+  },
+) {
+  const response = await http.put<ApiResponse<BlogCategory>>(`/blog/categories/${id}`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function deleteBlogCategory(id: string) {
+  const response = await http.delete<ApiResponse<null>>(`/blog/categories/${id}`)
   return unwrapApiResponse(response.data)
 }
 

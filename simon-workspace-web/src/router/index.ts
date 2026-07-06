@@ -6,6 +6,7 @@ import WorkspaceView from '../views/WorkspaceView.vue'
 import BlogDetailView from '../views/blog/BlogDetailView.vue'
 import BlogEditorView from '../views/blog/BlogEditorView.vue'
 import BlogListView from '../views/blog/BlogListView.vue'
+import BlogManagementView from '../views/workspace/BlogManagementView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
 import FileCenterView from '../views/workspace/FileCenterView.vue'
@@ -104,6 +105,15 @@ export const router = createRouter({
           meta: {
             titleKey: 'workspace.pages.history',
             permission: 'generation:history',
+          },
+        },
+        {
+          path: 'blog',
+          name: 'workspace-blog',
+          component: BlogManagementView,
+          meta: {
+            titleKey: 'workspace.pages.blog',
+            permission: 'blog:category:manage',
           },
         },
         {
