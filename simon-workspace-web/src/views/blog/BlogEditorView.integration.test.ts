@@ -21,8 +21,8 @@ describe('BlogEditorView', () => {
   })
 
   it('keeps the editor compact and places mobile actions in one row', () => {
-    expect(editorSource).toContain('padding: 72px 0 42px;')
-    expect(editorSource).toContain('padding: 64px 0 28px;')
+    expect(editorSource).toContain('padding: 0 0 42px;')
+    expect(editorSource).toContain('padding: 0 0 28px;')
     expect(editorSource).toContain('.editor-actions {\n    grid-template-columns: repeat(3, minmax(0, 1fr));')
     expect(editorSource).not.toContain('grid-column: 1 / -1;')
   })
