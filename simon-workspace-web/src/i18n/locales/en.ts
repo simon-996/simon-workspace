@@ -173,6 +173,12 @@ export default {
       uploaded: 'Avatar updated',
       hint: 'Choose an image, crop it, then save.',
       preview: 'Preview',
+      newPreview: 'New avatar',
+      reselect: 'Reselect',
+      resetCrop: 'Reset Crop',
+      uploading: 'Uploading avatar...',
+      invalidType: 'Please choose an image file',
+      uploadFailed: 'Failed to upload avatar',
     },
     password: {
       current: 'Current password',

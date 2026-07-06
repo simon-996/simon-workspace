@@ -12,6 +12,7 @@ import {
   NFormItem,
   NInput,
   NModal,
+  NSpin,
   NTabPane,
   NTabs,
 } from 'naive-ui'
@@ -40,6 +41,7 @@ const selectedAvatarFile = ref<File | null>(null)
 const selectedAvatarUrl = ref('')
 const avatarCropResult = ref<AvatarCropResult | null>(null)
 const avatarCropCanvas = ref<HTMLCanvasElement | null>(null)
+const avatarCropperKey = ref(0)
 
 const modalStyle: CSSProperties = {
   width: 'min(760px, calc(100vw - 32px))',
@@ -170,9 +172,16 @@ function selectAvatarFile(event: Event) {
     return
   }
 
+  if (!file.type.startsWith('image/')) {
+    input.value = ''
+    message.warning(t('account.avatar.invalidType'))
+    return
+  }
+
   resetSelectedAvatar()
   selectedAvatarFile.value = file
   selectedAvatarUrl.value = URL.createObjectURL(file)
+  avatarCropperKey.value += 1
   input.value = ''
 }
 
@@ -204,6 +213,8 @@ async function uploadCroppedAvatar() {
       resetSelectedAvatar()
       message.success(t('account.avatar.uploaded'))
     }
+  } catch {
+    message.error(t('account.avatar.uploadFailed'))
   } finally {
     uploadingAvatar.value = false
   }
@@ -226,6 +237,12 @@ function resetSelectedAvatar() {
   avatarCropResult.value = null
   avatarCropCanvas.value = null
   revokeSelectedAvatarUrl()
+}
+
+function resetAvatarCrop() {
+  avatarCropResult.value = null
+  avatarCropCanvas.value = null
+  avatarCropperKey.value += 1
 }
 
 function revokeSelectedAvatarUrl() {
@@ -278,28 +295,55 @@ function revokeSelectedAvatarUrl() {
 
           <n-tab-pane name="avatar" :tab="t('account.tabs.avatar')">
             <section class="avatar-panel">
-              <div class="avatar-head">
-                <n-avatar v-if="avatarPreview" round :size="64" :src="avatarPreview" :data-avatar-src="avatarPreview" />
-                <n-avatar v-else round :size="64" data-avatar-src="">
-                  {{ accountInitial }}
-                </n-avatar>
-                <div>
-                  <strong>{{ t('account.avatar.current') }}</strong>
-                  <span>{{ displayName }}</span>
-                </div>
+              <div class="avatar-compare-grid">
+                <article class="avatar-card">
+                  <n-avatar v-if="avatarPreview" round :size="68" :src="avatarPreview" :data-avatar-src="avatarPreview" />
+                  <n-avatar v-else round :size="68" data-avatar-src="">
+                    {{ accountInitial }}
+                  </n-avatar>
+                  <div>
+                    <strong>{{ t('account.avatar.current') }}</strong>
+                    <span>{{ displayName }}</span>
+                  </div>
+                </article>
+
+                <article v-if="selectedAvatarUrl" class="avatar-card avatar-card-preview">
+                  <Preview
+                    v-if="avatarCropResult"
+                    class="avatar-live-preview avatar-live-preview-lg"
+                    :width="68"
+                    :height="68"
+                    :image="avatarCropResult.image"
+                    :coordinates="avatarCropResult.coordinates"
+                  />
+                  <div v-else class="avatar-preview-placeholder" />
+                  <div>
+                    <strong>{{ t('account.avatar.newPreview') }}</strong>
+                    <span>{{ t('account.avatar.preview') }}</span>
+                  </div>
+                </article>
               </div>
 
               <div v-if="selectedAvatarUrl" class="avatar-crop-panel">
-                <Cropper
-                  class="avatar-cropper"
-                  :src="selectedAvatarUrl"
-                  :stencil-component="CircleStencil"
-                  :stencil-props="cropperStencilProps"
-                  :canvas="cropperCanvasOptions"
-                  :debounce="false"
-                  image-restriction="stencil"
-                  @change="onAvatarCropChange"
-                />
+                <div class="avatar-crop-shell">
+                  <Cropper
+                    :key="avatarCropperKey"
+                    class="avatar-cropper"
+                    :src="selectedAvatarUrl"
+                    :stencil-component="CircleStencil"
+                    :stencil-props="cropperStencilProps"
+                    :canvas="cropperCanvasOptions"
+                    :debounce="false"
+                    image-restriction="stencil"
+                    @change="onAvatarCropChange"
+                  />
+                  <Transition name="avatar-upload-fade">
+                    <div v-if="uploadingAvatar" class="avatar-upload-overlay" role="status" aria-live="polite">
+                      <n-spin size="small" />
+                      <span>{{ t('account.avatar.uploading') }}</span>
+                    </div>
+                  </Transition>
+                </div>
                 <div class="avatar-preview-panel">
                   <span>{{ t('account.avatar.preview') }}</span>
                   <Preview
@@ -326,7 +370,10 @@ function revokeSelectedAvatarUrl() {
               >
               <div class="avatar-actions">
                 <n-button secondary @click="openAvatarPicker">
-                  {{ t('account.avatar.choose') }}
+                  {{ selectedAvatarUrl ? t('account.avatar.reselect') : t('account.avatar.choose') }}
+                </n-button>
+                <n-button v-if="selectedAvatarUrl" secondary :disabled="uploadingAvatar" @click="resetAvatarCrop">
+                  {{ t('account.avatar.resetCrop') }}
                 </n-button>
                 <n-button type="primary" :disabled="!avatarCropCanvas" :loading="uploadingAvatar" @click="uploadCroppedAvatar">
                   {{ t('account.avatar.upload') }}
@@ -442,25 +489,40 @@ function revokeSelectedAvatarUrl() {
   padding-top: 16px;
 }
 
-.avatar-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.avatar-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.avatar-head div {
+.avatar-card {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg);
+}
+
+.avatar-card-preview {
+  animation: avatar-card-in 180ms ease-out;
+}
+
+.avatar-card div {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.avatar-head strong {
+.avatar-card strong {
   color: var(--sw-text);
   font-size: 14px;
   line-height: 1.2;
 }
 
-.avatar-head span {
+.avatar-card span {
   overflow: hidden;
   color: var(--sw-muted);
   font-size: 13px;
@@ -476,12 +538,32 @@ function revokeSelectedAvatarUrl() {
   gap: 14px;
 }
 
+.avatar-crop-shell {
+  position: relative;
+  min-width: 0;
+}
+
 .avatar-cropper {
   overflow: hidden;
   height: 316px;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
   background: var(--sw-surface-muted);
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sw-panel-bg) 82%, transparent);
+  color: var(--sw-text);
+  font-size: 13px;
+  font-weight: 700;
+  backdrop-filter: blur(10px);
 }
 
 .avatar-preview-panel {
@@ -504,6 +586,21 @@ function revokeSelectedAvatarUrl() {
   border: 1px solid var(--sw-border);
   border-radius: 50%;
   background: var(--sw-surface-muted);
+}
+
+.avatar-live-preview-lg {
+  width: 68px;
+  height: 68px;
+}
+
+.avatar-preview-placeholder {
+  width: 68px;
+  height: 68px;
+  border: 1px dashed var(--sw-border);
+  border-radius: 50%;
+  background:
+    linear-gradient(135deg, transparent 44%, var(--sw-border) 45%, var(--sw-border) 55%, transparent 56%),
+    var(--sw-surface-muted);
 }
 
 .avatar-empty {
@@ -535,6 +632,29 @@ function revokeSelectedAvatarUrl() {
   display: none;
 }
 
+.avatar-upload-fade-enter-active,
+.avatar-upload-fade-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.avatar-upload-fade-enter-from,
+.avatar-upload-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.985);
+}
+
+@keyframes avatar-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 720px) {
   .account-layout {
     grid-template-columns: 1fr;
@@ -552,6 +672,10 @@ function revokeSelectedAvatarUrl() {
   .account-main {
     max-height: calc(100dvh - 252px);
     padding: 16px;
+  }
+
+  .avatar-compare-grid {
+    grid-template-columns: 1fr;
   }
 
   .avatar-crop-panel {

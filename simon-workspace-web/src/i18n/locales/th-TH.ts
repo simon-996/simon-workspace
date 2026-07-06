@@ -173,6 +173,12 @@ export default {
       uploaded: 'อัปเดตรูปแล้ว',
       hint: 'เลือกรูป ครอบตัด แล้วบันทึก',
       preview: 'ตัวอย่าง',
+      newPreview: 'รูปใหม่',
+      reselect: 'เลือกใหม่',
+      resetCrop: 'รีเซ็ตการครอบ',
+      uploading: 'กำลังอัปโหลดรูปโปรไฟล์...',
+      invalidType: 'กรุณาเลือกไฟล์รูปภาพ',
+      uploadFailed: 'อัปโหลดรูปโปรไฟล์ไม่สำเร็จ',
     },
     password: {
       current: 'รหัสผ่านปัจจุบัน',

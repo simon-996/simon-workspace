@@ -173,6 +173,12 @@ export default {
       uploaded: '头像已更新',
       hint: '选择图片，裁剪后保存。',
       preview: '预览',
+      newPreview: '新头像',
+      reselect: '重新选择',
+      resetCrop: '重置裁剪',
+      uploading: '头像上传中...',
+      invalidType: '请选择图片文件',
+      uploadFailed: '头像上传失败',
     },
     password: {
       current: '当前密码',
