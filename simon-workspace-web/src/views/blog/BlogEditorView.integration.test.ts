@@ -19,4 +19,9 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain("t('blog.messages.imageUploadFailed')")
     expect(editorSource).toContain('catch (error)')
   })
+
+  it('stacks mobile editor actions without cramming three buttons into one row', () => {
+    expect(editorSource).toContain('.editor-actions {\n    grid-template-columns: repeat(2, minmax(0, 1fr));')
+    expect(editorSource).toContain('.import-button {\n    grid-column: 1 / -1;')
+  })
 })

@@ -301,6 +301,20 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
     align-items: stretch;
   }
 
+  .editor-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .editor-actions .n-button,
+  .import-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .import-button {
+    grid-column: 1 / -1;
+  }
+
   .meta-panel {
     grid-template-columns: 1fr;
   }
