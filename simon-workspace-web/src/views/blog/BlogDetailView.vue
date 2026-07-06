@@ -120,7 +120,7 @@ async function submitComment() {
 .post-detail {
   width: min(820px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 92px 0 72px;
+  padding: 10px 0 72px;
 }
 
 .post-detail header {
@@ -182,5 +182,11 @@ async function submitComment() {
 
 .comment-item p {
   margin: 8px 0 0;
+}
+
+@media (max-width: 920px) {
+  .post-detail {
+    padding: 0 0 48px;
+  }
 }
 </style>
