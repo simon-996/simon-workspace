@@ -11,7 +11,6 @@ describe('AccountCenterModal', () => {
   })
 
   it('keeps avatar crop upload interaction explicit and recoverable', () => {
-    expect(source).toContain('avatar-compare-grid')
     expect(source).toContain('avatar-crop-shell')
     expect(source).toContain('avatar-upload-overlay')
     expect(source).toContain('resetAvatarCrop')

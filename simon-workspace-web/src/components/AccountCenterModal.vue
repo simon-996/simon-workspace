@@ -295,35 +295,6 @@ function revokeSelectedAvatarUrl() {
 
           <n-tab-pane name="avatar" :tab="t('account.tabs.avatar')">
             <section class="avatar-panel">
-              <div class="avatar-compare-grid">
-                <article class="avatar-card">
-                  <n-avatar v-if="avatarPreview" round :size="68" :src="avatarPreview" :data-avatar-src="avatarPreview" />
-                  <n-avatar v-else round :size="68" data-avatar-src="">
-                    {{ accountInitial }}
-                  </n-avatar>
-                  <div>
-                    <strong>{{ t('account.avatar.current') }}</strong>
-                    <span>{{ displayName }}</span>
-                  </div>
-                </article>
-
-                <article v-if="selectedAvatarUrl" class="avatar-card avatar-card-preview">
-                  <Preview
-                    v-if="avatarCropResult"
-                    class="avatar-live-preview avatar-live-preview-lg"
-                    :width="68"
-                    :height="68"
-                    :image="avatarCropResult.image"
-                    :coordinates="avatarCropResult.coordinates"
-                  />
-                  <div v-else class="avatar-preview-placeholder" />
-                  <div>
-                    <strong>{{ t('account.avatar.newPreview') }}</strong>
-                    <span>{{ t('account.avatar.preview') }}</span>
-                  </div>
-                </article>
-              </div>
-
               <div v-if="selectedAvatarUrl" class="avatar-crop-panel">
                 <div class="avatar-crop-shell">
                   <Cropper
@@ -489,48 +460,6 @@ function revokeSelectedAvatarUrl() {
   padding-top: 16px;
 }
 
-.avatar-compare-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.avatar-card {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 14px;
-  padding: 14px;
-  border: 1px solid var(--sw-border);
-  border-radius: 8px;
-  background: var(--sw-panel-bg);
-}
-
-.avatar-card-preview {
-  animation: avatar-card-in 180ms ease-out;
-}
-
-.avatar-card div {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-
-.avatar-card strong {
-  color: var(--sw-text);
-  font-size: 14px;
-  line-height: 1.2;
-}
-
-.avatar-card span {
-  overflow: hidden;
-  color: var(--sw-muted);
-  font-size: 13px;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .avatar-crop-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 128px;
@@ -588,21 +517,6 @@ function revokeSelectedAvatarUrl() {
   background: var(--sw-surface-muted);
 }
 
-.avatar-live-preview-lg {
-  width: 68px;
-  height: 68px;
-}
-
-.avatar-preview-placeholder {
-  width: 68px;
-  height: 68px;
-  border: 1px dashed var(--sw-border);
-  border-radius: 50%;
-  background:
-    linear-gradient(135deg, transparent 44%, var(--sw-border) 45%, var(--sw-border) 55%, transparent 56%),
-    var(--sw-surface-muted);
-}
-
 .avatar-empty {
   display: grid;
   align-items: center;
@@ -643,18 +557,6 @@ function revokeSelectedAvatarUrl() {
   transform: scale(0.985);
 }
 
-@keyframes avatar-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (max-width: 720px) {
   .account-layout {
     grid-template-columns: 1fr;
@@ -672,10 +574,6 @@ function revokeSelectedAvatarUrl() {
   .account-main {
     max-height: calc(100dvh - 252px);
     padding: 16px;
-  }
-
-  .avatar-compare-grid {
-    grid-template-columns: 1fr;
   }
 
   .avatar-crop-panel {
