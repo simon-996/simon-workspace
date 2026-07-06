@@ -130,7 +130,6 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
       <header>
         <div>
           <span>{{ t('blog.editor.kicker') }}</span>
-          <h1>{{ t('blog.editor.title') }}</h1>
         </div>
         <div class="editor-actions">
           <input

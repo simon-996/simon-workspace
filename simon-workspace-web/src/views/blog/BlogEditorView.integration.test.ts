@@ -10,7 +10,6 @@ describe('BlogEditorView', () => {
   })
 
   it('uses i18n keys for editor operation text', () => {
-    expect(editorSource).toContain("t('blog.editor.title')")
     expect(editorSource).toContain("t('blog.editor.publish')")
     expect(editorSource).not.toContain('Write in Markdown.')
     expect(editorSource).not.toContain('Title and content are required')
