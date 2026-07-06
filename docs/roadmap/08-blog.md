@@ -15,6 +15,9 @@ Build the public blog as the first real content module of the personal homepage.
 - [x] Added public APIs for category list, tag list, post list, post detail, and comments.
 - [x] Added authenticated/permission-protected APIs for creating, updating, and deleting posts.
 - [x] Added permission-protected category create/update/delete APIs.
+- [x] Added permission-protected category management list API with post counts.
+- [x] Categories with existing posts cannot be deleted.
+- [x] Disabled categories cannot be used when publishing posts.
 - [x] Tags are created freely from post input and de-duplicated by slug.
 - [x] Markdown image references are parsed when saving posts.
 - [x] Internal file links like `/api/files/{id}/download` are bound directly by `fileId`.
@@ -34,13 +37,16 @@ Build the public blog as the first real content module of the personal homepage.
 - [x] Blog navigation now points to `/blog` instead of the old homepage anchor.
 - [x] Terminal `blog` command now opens `/blog`.
 - [x] Category creation is available in the editor for accounts with `blog:category:manage`.
+- [x] Added `/workspace/blog` category management page for accounts with `blog:category:manage`.
+- [x] Category management supports create, edit, enable/disable, and delete only when unused.
+- [x] Added English, Chinese, and Thai operation strings for the category management page.
 
 ## Remaining Todo
 
 ### Blog Product
 
 - [ ] Add draft list and edit existing draft/published posts from the UI.
-- [ ] Add category management page or workspace panel.
+- [x] Add category management page or workspace panel.
 - [ ] Add tag search/autocomplete from existing tags.
 - [ ] Add post cover image.
 - [ ] Add post archive/unpublish flow instead of only delete.
@@ -78,6 +84,7 @@ Build the public blog as the first real content module of the personal homepage.
 - Completed first backend blog model and API layer.
 - Completed first public blog list/detail pages.
 - Completed Markdown publishing page with md-editor-v3.
+- Completed workspace category management with post counts, delete protection, and disabled-category publish guard.
 - Completed first ghost-image prevention by syncing blog Markdown image references to file_reference.
 - Deferred draft management, moderation, scheduled cleanup, and full i18n to later iterations.
 ```
