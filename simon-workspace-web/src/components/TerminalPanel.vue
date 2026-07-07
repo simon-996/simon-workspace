@@ -218,7 +218,7 @@ function focusInput() {
     transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-:global(:root[data-theme="dark"]) .terminal {
+:global(:root[data-theme="dark"] .terminal) {
   --terminal-bg: rgba(13, 21, 30, 0.86);
   --terminal-bg-strong: rgba(16, 25, 35, 0.96);
   --terminal-border: rgba(222, 231, 237, 0.1);

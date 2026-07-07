@@ -190,7 +190,6 @@ function updateViewport() {
   --details-y: 20px;
   --details-scale: 1;
   --intro-details-gap: 28px;
-  --intro-details-lift: clamp(96px, 10vw, 124px);
   --brief-opacity: 1;
   background: var(--sw-bg);
   color: var(--sw-text);
@@ -322,7 +321,7 @@ h1 {
 
 .intro-skeleton-details {
   position: absolute;
-  top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift));
+  top: calc(100% + var(--intro-details-gap));
   left: 0;
   display: grid;
   gap: 18px;
@@ -372,7 +371,7 @@ h1 {
 
 .intro-details {
   position: absolute;
-  top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift));
+  top: calc(100% + var(--intro-details-gap));
   left: 0;
   display: grid;
   gap: 10px;
@@ -390,11 +389,16 @@ h1 {
 
 .terminal-stage {
   z-index: 1;
+  pointer-events: auto;
   transform: translate3d(var(--terminal-x), var(--terminal-y), 0) scale(var(--terminal-scale));
   transform-origin: center center;
   opacity: var(--terminal-opacity);
   filter: saturate(1.02);
   will-change: transform, opacity;
+}
+
+.home-page.details-active .terminal-stage {
+  pointer-events: none;
 }
 
 .terminal-skeleton {
@@ -517,7 +521,6 @@ h1 {
 @media (max-width: 900px) {
   .home-page {
     --intro-details-gap: 24px;
-    --intro-details-lift: 78px;
   }
 
   .hero-section {
@@ -619,7 +622,6 @@ h1 {
 @media (max-width: 560px) {
   .home-page {
     --intro-details-gap: 20px;
-    --intro-details-lift: 58px;
   }
 
   .hero-section {

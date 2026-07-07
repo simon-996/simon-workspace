@@ -20,8 +20,8 @@ describe('HomeView profile layout', () => {
 
   it('positions expanded intro details below the title area', () => {
     expect(homeSource).not.toContain('top: calc(100% - 130px)')
-    expect(homeSource).toContain('top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift))')
-    expect(homeSource).toContain('--intro-details-lift')
+    expect(homeSource).toContain('top: calc(100% + var(--intro-details-gap))')
+    expect(homeSource).not.toContain('--intro-details-lift')
   })
 
   it('centers the contact link in compact layouts', () => {
@@ -49,6 +49,7 @@ describe('HomeView profile layout', () => {
     expect(homeSource).toContain('pointer-events: none;')
     expect(homeSource).toContain('.home-page.details-active .intro-details')
     expect(homeSource).toContain('pointer-events: auto;')
+    expect(homeSource).toContain('.home-page.details-active .terminal-stage')
   })
 
   it('passes initial focus intent into the terminal panel', () => {

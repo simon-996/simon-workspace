@@ -50,4 +50,9 @@ describe('global dark theme styles', () => {
     expect(homeSource).not.toContain("t('home.intro.body')")
     expect(homeSource).not.toContain("t('home.intro.philosophy')")
   })
+
+  it('targets the terminal dark palette with an unscoped global selector', () => {
+    expect(terminalSource).toContain(':global(:root[data-theme="dark"] .terminal)')
+    expect(terminalSource).not.toContain(':global(:root[data-theme="dark"]) .terminal')
+  })
 })
