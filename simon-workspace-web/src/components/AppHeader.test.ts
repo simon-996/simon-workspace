@@ -27,10 +27,10 @@ describe('AppHeader', () => {
     expect(source).toContain('RouterLink')
   })
 
-  it('renders the configured site title image in the brand link', () => {
-    expect(source).toContain('class="brand-mark"')
-    expect(source).toContain('src="/site-title-logo.png"')
-    expect(source).toContain('image-rendering: pixelated')
+  it('keeps the brand link text-only without the title image avatar', () => {
+    expect(source).not.toContain('class="brand-mark"')
+    expect(source).not.toContain('src="/site-title-logo.png"')
+    expect(source).not.toContain('image-rendering: pixelated')
   })
 
   it('uses the same title image as the browser tab icon', () => {
