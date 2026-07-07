@@ -3,12 +3,26 @@ import { describe, expect, it } from 'vitest'
 import listSource from './BlogListView.vue?raw'
 
 describe('BlogListView UI', () => {
-  it('uses a compact browser layout with featured and regular reading lanes', () => {
-    expect(listSource).toContain('featuredPost')
-    expect(listSource).toContain('regularPosts')
-    expect(listSource).toContain('class="post-card featured"')
+  it('uses the same card structure for every post in the list', () => {
+    expect(listSource).toContain('v-for="post in posts"')
+    expect(listSource).not.toContain('featuredPost')
+    expect(listSource).not.toContain('regularPosts')
+    expect(listSource).not.toContain('class="post-card featured"')
+    expect(listSource).not.toContain('.post-card.featured')
     expect(listSource).not.toContain('class="blog-metrics"')
     expect(listSource).not.toContain("t('blog.list.metrics")
+  })
+
+  it('places category before tags and the date after the comment count', () => {
+    const categoryIndex = listSource.indexOf('post.category?.name')
+    const tagsIndex = listSource.indexOf('class="tag-row"')
+    const commentsIndex = listSource.indexOf('post.commentCount')
+    const dateIndex = listSource.indexOf('formatDate(post.publishedTime)')
+
+    expect(categoryIndex).toBeGreaterThan(-1)
+    expect(tagsIndex).toBeGreaterThan(categoryIndex)
+    expect(commentsIndex).toBeGreaterThan(tagsIndex)
+    expect(dateIndex).toBeGreaterThan(commentsIndex)
   })
 
   it('keeps only a 10px top offset below the header', () => {

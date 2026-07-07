@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useMessage, NButton, NIcon, NInput, NSpin } from 'naive-ui'
-import { ArrowRight, Edit, Eye, MessageCircle, Refresh, Search, Tags } from '@vicons/tabler'
+import { Edit, Eye, MessageCircle, Refresh, Search, Tags } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
 import { fetchBlogCategories, fetchBlogPosts, type BlogCategory, type BlogPostSummary } from '../../api/workspace'
@@ -20,8 +20,6 @@ const posts = ref<BlogPostSummary[]>([])
 const categories = ref<BlogCategory[]>([])
 
 const canWrite = computed(() => auth.hasPermission('blog:post:create'))
-const featuredPost = computed(() => posts.value[0] ?? null)
-const regularPosts = computed(() => posts.value.slice(1))
 const selectedCategoryName = computed(() => {
   if (!selectedCategory.value) return t('blog.list.all')
   return categories.value.find((category) => category.id === selectedCategory.value)?.name || t('blog.list.all')
@@ -130,33 +128,10 @@ function formatDate(value?: string | null) {
           <span v-for="index in 4" :key="index" />
         </section>
 
-        <template v-else-if="featuredPost">
+        <template v-else-if="posts.length">
           <section class="post-list">
             <article
-              class="post-card featured"
-              tabindex="0"
-              @click="openPost(featuredPost)"
-              @keydown.enter.prevent="openPost(featuredPost)"
-              @keydown.space.prevent="openPost(featuredPost)"
-            >
-              <div class="post-meta">
-                <span>{{ featuredPost.category?.name || t('blog.list.uncategorized') }}</span>
-                <time>{{ formatDate(featuredPost.publishedTime) }}</time>
-              </div>
-              <h2>{{ featuredPost.title }}</h2>
-              <p>{{ featuredPost.summary || t('blog.list.noSummary') }}</p>
-              <footer>
-                <div class="tag-row">
-                  <strong v-for="tag in featuredPost.tags.slice(0, 3)" :key="tag.id">#{{ tag.name }}</strong>
-                </div>
-                <span class="post-action">
-                  <n-icon :component="ArrowRight" />
-                </span>
-              </footer>
-            </article>
-
-            <article
-              v-for="post in regularPosts"
+              v-for="post in posts"
               :key="post.id"
               class="post-card"
               tabindex="0"
@@ -164,21 +139,21 @@ function formatDate(value?: string | null) {
               @keydown.enter.prevent="openPost(post)"
               @keydown.space.prevent="openPost(post)"
             >
-              <div class="post-meta">
-                <span>{{ post.category?.name || t('blog.list.uncategorized') }}</span>
-                <time>{{ formatDate(post.publishedTime) }}</time>
-              </div>
               <h2>{{ post.title }}</h2>
               <p>{{ post.summary || t('blog.list.noSummary') }}</p>
               <footer>
-                <div class="tag-row">
-                  <strong v-for="tag in post.tags.slice(0, 3)" :key="tag.id">#{{ tag.name }}</strong>
+                <div class="post-taxonomy">
+                  <span class="post-category">{{ post.category?.name || t('blog.list.uncategorized') }}</span>
+                  <div class="tag-row">
+                    <strong v-for="tag in post.tags.slice(0, 3)" :key="tag.id">#{{ tag.name }}</strong>
+                  </div>
                 </div>
                 <span class="post-stats">
                   <n-icon :component="Eye" />
                   {{ post.viewCount }}
                   <n-icon :component="MessageCircle" />
                   {{ post.commentCount }}
+                  <time>{{ formatDate(post.publishedTime) }}</time>
                 </span>
               </footer>
             </article>
@@ -385,27 +360,9 @@ function formatDate(value?: string | null) {
   position: relative;
 }
 
-.post-card.featured {
-  min-height: 238px;
-  display: grid;
-  align-content: end;
-  padding: 28px;
-}
-
-.post-card.featured h2 {
-  max-width: 18ch;
-  font-size: clamp(27px, 4.2vw, 46px);
-  line-height: 1.03;
-}
-
-.post-card.featured p {
-  max-width: 66ch;
-}
-
-.post-meta,
 .post-card footer,
 .post-stats,
-.post-action {
+.post-taxonomy {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -413,13 +370,14 @@ function formatDate(value?: string | null) {
   font-size: 13px;
 }
 
-.post-meta span {
+.post-category {
   color: var(--sw-accent);
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .post-card h2 {
-  margin: 10px 0 8px;
+  margin: 0 0 8px;
   color: var(--sw-text);
   font-size: 21px;
   font-weight: 700;
@@ -440,6 +398,11 @@ function formatDate(value?: string | null) {
 
 .post-card footer {
   justify-content: space-between;
+}
+
+.post-taxonomy {
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .tag-row {
@@ -463,23 +426,8 @@ function formatDate(value?: string | null) {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
-.post-action {
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--sw-border);
-  border-radius: 50%;
-  background: var(--sw-surface-solid);
-  color: var(--sw-accent);
-  transition:
-    border-color var(--sw-motion-standard),
-    transform var(--sw-motion-standard);
-}
-
-.post-card.featured:hover .post-action,
-.post-card.featured:focus-visible .post-action {
-  border-color: color-mix(in srgb, var(--sw-accent) 42%, var(--sw-border));
-  transform: translate3d(4px, 0, 0);
+.post-stats time {
+  color: var(--sw-faint);
 }
 
 .empty-blog {
@@ -519,8 +467,7 @@ function formatDate(value?: string | null) {
 
   .post-card,
   .post-card::before,
-  .category-tabs button,
-  .post-action {
+  .category-tabs button {
     transition: none;
   }
 }
@@ -556,11 +503,6 @@ function formatDate(value?: string | null) {
   .blog-hero,
   .blog-layout {
     width: min(100% - 24px, 1180px);
-  }
-
-  .post-card.featured {
-    min-height: 220px;
-    padding: 22px;
   }
 
   .post-card footer {
