@@ -7,7 +7,15 @@ describe('BlogListView UI', () => {
     expect(listSource).toContain('featuredPost')
     expect(listSource).toContain('regularPosts')
     expect(listSource).toContain('class="post-card featured"')
-    expect(listSource).toContain('class="blog-metrics"')
+    expect(listSource).not.toContain('class="blog-metrics"')
+    expect(listSource).not.toContain("t('blog.list.metrics")
+  })
+
+  it('keeps only a 10px top offset below the header', () => {
+    expect(listSource).toContain('padding: 10px 0 18px;')
+    expect(listSource).toContain('padding-top: 10px;')
+    expect(listSource).not.toContain('padding: 96px 0 18px;')
+    expect(listSource).not.toContain('padding-top: 92px;')
   })
 
   it('keeps filters operable from keyboard and form submission', () => {

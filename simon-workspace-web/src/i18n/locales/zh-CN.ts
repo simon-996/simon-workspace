@@ -114,11 +114,6 @@ export default {
       noSummary: '暂无摘要。',
       emptyTitle: '暂无文章',
       emptyText: '发布后的笔记会显示在这里。',
-      metrics: {
-        posts: '文章',
-        views: '阅读',
-        comments: '评论',
-      },
     },
     detail: {
       back: '博客',

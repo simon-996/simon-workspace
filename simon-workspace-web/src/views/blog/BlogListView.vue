@@ -22,8 +22,6 @@ const categories = ref<BlogCategory[]>([])
 const canWrite = computed(() => auth.hasPermission('blog:post:create'))
 const featuredPost = computed(() => posts.value[0] ?? null)
 const regularPosts = computed(() => posts.value.slice(1))
-const totalViews = computed(() => posts.value.reduce((sum, post) => sum + Number(post.viewCount || 0), 0))
-const totalComments = computed(() => posts.value.reduce((sum, post) => sum + Number(post.commentCount || 0), 0))
 const selectedCategoryName = computed(() => {
   if (!selectedCategory.value) return t('blog.list.all')
   return categories.value.find((category) => category.id === selectedCategory.value)?.name || t('blog.list.all')
@@ -133,21 +131,6 @@ function formatDate(value?: string | null) {
         </section>
 
         <template v-else-if="featuredPost">
-          <section class="blog-metrics" aria-live="polite">
-            <article>
-              <strong>{{ posts.length }}</strong>
-              <span>{{ t('blog.list.metrics.posts') }}</span>
-            </article>
-            <article>
-              <strong>{{ totalViews }}</strong>
-              <span>{{ t('blog.list.metrics.views') }}</span>
-            </article>
-            <article>
-              <strong>{{ totalComments }}</strong>
-              <span>{{ t('blog.list.metrics.comments') }}</span>
-            </article>
-          </section>
-
           <section class="post-list">
             <article
               class="post-card featured"
@@ -228,7 +211,7 @@ function formatDate(value?: string | null) {
   align-items: end;
   justify-content: space-between;
   gap: 18px;
-  padding: 96px 0 18px;
+  padding: 10px 0 18px;
 }
 
 .blog-hero span {
@@ -347,41 +330,6 @@ function formatDate(value?: string | null) {
 
 .blog-content {
   min-width: 0;
-}
-
-.blog-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
-  border: 1px solid var(--sw-border);
-  border-radius: 8px;
-  background: var(--sw-border-soft);
-  box-shadow: var(--sw-shadow-soft);
-  margin-bottom: 14px;
-}
-
-.blog-metrics article {
-  display: grid;
-  gap: 4px;
-  background: var(--sw-panel-bg-strong);
-  padding: 15px 16px;
-}
-
-.blog-metrics strong {
-  color: var(--sw-text);
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.blog-metrics span {
-  color: var(--sw-muted);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .post-list {
@@ -586,7 +534,7 @@ function formatDate(value?: string | null) {
 
   .blog-hero {
     display: grid;
-    padding-top: 92px;
+    padding-top: 10px;
   }
 
   .blog-sidebar {
@@ -608,10 +556,6 @@ function formatDate(value?: string | null) {
   .blog-hero,
   .blog-layout {
     width: min(100% - 24px, 1180px);
-  }
-
-  .blog-metrics {
-    grid-template-columns: 1fr;
   }
 
   .post-card.featured {

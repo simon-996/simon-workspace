@@ -114,11 +114,6 @@ export default {
       noSummary: 'ยังไม่มีสรุป',
       emptyTitle: 'ยังไม่มีบทความ',
       emptyText: 'บทความที่เผยแพร่จะแสดงที่นี่',
-      metrics: {
-        posts: 'บทความ',
-        views: 'อ่าน',
-        comments: 'ความคิดเห็น',
-      },
     },
     detail: {
       back: 'บล็อก',
