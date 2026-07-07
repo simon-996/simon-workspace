@@ -33,6 +33,13 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain("t('blog.editor.editKicker')")
   })
 
+  it('requires a category before publishing a blog post', () => {
+    expect(editorSource).toContain("status === 'PUBLISHED' && !categoryId.value")
+    expect(editorSource).toContain("t('blog.messages.categoryRequired')")
+    expect(editorSource).toContain('categorySelectStatus')
+    expect(editorSource).toContain(':status="categorySelectStatus"')
+  })
+
   it('shows an error when editor image upload fails', () => {
     expect(editorSource).toContain("t('blog.messages.imageUploadFailed')")
     expect(editorSource).toContain('catch (error)')

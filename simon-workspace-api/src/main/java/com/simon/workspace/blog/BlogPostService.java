@@ -102,8 +102,11 @@ public class BlogPostService extends BlogService {
     }
 
     private void validatePublishCategory(Long categoryId, String status) {
-        if (categoryId == null || !"PUBLISHED".equals(status)) {
+        if (!"PUBLISHED".equals(status)) {
             return;
+        }
+        if (categoryId == null) {
+            throw new IllegalArgumentException("发布文章必须选择分类");
         }
         Integer activeCount = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM blog_category WHERE id = ? AND status = 'ACTIVE' AND deleted = 0",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
@@ -27,18 +27,42 @@ const theme = useThemeStore()
 const post = ref<BlogPostDetail | null>(null)
 const comments = ref<BlogComment[]>([])
 const comment = ref('')
+const articleBodyRef = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const submitting = ref(false)
+const activeHeadingId = ref('')
+let headingObserver: IntersectionObserver | null = null
+let headingSyncFrame = 0
+
+interface ArticleHeading {
+  id: string
+  level: number
+  text: string
+}
+
 const canEditPost = computed(() => Boolean(
   post.value?.authorUserId
   && auth.user?.id
   && post.value.authorUserId === auth.user.id
   && auth.hasPermission('blog:post:update'),
 ))
+const tocItems = computed(() => extractArticleHeadings(post.value?.contentMd || ''))
 
 onMounted(() => {
   void auth.restore()
   void load()
+})
+
+onBeforeUnmount(() => {
+  headingObserver?.disconnect()
+  if (headingSyncFrame) {
+    window.cancelAnimationFrame(headingSyncFrame)
+  }
+})
+
+watch(tocItems, async () => {
+  await nextTick()
+  scheduleHeadingSync()
 })
 
 async function load() {
@@ -51,6 +75,8 @@ async function load() {
     ])
     post.value = postData
     comments.value = commentData
+    await nextTick()
+    scheduleHeadingSync()
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.postLoadFailed'))
   } finally {
@@ -79,6 +105,111 @@ function formatDate(value?: string | null) {
 function openEditor() {
   if (!post.value) return
   void router.push(`/blog/${post.value.id}/edit`)
+}
+
+function extractArticleHeadings(markdown: string): ArticleHeading[] {
+  const headings: ArticleHeading[] = []
+  const usedIds = new Map<string, number>()
+  let inCodeFence = false
+
+  for (const line of markdown.split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
+      inCodeFence = !inCodeFence
+      continue
+    }
+    if (inCodeFence) continue
+
+    const match = /^(#{1,4})\s+(.+?)\s*#*$/.exec(trimmed)
+    if (!match) continue
+
+    const text = cleanHeadingText(match[2])
+    if (!text) continue
+    headings.push({
+      id: createHeadingId(text, headings.length, usedIds),
+      level: match[1].length,
+      text,
+    })
+  }
+
+  return headings
+}
+
+function cleanHeadingText(value: string) {
+  return value
+    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[`*_~]/g, '')
+    .trim()
+}
+
+function createHeadingId(text: string, index: number, usedIds: Map<string, number>) {
+  const base = text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '') || `section-${index + 1}`
+  const usedCount = usedIds.get(base) || 0
+  usedIds.set(base, usedCount + 1)
+  return usedCount ? `${base}-${usedCount + 1}` : base
+}
+
+function scheduleHeadingSync() {
+  if (typeof window === 'undefined') return
+  if (headingSyncFrame) {
+    window.cancelAnimationFrame(headingSyncFrame)
+  }
+  headingSyncFrame = window.requestAnimationFrame(setupHeadingObserver)
+}
+
+function setupHeadingObserver() {
+  headingObserver?.disconnect()
+  syncRenderedHeadingIds()
+  const headingElements = renderedHeadingElements()
+  if (!headingElements.length) {
+    activeHeadingId.value = ''
+    return
+  }
+  activeHeadingId.value = activeHeadingId.value || headingElements[0].id
+
+  if (!('IntersectionObserver' in window)) return
+  headingObserver = new IntersectionObserver((entries) => {
+    const nextActive = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top)
+      .at(0)?.target
+
+    if (nextActive instanceof HTMLElement && nextActive.id) {
+      activeHeadingId.value = nextActive.id
+    }
+  }, {
+    rootMargin: '-104px 0px -72% 0px',
+    threshold: [0, 1],
+  })
+  headingElements.forEach((element) => headingObserver?.observe(element))
+}
+
+function syncRenderedHeadingIds() {
+  const headingElements = renderedHeadingElements()
+  tocItems.value.forEach((item, index) => {
+    const element = headingElements[index]
+    if (element) {
+      element.id = item.id
+    }
+  })
+}
+
+function renderedHeadingElements() {
+  return Array.from(
+    articleBodyRef.value?.querySelectorAll<HTMLElement>('.md-editor-preview h1, .md-editor-preview h2, .md-editor-preview h3, .md-editor-preview h4') || [],
+  )
+}
+
+function scrollToHeading(id: string) {
+  activeHeadingId.value = id
+  document.getElementById(id)?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  })
 }
 </script>
 
@@ -119,47 +250,67 @@ function openEditor() {
           </div>
         </header>
 
-        <section class="article-body">
-          <MdPreview :model-value="post.contentMd" :theme="theme.isDark ? 'dark' : 'light'" preview-theme="github" />
-        </section>
+        <div class="article-layout">
+          <div class="article-main">
+            <section ref="articleBodyRef" class="article-body">
+              <MdPreview :model-value="post.contentMd" :theme="theme.isDark ? 'dark' : 'light'" preview-theme="github" />
+            </section>
 
-        <section class="comments">
-          <header class="comments-head">
-            <h2>{{ t('blog.detail.comments') }}</h2>
-            <span class="comment-count">{{ comments.length }}</span>
-          </header>
+            <section class="comments">
+              <header class="comments-head">
+                <h2>{{ t('blog.detail.comments') }}</h2>
+                <span class="comment-count">{{ comments.length }}</span>
+              </header>
 
-          <div v-if="auth.isAuthenticated" class="comment-box">
-            <n-input
-              v-model:value="comment"
-              type="textarea"
-              :autosize="{ minRows: 3, maxRows: 7 }"
-              :placeholder="t('blog.detail.commentPlaceholder')"
-            />
-            <div class="comment-submit-row">
-              <span>{{ comment.trim().length }}</span>
-              <n-button type="primary" :loading="submitting" :disabled="!comment.trim()" @click="submitComment">
-                <template #icon>
-                  <n-icon :component="Send" />
-                </template>
-                {{ t('blog.detail.send') }}
-              </n-button>
-            </div>
-          </div>
-
-          <p v-else class="signin-hint">{{ t('blog.detail.signInToComment') }}</p>
-          <p v-if="!comments.length" class="comment-empty">{{ t('blog.detail.noComments') }}</p>
-
-          <div v-if="comments.length" class="comment-list">
-            <div v-for="item in comments" :key="item.id" class="comment-item">
-              <div>
-                <strong>{{ item.authorName }}</strong>
-                <span>{{ item.createdTime ? item.createdTime.slice(0, 16).replace('T', ' ') : '' }}</span>
+              <div v-if="auth.isAuthenticated" class="comment-box">
+                <n-input
+                  v-model:value="comment"
+                  type="textarea"
+                  :autosize="{ minRows: 3, maxRows: 7 }"
+                  :placeholder="t('blog.detail.commentPlaceholder')"
+                />
+                <div class="comment-submit-row">
+                  <span>{{ comment.trim().length }}</span>
+                  <n-button type="primary" :loading="submitting" :disabled="!comment.trim()" @click="submitComment">
+                    <template #icon>
+                      <n-icon :component="Send" />
+                    </template>
+                    {{ t('blog.detail.send') }}
+                  </n-button>
+                </div>
               </div>
-              <p>{{ item.content }}</p>
-            </div>
+
+              <p v-else class="signin-hint">{{ t('blog.detail.signInToComment') }}</p>
+              <p v-if="!comments.length" class="comment-empty">{{ t('blog.detail.noComments') }}</p>
+
+              <div v-if="comments.length" class="comment-list">
+                <div v-for="item in comments" :key="item.id" class="comment-item">
+                  <div>
+                    <strong>{{ item.authorName }}</strong>
+                    <span>{{ item.createdTime ? item.createdTime.slice(0, 16).replace('T', ' ') : '' }}</span>
+                  </div>
+                  <p>{{ item.content }}</p>
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
+
+          <aside v-if="tocItems.length" class="article-toc" :aria-label="t('blog.detail.toc')">
+            <strong>{{ t('blog.detail.toc') }}</strong>
+            <nav>
+              <button
+                v-for="item in tocItems"
+                :key="item.id"
+                type="button"
+                :class="{ active: activeHeadingId === item.id }"
+                :style="{ '--toc-depth': item.level - 1 }"
+                @click="scrollToHeading(item.id)"
+              >
+                {{ item.text }}
+              </button>
+            </nav>
+          </aside>
+            </div>
       </article>
     </n-spin>
   </main>
@@ -173,7 +324,7 @@ function openEditor() {
 }
 
 .post-detail {
-  width: min(880px, calc(100% - 32px));
+  width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
   padding: 10px 0 72px;
 }
@@ -234,6 +385,17 @@ function openEditor() {
   margin: 0;
 }
 
+.article-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 24px;
+  align-items: start;
+}
+
+.article-main {
+  min-width: 0;
+}
+
 .article-meta {
   display: flex;
   flex-wrap: wrap;
@@ -271,12 +433,11 @@ function openEditor() {
   box-shadow: var(--sw-shadow-soft);
 }
 
-.article-body :deep(.md-editor-preview-wrapper) {
-  padding: 28px;
-}
-
 .article-body :deep(.md-editor-preview) {
+  max-width: 76ch;
+  margin: 0 auto;
   color: var(--sw-text);
+  padding: 40px 44px;
   font-family:
     Outfit, Geist, Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", "Microsoft YaHei", sans-serif;
@@ -287,12 +448,71 @@ function openEditor() {
 .article-body :deep(.md-editor-preview h3) {
   color: var(--sw-text);
   letter-spacing: 0;
+  scroll-margin-top: 104px;
 }
 
 .article-body :deep(.md-editor-preview p),
 .article-body :deep(.md-editor-preview li) {
   color: var(--sw-table-cell-text);
   line-height: 1.78;
+}
+
+.article-toc {
+  position: sticky;
+  top: 86px;
+  display: grid;
+  gap: 10px;
+  max-height: calc(100vh - 112px);
+  overflow: auto;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg);
+  box-shadow: var(--sw-shadow-soft);
+  padding: 12px;
+  backdrop-filter: blur(18px);
+}
+
+.article-toc strong {
+  color: var(--sw-text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.article-toc nav {
+  display: grid;
+  gap: 4px;
+}
+
+.article-toc button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sw-muted);
+  cursor: pointer;
+  padding: 7px 8px 7px calc(8px + (var(--toc-depth) * 10px));
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: left;
+  transition:
+    background-color var(--sw-motion-standard),
+    border-color var(--sw-motion-standard),
+    color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
+}
+
+.article-toc button:hover,
+.article-toc button.active {
+  border-color: var(--sw-accent);
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
+}
+
+.article-toc button:active {
+  transform: translate3d(1px, 1px, 0);
 }
 
 .comments {
@@ -398,19 +618,29 @@ function openEditor() {
   .post-detail {
     padding: 0 0 48px;
   }
+
+  .article-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .article-toc {
+    position: static;
+    max-height: none;
+    order: -1;
+  }
 }
 
 @media (max-width: 620px) {
   .post-detail {
-    width: min(100% - 24px, 880px);
+    width: min(100% - 24px, 1180px);
   }
 
   .post-detail h1 {
     max-width: none;
   }
 
-  .article-body :deep(.md-editor-preview-wrapper) {
-    padding: 20px;
+  .article-body :deep(.md-editor-preview) {
+    padding: 28px 20px;
   }
 }
 </style>

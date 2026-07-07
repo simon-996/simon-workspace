@@ -38,4 +38,9 @@ describe('BlogListView UI', () => {
     expect(listSource).toContain('@keydown.space.prevent="openPost(post)"')
     expect(listSource).toContain('class="category-count"')
   })
+
+  it('does not reserve summary space when a post has no summary', () => {
+    expect(listSource).toContain('v-if="post.summary"')
+    expect(listSource).not.toContain("post.summary || t('blog.list.noSummary')")
+  })
 })

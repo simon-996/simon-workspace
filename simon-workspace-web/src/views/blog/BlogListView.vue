@@ -140,7 +140,7 @@ function formatDate(value?: string | null) {
               @keydown.space.prevent="openPost(post)"
             >
               <h2>{{ post.title }}</h2>
-              <p>{{ post.summary || t('blog.list.noSummary') }}</p>
+              <p v-if="post.summary">{{ post.summary }}</p>
               <footer>
                 <div class="post-taxonomy">
                   <span class="post-category">{{ post.category?.name || t('blog.list.uncategorized') }}</span>

@@ -43,6 +43,7 @@ const content = ref('')
 const saving = ref(false)
 const uploadingImages = ref(false)
 const uploadProgress = ref(0)
+const publishAttempted = ref(false)
 const categoryModal = ref(false)
 const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
@@ -59,6 +60,7 @@ const editingPostId = computed(() => {
 const isEditing = computed(() => Boolean(editingPostId.value))
 const requiredPostPermission = computed(() => isEditing.value ? 'blog:post:update' : 'blog:post:create')
 const editorRedirectPath = computed(() => isEditing.value ? `/blog/${editingPostId.value}/edit` : '/blog/new')
+const categorySelectStatus = computed(() => publishAttempted.value && !categoryId.value ? 'error' : undefined)
 const hasUnsavedChanges = computed(() => {
   return Boolean(
     title.value.trim()
@@ -130,6 +132,11 @@ async function backToBlog() {
 async function save(status: 'DRAFT' | 'PUBLISHED') {
   if (!title.value.trim() || !content.value.trim()) {
     message.warning(t('blog.messages.titleContentRequired'))
+    return
+  }
+  if (status === 'PUBLISHED' && !categoryId.value) {
+    publishAttempted.value = true
+    message.warning(t('blog.messages.categoryRequired'))
     return
   }
   saving.value = true
@@ -258,6 +265,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           <n-select
             v-model:value="categoryId"
             clearable
+            :status="categorySelectStatus"
             :options="categoryOptions"
             :placeholder="t('blog.editor.categoryPlaceholder')"
           />

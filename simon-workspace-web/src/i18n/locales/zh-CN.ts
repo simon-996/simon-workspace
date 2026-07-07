@@ -118,6 +118,7 @@ export default {
     detail: {
       back: '博客',
       edit: '编辑',
+      toc: '目录',
       comments: '评论',
       commentPlaceholder: '写一条评论',
       send: '发送',
@@ -147,6 +148,7 @@ export default {
       postLoadFailed: '文章加载失败',
       commentFailed: '评论失败',
       titleContentRequired: '标题和内容不能为空',
+      categoryRequired: '发布文章必须选择分类',
       published: '已发布',
       draftSaved: '草稿已保存',
       saveFailed: '文章保存失败',

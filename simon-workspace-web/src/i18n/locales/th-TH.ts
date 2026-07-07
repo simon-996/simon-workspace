@@ -118,6 +118,7 @@ export default {
     detail: {
       back: 'บล็อก',
       edit: 'แก้ไข',
+      toc: 'สารบัญ',
       comments: 'ความคิดเห็น',
       commentPlaceholder: 'เขียนความคิดเห็น',
       send: 'ส่ง',
@@ -147,6 +148,7 @@ export default {
       postLoadFailed: 'โหลดบทความไม่สำเร็จ',
       commentFailed: 'ส่งความคิดเห็นไม่สำเร็จ',
       titleContentRequired: 'ต้องกรอกชื่อเรื่องและเนื้อหา',
+      categoryRequired: 'เลือกหมวดหมู่ก่อนเผยแพร่',
       published: 'เผยแพร่แล้ว',
       draftSaved: 'บันทึกฉบับร่างแล้ว',
       saveFailed: 'บันทึกบทความไม่สำเร็จ',

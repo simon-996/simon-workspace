@@ -77,4 +77,24 @@ class BlogPostServiceTests {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("停用分类不能发布文章");
     }
+
+    @Test
+    void savePublishedPostRequiresCategory() {
+        JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+        FileReferenceService fileReferenceService = mock(FileReferenceService.class);
+        BlogPostService service = new BlogPostService(jdbcTemplate, fileReferenceService);
+        AuthContextHolder.set(new CurrentUser(7L, "simon", "Simon", null, null, List.of(), List.of("blog:post:create")));
+
+        assertThatThrownBy(() -> service.save(null, new BlogPostRequest(
+                "Hello Blog",
+                "A short summary",
+                "slug",
+                null,
+                List.of("Vue"),
+                "content",
+                "PUBLISHED"
+        )))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("发布文章必须选择分类");
+    }
 }

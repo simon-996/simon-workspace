@@ -118,6 +118,7 @@ export default {
     detail: {
       back: 'Blog',
       edit: 'Edit',
+      toc: 'Contents',
       comments: 'Comments',
       commentPlaceholder: 'Write a comment',
       send: 'Send',
@@ -147,6 +148,7 @@ export default {
       postLoadFailed: 'Failed to load post',
       commentFailed: 'Failed to comment',
       titleContentRequired: 'Title and content are required',
+      categoryRequired: 'Choose a category before publishing',
       published: 'Published',
       draftSaved: 'Draft saved',
       saveFailed: 'Failed to save post',

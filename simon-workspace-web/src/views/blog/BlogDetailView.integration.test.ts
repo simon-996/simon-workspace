@@ -25,4 +25,21 @@ describe('BlogDetailView', () => {
     expect(detailSource).toContain("t('blog.detail.edit')")
     expect(detailSource).toContain('router.push(`/blog/${post.value.id}/edit`)')
   })
+
+  it('renders a floating table of contents with scroll-aware active headings', () => {
+    expect(detailSource).toContain('extractArticleHeadings')
+    expect(detailSource).toContain('activeHeadingId')
+    expect(detailSource).toContain('IntersectionObserver')
+    expect(detailSource).toContain('scrollToHeading')
+    expect(detailSource).toContain('class="article-toc"')
+    expect(detailSource).toContain(':class="{ active: activeHeadingId === item.id }"')
+    expect(detailSource).toContain('position: sticky;')
+    expect(detailSource).toContain('scroll-margin-top: 104px;')
+  })
+
+  it('adds breathing room between the article frame and rendered markdown', () => {
+    expect(detailSource).toContain('grid-template-columns: minmax(0, 1fr) 230px;')
+    expect(detailSource).toContain('padding: 40px 44px;')
+    expect(detailSource).toContain('max-width: 76ch;')
+  })
 })
