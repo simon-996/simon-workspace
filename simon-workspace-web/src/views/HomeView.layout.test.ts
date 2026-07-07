@@ -9,6 +9,15 @@ describe('HomeView profile layout', () => {
     expect(homeSource).toContain('v-if="introKicker"')
   })
 
+  it('omits the Chinese short intro line when it is empty', () => {
+    const removedShortLine = ['喜欢把教学', '和技术想法', '做成可用工具', '的大学教师'].join('')
+    expect(zhCNSource).not.toContain(removedShortLine)
+    expect(homeSource).toContain('const introShort = computed')
+    expect(homeSource).toContain('v-if="introShort"')
+    expect(homeSource).toContain('{{ introShort }}')
+    expect(homeSource).not.toContain("{{ t('home.intro.shortLine') }}")
+  })
+
   it('positions expanded intro details below the title area', () => {
     expect(homeSource).not.toContain('top: calc(100% - 130px)')
     expect(homeSource).toContain('top: calc(100% + var(--intro-details-gap) - var(--intro-details-lift))')

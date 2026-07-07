@@ -69,7 +69,7 @@ export default {
     configLoadFailed: '公开配置加载失败',
     intro: {
       kicker: '',
-      shortLine: '喜欢把教学和技术想法做成可用工具的大学教师。',
+      shortLine: '',
       lead: '我是陈希萌，一名喜欢折腾技术的大学教师。',
       body: '平时主要做 Web、微信小程序和 Flutter App 开发，也会记录教学实践、项目开发和一些技术折腾。',
       philosophy: '我更关注技术能否解决真实问题。',

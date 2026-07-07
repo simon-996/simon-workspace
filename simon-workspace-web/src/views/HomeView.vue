@@ -14,6 +14,7 @@ const { site, failed: siteLoadFailed, loadSite } = usePublicSiteConfig()
 const defaultContactEmail = 'simon996chen@outlook.com'
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
 const introKicker = computed(() => t('home.intro.kicker').trim())
+const introShort = computed(() => t('home.intro.shortLine').trim())
 const contactLabel = computed(() => t('home.intro.contactLabel').trim())
 const contactEmail = computed(() => site.value?.contactEmail?.trim() || defaultContactEmail)
 const contactHref = computed(() => `mailto:${contactEmail.value}`)
@@ -101,7 +102,7 @@ function updateViewport() {
           <template v-if="site">
             <p v-if="introKicker" class="intro-kicker">{{ introKicker }}</p>
             <h1>{{ site.ownerName }}</h1>
-            <p class="intro-short">{{ t('home.intro.shortLine') }}</p>
+            <p v-if="introShort" class="intro-short">{{ introShort }}</p>
 
             <div class="intro-details">
               <a class="contact-link" :href="contactHref">
