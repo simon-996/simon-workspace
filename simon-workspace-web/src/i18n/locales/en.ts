@@ -114,6 +114,11 @@ export default {
       noSummary: 'No summary.',
       emptyTitle: 'No posts yet',
       emptyText: 'Published notes will appear here.',
+      metrics: {
+        posts: 'Posts',
+        views: 'Reads',
+        comments: 'Comments',
+      },
     },
     detail: {
       back: 'Blog',

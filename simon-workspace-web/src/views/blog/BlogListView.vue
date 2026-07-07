@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useMessage, NButton, NIcon, NInput, NSpin } from 'naive-ui'
-import { Edit, MessageCircle, Refresh, Search } from '@vicons/tabler'
+import { ArrowRight, Edit, Eye, MessageCircle, Refresh, Search, Tags } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
 import { fetchBlogCategories, fetchBlogPosts, type BlogCategory, type BlogPostSummary } from '../../api/workspace'
@@ -20,6 +20,10 @@ const posts = ref<BlogPostSummary[]>([])
 const categories = ref<BlogCategory[]>([])
 
 const canWrite = computed(() => auth.hasPermission('blog:post:create'))
+const featuredPost = computed(() => posts.value[0] ?? null)
+const regularPosts = computed(() => posts.value.slice(1))
+const totalViews = computed(() => posts.value.reduce((sum, post) => sum + Number(post.viewCount || 0), 0))
+const totalComments = computed(() => posts.value.reduce((sum, post) => sum + Number(post.commentCount || 0), 0))
 const selectedCategoryName = computed(() => {
   if (!selectedCategory.value) return t('blog.list.all')
   return categories.value.find((category) => category.id === selectedCategory.value)?.name || t('blog.list.all')
@@ -49,8 +53,17 @@ async function load() {
   }
 }
 
+function selectCategory(categoryId: string | null) {
+  selectedCategory.value = categoryId
+  void load()
+}
+
 function openPost(post: BlogPostSummary) {
   void router.push(`/blog/${post.id}`)
+}
+
+function formatDate(value?: string | null) {
+  return value ? value.slice(0, 10) : '-'
 }
 </script>
 
@@ -70,62 +83,129 @@ function openPost(post: BlogPostSummary) {
     </section>
 
     <section class="blog-layout">
-      <aside class="blog-sidebar">
-        <n-input v-model:value="keyword" clearable :placeholder="t('blog.list.searchPlaceholder')" @keyup.enter="load">
-        <template #prefix>
-          <n-icon :component="Search" />
-        </template>
-      </n-input>
-        <div class="filter-title">{{ t('blog.list.categories') }}</div>
-        <div class="category-tabs">
-          <button :class="{ active: selectedCategory === null }" @click="selectedCategory = null; load()">
-            {{ t('blog.list.all') }}
-          </button>
-        <button
-          v-for="category in categories"
-          :key="category.id"
-          :class="{ active: selectedCategory === category.id }"
-          @click="selectedCategory = category.id; load()"
-        >
-          {{ category.name }}
-        </button>
-      </div>
-        <div class="selected-filter">{{ selectedCategoryName }}</div>
+      <aside class="blog-sidebar" :aria-label="t('blog.list.categories')">
+        <form class="search-panel" @submit.prevent="load">
+          <n-input v-model:value="keyword" clearable :placeholder="t('blog.list.searchPlaceholder')">
+            <template #prefix>
+              <n-icon :component="Search" />
+            </template>
+          </n-input>
+          <n-button circle secondary attr-type="submit" :aria-label="t('common.actions.search')">
+            <template #icon>
+              <n-icon :component="Search" />
+            </template>
+          </n-button>
+        </form>
+
+        <div class="category-card">
+          <div class="filter-title">
+            <n-icon :component="Tags" />
+            <span>{{ selectedCategoryName }}</span>
+          </div>
+          <div class="category-tabs">
+            <button :class="{ active: selectedCategory === null }" @click="selectCategory(null)">
+              <span>{{ t('blog.list.all') }}</span>
+              <strong class="category-count">{{ posts.length }}</strong>
+            </button>
+            <button
+              v-for="category in categories"
+              :key="category.id"
+              :class="{ active: selectedCategory === category.id }"
+              @click="selectCategory(category.id)"
+            >
+              <span>{{ category.name }}</span>
+              <strong class="category-count">{{ category.postCount ?? 0 }}</strong>
+            </button>
+          </div>
+        </div>
+
         <n-button secondary block @click="load">
-        <template #icon>
-          <n-icon :component="Refresh" />
-        </template>
+          <template #icon>
+            <n-icon :component="Refresh" />
+          </template>
           {{ t('common.actions.refresh') }}
-      </n-button>
+        </n-button>
       </aside>
 
       <n-spin :show="loading" class="blog-content">
         <section v-if="loading && !posts.length" class="blog-skeleton">
           <span v-for="index in 4" :key="index" />
         </section>
-        <section v-else-if="posts.length" class="post-list">
-        <article v-for="post in posts" :key="post.id" class="post-card" @click="openPost(post)">
-          <div>
-              <span>{{ post.category?.name || t('blog.list.uncategorized') }}</span>
-            <time>{{ post.publishedTime ? post.publishedTime.slice(0, 10) : '-' }}</time>
-          </div>
-          <h2>{{ post.title }}</h2>
-            <p>{{ post.summary || t('blog.list.noSummary') }}</p>
-          <footer>
-              <div class="tag-row">
-                <strong v-for="tag in post.tags" :key="tag.id">#{{ tag.name }}</strong>
+
+        <template v-else-if="featuredPost">
+          <section class="blog-metrics" aria-live="polite">
+            <article>
+              <strong>{{ posts.length }}</strong>
+              <span>{{ t('blog.list.metrics.posts') }}</span>
+            </article>
+            <article>
+              <strong>{{ totalViews }}</strong>
+              <span>{{ t('blog.list.metrics.views') }}</span>
+            </article>
+            <article>
+              <strong>{{ totalComments }}</strong>
+              <span>{{ t('blog.list.metrics.comments') }}</span>
+            </article>
+          </section>
+
+          <section class="post-list">
+            <article
+              class="post-card featured"
+              tabindex="0"
+              @click="openPost(featuredPost)"
+              @keydown.enter.prevent="openPost(featuredPost)"
+              @keydown.space.prevent="openPost(featuredPost)"
+            >
+              <div class="post-meta">
+                <span>{{ featuredPost.category?.name || t('blog.list.uncategorized') }}</span>
+                <time>{{ formatDate(featuredPost.publishedTime) }}</time>
               </div>
-            <span>
-              <n-icon :component="MessageCircle" />
-              {{ post.commentCount }}
-            </span>
-          </footer>
-        </article>
-      </section>
-      <section v-else class="empty-blog">
+              <h2>{{ featuredPost.title }}</h2>
+              <p>{{ featuredPost.summary || t('blog.list.noSummary') }}</p>
+              <footer>
+                <div class="tag-row">
+                  <strong v-for="tag in featuredPost.tags.slice(0, 3)" :key="tag.id">#{{ tag.name }}</strong>
+                </div>
+                <span class="post-action">
+                  <n-icon :component="ArrowRight" />
+                </span>
+              </footer>
+            </article>
+
+            <article
+              v-for="post in regularPosts"
+              :key="post.id"
+              class="post-card"
+              tabindex="0"
+              @click="openPost(post)"
+              @keydown.enter.prevent="openPost(post)"
+              @keydown.space.prevent="openPost(post)"
+            >
+              <div class="post-meta">
+                <span>{{ post.category?.name || t('blog.list.uncategorized') }}</span>
+                <time>{{ formatDate(post.publishedTime) }}</time>
+              </div>
+              <h2>{{ post.title }}</h2>
+              <p>{{ post.summary || t('blog.list.noSummary') }}</p>
+              <footer>
+                <div class="tag-row">
+                  <strong v-for="tag in post.tags.slice(0, 3)" :key="tag.id">#{{ tag.name }}</strong>
+                </div>
+                <span class="post-stats">
+                  <n-icon :component="Eye" />
+                  {{ post.viewCount }}
+                  <n-icon :component="MessageCircle" />
+                  {{ post.commentCount }}
+                </span>
+              </footer>
+            </article>
+          </section>
+        </template>
+
+        <section v-else class="empty-blog">
           <strong>{{ t('blog.list.emptyTitle') }}</strong>
-      </section>
-    </n-spin>
+        </section>
+      </n-spin>
     </section>
   </main>
 </template>
@@ -139,7 +219,7 @@ function openPost(post: BlogPostSummary) {
 
 .blog-hero,
 .blog-layout {
-  width: min(1120px, calc(100% - 32px));
+  width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
 }
 
@@ -148,19 +228,20 @@ function openPost(post: BlogPostSummary) {
   align-items: end;
   justify-content: space-between;
   gap: 18px;
-  padding: 98px 0 22px;
+  padding: 96px 0 18px;
 }
 
 .blog-hero span {
   color: var(--sw-muted);
   font-size: 13px;
   font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .blog-layout {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
+  grid-template-columns: 264px minmax(0, 1fr);
   gap: 24px;
   border-top: 1px solid var(--sw-border);
   padding: 18px 0 72px;
@@ -175,32 +256,132 @@ function openPost(post: BlogPostSummary) {
   height: fit-content;
 }
 
-.filter-title,
-.selected-filter {
+.search-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  gap: 8px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg);
+  padding: 8px;
+  box-shadow: var(--sw-shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.category-card {
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg-strong);
+  box-shadow: var(--sw-shadow-soft);
+  padding: 10px;
+  backdrop-filter: blur(18px);
+}
+
+.filter-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--sw-muted);
   font-size: 12px;
   font-weight: 800;
+  padding: 4px 6px 10px;
+}
+
+.filter-title .n-icon {
+  color: var(--sw-accent);
+  font-size: 17px;
 }
 
 .category-tabs {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .category-tabs button {
-  border: 1px solid var(--sw-border);
-  border-radius: 999px;
-  background: var(--sw-surface-solid);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
   color: var(--sw-muted);
   cursor: pointer;
-  padding: 7px 12px;
+  padding: 9px 10px;
   text-align: left;
-  white-space: nowrap;
+  transition:
+    background-color var(--sw-motion-standard),
+    border-color var(--sw-motion-standard),
+    color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
+}
+
+.category-tabs button:hover {
+  background: var(--sw-surface-muted);
+  color: var(--sw-text);
+  transform: translate3d(2px, 0, 0);
 }
 
 .category-tabs button.active {
-  border-color: #16708f;
-  color: #16708f;
+  border-color: color-mix(in srgb, var(--sw-accent) 34%, transparent);
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
+}
+
+.category-tabs button:active {
+  transform: translate3d(2px, 1px, 0);
+}
+
+.category-count {
+  display: inline-grid;
+  min-width: 28px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--sw-surface-solid);
+  color: inherit;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+}
+
+.blog-content {
+  min-width: 0;
+}
+
+.blog-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-border-soft);
+  box-shadow: var(--sw-shadow-soft);
+  margin-bottom: 14px;
+}
+
+.blog-metrics article {
+  display: grid;
+  gap: 4px;
+  background: var(--sw-panel-bg-strong);
+  padding: 15px 16px;
+}
+
+.blog-metrics strong {
+  color: var(--sw-text);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.blog-metrics span {
+  color: var(--sw-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .post-list {
@@ -209,21 +390,74 @@ function openPost(post: BlogPostSummary) {
 }
 
 .post-card {
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: var(--sw-surface-solid);
+  background: var(--sw-panel-bg-strong);
+  box-shadow: var(--sw-shadow-soft);
   cursor: pointer;
   padding: 18px 20px;
-  transition: transform 180ms ease, border-color 180ms ease;
+  transition:
+    background-color var(--sw-motion-standard),
+    border-color var(--sw-motion-standard),
+    box-shadow var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
 }
 
-.post-card:hover {
-  border-color: #85afbc;
-  transform: translateY(-2px);
+.post-card::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--sw-accent) 13%, transparent), transparent 42%);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sw-motion-standard);
 }
 
-.post-card div,
-.post-card footer {
+.post-card:hover,
+.post-card:focus-visible {
+  border-color: color-mix(in srgb, var(--sw-accent) 42%, var(--sw-border));
+  background: var(--sw-panel-bg-hover);
+  box-shadow: var(--sw-shadow);
+  transform: translate3d(0, -3px, 0);
+}
+
+.post-card:hover::before,
+.post-card:focus-visible::before {
+  opacity: 1;
+}
+
+.post-card:active {
+  transform: translate3d(0, -1px, 0) scale(0.995);
+}
+
+.post-card > * {
+  position: relative;
+}
+
+.post-card.featured {
+  min-height: 238px;
+  display: grid;
+  align-content: end;
+  padding: 28px;
+}
+
+.post-card.featured h2 {
+  max-width: 18ch;
+  font-size: clamp(27px, 4.2vw, 46px);
+  line-height: 1.03;
+}
+
+.post-card.featured p {
+  max-width: 66ch;
+}
+
+.post-meta,
+.post-card footer,
+.post-stats,
+.post-action {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -231,41 +465,85 @@ function openPost(post: BlogPostSummary) {
   font-size: 13px;
 }
 
+.post-meta span {
+  color: var(--sw-accent);
+  font-weight: 800;
+}
+
 .post-card h2 {
   margin: 10px 0 8px;
-  font-size: 20px;
-  line-height: 1.25;
+  color: var(--sw-text);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.22;
 }
 
 .post-card p {
-  margin: 0 0 14px;
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 16px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   color: var(--sw-muted);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 .post-card footer {
   justify-content: space-between;
 }
 
-.post-card footer strong {
-  color: #16708f;
-  font-size: 13px;
-}
-
 .tag-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
+}
+
+.tag-row strong {
+  border-radius: 999px;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.post-stats {
+  flex-shrink: 0;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.post-action {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--sw-border);
+  border-radius: 50%;
+  background: var(--sw-surface-solid);
+  color: var(--sw-accent);
+  transition:
+    border-color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
+}
+
+.post-card.featured:hover .post-action,
+.post-card.featured:focus-visible .post-action {
+  border-color: color-mix(in srgb, var(--sw-accent) 42%, var(--sw-border));
+  transform: translate3d(4px, 0, 0);
 }
 
 .empty-blog {
   display: grid;
+  min-height: 360px;
   place-items: center;
   align-content: center;
-  gap: 8px;
-  min-height: 320px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg-strong);
   color: var(--sw-muted);
+  box-shadow: var(--sw-shadow-soft);
 }
 
 .empty-blog strong {
@@ -279,24 +557,27 @@ function openPost(post: BlogPostSummary) {
 }
 
 .blog-skeleton span {
-  height: 116px;
+  height: 126px;
   border-radius: 8px;
-  background: linear-gradient(90deg, rgba(143, 162, 172, 0.14), rgba(255, 255, 255, 0.4), rgba(143, 162, 172, 0.14));
+  background: linear-gradient(90deg, var(--sw-border-soft), var(--sw-surface-muted), var(--sw-border-soft));
   background-size: 200% 100%;
-  animation: shimmer 1.2s ease-in-out infinite;
+  animation: sw-shimmer 1.35s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  from {
-    background-position: 200% 0;
+@media (prefers-reduced-motion: reduce) {
+  .blog-skeleton span {
+    animation: none;
   }
 
-  to {
-    background-position: -200% 0;
+  .post-card,
+  .post-card::before,
+  .category-tabs button,
+  .post-action {
+    transition: none;
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 860px) {
   .blog-hero,
   .blog-layout {
     grid-template-columns: 1fr;
@@ -315,6 +596,32 @@ function openPost(post: BlogPostSummary) {
   .category-tabs {
     display: flex;
     overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .category-tabs button {
+    min-width: max-content;
+  }
+}
+
+@media (max-width: 620px) {
+  .blog-hero,
+  .blog-layout {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .blog-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .post-card.featured {
+    min-height: 220px;
+    padding: 22px;
+  }
+
+  .post-card footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>
