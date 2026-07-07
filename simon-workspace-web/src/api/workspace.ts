@@ -254,6 +254,7 @@ export interface BlogPostSummary {
   slug: string
   status: string
   authorName: string
+  authorUserId: string
   category?: BlogCategory | null
   tags: BlogTag[]
   viewCount: number

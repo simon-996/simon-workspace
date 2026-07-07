@@ -117,6 +117,7 @@ export default {
     },
     detail: {
       back: 'Blog',
+      edit: 'Edit',
       comments: 'Comments',
       commentPlaceholder: 'Write a comment',
       send: 'Send',
@@ -125,6 +126,7 @@ export default {
     },
     editor: {
       kicker: 'New Post',
+      editKicker: 'Edit Post',
       title: 'Write in Markdown',
       backToBlog: 'Blog',
       leaveConfirm: 'Discard this draft and leave?',

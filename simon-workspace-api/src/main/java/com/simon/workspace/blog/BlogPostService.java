@@ -43,7 +43,7 @@ public class BlogPostService extends BlogService {
         syncTags(postId, request.tags());
         syncAssets(postId, content);
         return new BlogPostDetailResponse(String.valueOf(postId), title, request.summary(), slug, content, status,
-                user.nickname(), null, List.of(), 0L, 0L,
+                user.nickname(), String.valueOf(user.id()), null, List.of(), 0L, 0L,
                 "PUBLISHED".equals(status) ? LocalDateTime.now() : null,
                 LocalDateTime.now(), LocalDateTime.now());
     }

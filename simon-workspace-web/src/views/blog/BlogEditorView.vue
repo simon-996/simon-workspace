@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import {
@@ -20,12 +20,15 @@ import {
   createBlogCategory,
   createBlogPost,
   fetchBlogCategories,
+  fetchBlogPostDetail,
   type BlogCategory,
+  updateBlogPost,
   uploadBlogEditorImage,
 } from '../../api/workspace'
 import { useAuthStore } from '../../stores/auth'
 import { useThemeStore } from '../../stores/theme'
 
+const route = useRoute()
 const router = useRouter()
 const message = useMessage()
 const { locale, t } = useI18n()
@@ -49,6 +52,13 @@ let bypassUnsavedGuard = false
 const canManageCategory = computed(() => auth.hasPermission('blog:category:manage'))
 const categoryOptions = computed(() => categories.value.map((item) => ({ label: item.name, value: item.id })))
 const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
+const editingPostId = computed(() => {
+  const id = route.params.id
+  return Array.isArray(id) ? id[0] : typeof id === 'string' ? id : ''
+})
+const isEditing = computed(() => Boolean(editingPostId.value))
+const requiredPostPermission = computed(() => isEditing.value ? 'blog:post:update' : 'blog:post:create')
+const editorRedirectPath = computed(() => isEditing.value ? `/blog/${editingPostId.value}/edit` : '/blog/new')
 const hasUnsavedChanges = computed(() => {
   return Boolean(
     title.value.trim()
@@ -62,11 +72,19 @@ const hasUnsavedChanges = computed(() => {
 
 onMounted(async () => {
   const ok = await auth.restore()
-  if (!ok || !auth.hasPermission('blog:post:create')) {
-    await router.push('/login?redirect=/blog/new')
+  if (!ok || !auth.hasPermission(requiredPostPermission.value)) {
+    await router.push({
+      name: 'login',
+      query: {
+        redirect: editorRedirectPath.value,
+      },
+    })
     return
   }
   await loadCategories()
+  if (isEditing.value) {
+    await loadPostForEdit()
+  }
 })
 
 watch(uploadingImages, (uploading) => {
@@ -95,6 +113,16 @@ async function loadCategories() {
   categories.value = await fetchBlogCategories()
 }
 
+async function loadPostForEdit() {
+  if (!editingPostId.value) return
+  const existing = await fetchBlogPostDetail(editingPostId.value)
+  title.value = existing.title
+  summary.value = existing.summary || ''
+  categoryId.value = existing.category?.id || null
+  tags.value = existing.tags.map((tag) => tag.name)
+  content.value = existing.contentMd
+}
+
 async function backToBlog() {
   await router.push('/blog')
 }
@@ -106,14 +134,17 @@ async function save(status: 'DRAFT' | 'PUBLISHED') {
   }
   saving.value = true
   try {
-    const post = await createBlogPost({
+    const payload = {
       title: title.value.trim(),
       summary: summary.value.trim() || null,
       categoryId: categoryId.value,
       tags: tags.value,
       contentMd: content.value,
       status,
-    })
+    }
+    const post = editingPostId.value
+      ? await updateBlogPost(editingPostId.value, payload)
+      : await createBlogPost(payload)
     message.success(status === 'PUBLISHED' ? t('blog.messages.published') : t('blog.messages.draftSaved'))
     bypassUnsavedGuard = true
     await router.push(`/blog/${post.id}`)
@@ -190,7 +221,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
             {{ t('blog.editor.backToBlog') }}
           </n-button>
           <span aria-hidden="true">/</span>
-          <strong>{{ t('blog.editor.kicker') }}</strong>
+          <strong>{{ isEditing ? t('blog.editor.editKicker') : t('blog.editor.kicker') }}</strong>
         </div>
         <div class="editor-actions">
           <input

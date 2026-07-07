@@ -117,6 +117,7 @@ export default {
     },
     detail: {
       back: '博客',
+      edit: '编辑',
       comments: '评论',
       commentPlaceholder: '写一条评论',
       send: '发送',
@@ -125,6 +126,7 @@ export default {
     },
     editor: {
       kicker: '新文章',
+      editKicker: '编辑文章',
       title: '使用 Markdown 写作',
       backToBlog: '博客',
       leaveConfirm: '离开后未保存的内容会丢失，确定返回吗？',

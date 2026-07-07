@@ -117,6 +117,7 @@ export default {
     },
     detail: {
       back: 'บล็อก',
+      edit: 'แก้ไข',
       comments: 'ความคิดเห็น',
       commentPlaceholder: 'เขียนความคิดเห็น',
       send: 'ส่ง',
@@ -125,6 +126,7 @@ export default {
     },
     editor: {
       kicker: 'บทความใหม่',
+      editKicker: 'แก้ไขบทความ',
       title: 'เขียนด้วย Markdown',
       backToBlog: 'บล็อก',
       leaveConfirm: 'ออกจากหน้านี้และทิ้งฉบับร่างที่ยังไม่ได้บันทึก?',

@@ -23,6 +23,16 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain("t('blog.editor.leaveConfirm')")
   })
 
+  it('loads an existing post and updates it when used from the edit route', () => {
+    expect(editorSource).toContain('useRoute')
+    expect(editorSource).toContain('fetchBlogPostDetail')
+    expect(editorSource).toContain('updateBlogPost')
+    expect(editorSource).toContain('editingPostId')
+    expect(editorSource).toContain('loadPostForEdit')
+    expect(editorSource).toContain('updateBlogPost(editingPostId.value')
+    expect(editorSource).toContain("t('blog.editor.editKicker')")
+  })
+
   it('shows an error when editor image upload fails', () => {
     expect(editorSource).toContain("t('blog.messages.imageUploadFailed')")
     expect(editorSource).toContain('catch (error)')

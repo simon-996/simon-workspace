@@ -10,6 +10,7 @@ public record BlogPostSummaryResponse(
         String slug,
         String status,
         String authorName,
+        String authorUserId,
         BlogCategoryResponse category,
         List<BlogTagResponse> tags,
         Long viewCount,

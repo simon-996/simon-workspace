@@ -174,6 +174,15 @@ export const router = createRouter({
       },
     },
     {
+      path: '/blog/:id/edit',
+      name: 'blog-edit',
+      component: BlogEditorView,
+      meta: {
+        requiresAuth: true,
+        permission: 'blog:post:update',
+      },
+    },
+    {
       path: '/blog/:id',
       name: 'blog-detail',
       component: BlogDetailView,

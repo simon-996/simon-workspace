@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import { useMessage, NButton, NIcon, NInput, NSpin } from 'naive-ui'
-import { ArrowLeft, Eye, MessageCircle, Send } from '@vicons/tabler'
+import { ArrowLeft, Edit, Eye, MessageCircle, Send } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
 import {
@@ -29,6 +29,12 @@ const comments = ref<BlogComment[]>([])
 const comment = ref('')
 const loading = ref(false)
 const submitting = ref(false)
+const canEditPost = computed(() => Boolean(
+  post.value?.authorUserId
+  && auth.user?.id
+  && post.value.authorUserId === auth.user.id
+  && auth.hasPermission('blog:post:update'),
+))
 
 onMounted(() => {
   void auth.restore()
@@ -69,6 +75,11 @@ async function submitComment() {
 function formatDate(value?: string | null) {
   return value ? value.slice(0, 10) : '-'
 }
+
+function openEditor() {
+  if (!post.value) return
+  void router.push(`/blog/${post.value.id}/edit`)
+}
 </script>
 
 <template>
@@ -76,12 +87,20 @@ function formatDate(value?: string | null) {
     <AppHeader />
     <n-spin :show="loading">
       <article v-if="post" class="post-detail">
-        <n-button quaternary class="back-button" @click="router.push('/blog')">
-          <template #icon>
-            <n-icon :component="ArrowLeft" />
-          </template>
-          {{ t('blog.detail.back') }}
-        </n-button>
+        <div class="detail-toolbar">
+          <n-button quaternary class="back-button" @click="router.push('/blog')">
+            <template #icon>
+              <n-icon :component="ArrowLeft" />
+            </template>
+            {{ t('blog.detail.back') }}
+          </n-button>
+          <n-button v-if="canEditPost" secondary class="edit-button" @click="openEditor">
+            <template #icon>
+              <n-icon :component="Edit" />
+            </template>
+            {{ t('blog.detail.edit') }}
+          </n-button>
+        </div>
 
         <header class="article-header">
           <span class="article-kicker">{{ post.category?.name || t('blog.list.uncategorized') }}</span>
@@ -159,8 +178,18 @@ function formatDate(value?: string | null) {
   padding: 10px 0 72px;
 }
 
-.back-button {
+.detail-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 6px;
+}
+
+.back-button,
+.edit-button {
+  --n-border-radius: 6px !important;
+  min-width: 0;
 }
 
 .article-header {
