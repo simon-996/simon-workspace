@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import indexHtml from '../../index.html?raw'
 import source from './AppHeader.vue?raw'
 
 describe('AppHeader', () => {
@@ -24,6 +25,17 @@ describe('AppHeader', () => {
     expect(source).toContain('v-if="item.disabled"')
     expect(source).toContain('aria-current="page"')
     expect(source).toContain('RouterLink')
+  })
+
+  it('renders the configured site title image in the brand link', () => {
+    expect(source).toContain('class="brand-mark"')
+    expect(source).toContain('src="/site-title-logo.png"')
+    expect(source).toContain('image-rendering: pixelated')
+  })
+
+  it('uses the same title image as the browser tab icon', () => {
+    expect(indexHtml).toContain('rel="icon"')
+    expect(indexHtml).toContain('href="/site-title-logo.png"')
   })
 
   it('keeps one responsive menu button for small screens', () => {

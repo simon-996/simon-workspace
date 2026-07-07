@@ -83,6 +83,14 @@ async function selectAccountAction(key: string | number) {
   <header class="app-header">
     <div class="app-header-inner">
       <RouterLink class="app-brand" to="/">
+        <img
+          class="brand-mark"
+          src="/site-title-logo.png"
+          alt=""
+          aria-hidden="true"
+          width="32"
+          height="32"
+        />
         <span v-if="!showSkeleton">{{ brandTitle }}</span>
         <span v-else class="header-skeleton brand-skeleton" aria-hidden="true"></span>
       </RouterLink>
@@ -186,10 +194,22 @@ async function selectAccountAction(key: string | number) {
 .app-brand {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   min-width: 0;
   color: var(--sw-text);
   font-size: 14px;
   font-weight: 800;
+  line-height: 1;
+}
+
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  box-shadow: 0 8px 20px rgba(28, 48, 58, 0.1);
 }
 
 .app-brand span:not(.header-skeleton) {
