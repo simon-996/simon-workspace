@@ -110,6 +110,8 @@ export default {
       searchPlaceholder: '搜索文章',
       categories: '分类',
       all: '全部',
+      tags: '标签',
+      allTags: '全部标签',
       uncategorized: '未分类',
       noSummary: '暂无摘要。',
       emptyTitle: '暂无文章',

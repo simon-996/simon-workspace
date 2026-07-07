@@ -431,13 +431,14 @@ function scrollToHeading(id: string) {
   border-radius: 8px;
   background: var(--sw-panel-bg-strong);
   box-shadow: var(--sw-shadow-soft);
+  padding: 16px;
 }
 
 .article-body :deep(.md-editor-preview) {
   max-width: 76ch;
   margin: 0 auto;
   color: var(--sw-text);
-  padding: 40px 44px;
+  padding: 44px 48px;
   font-family:
     Outfit, Geist, Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", "Microsoft YaHei", sans-serif;
@@ -640,7 +641,7 @@ function scrollToHeading(id: string) {
   }
 
   .article-body :deep(.md-editor-preview) {
-    padding: 28px 20px;
+    padding: 30px 22px;
   }
 }
 </style>

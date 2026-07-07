@@ -6,7 +6,14 @@ import { useMessage, NButton, NIcon, NInput, NSpin } from 'naive-ui'
 import { Edit, Eye, MessageCircle, Refresh, Search, Tags } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
-import { fetchBlogCategories, fetchBlogPosts, type BlogCategory, type BlogPostSummary } from '../../api/workspace'
+import {
+  fetchBlogCategories,
+  fetchBlogPosts,
+  fetchBlogTags,
+  type BlogCategory,
+  type BlogPostSummary,
+  type BlogTag,
+} from '../../api/workspace'
 import { useAuthStore } from '../../stores/auth'
 
 const router = useRouter()
@@ -16,13 +23,19 @@ const { t } = useI18n()
 const loading = ref(false)
 const keyword = ref('')
 const selectedCategory = ref<string | null>(null)
+const selectedTag = ref<string | null>(null)
 const posts = ref<BlogPostSummary[]>([])
 const categories = ref<BlogCategory[]>([])
+const tagFilters = ref<BlogTag[]>([])
 
 const canWrite = computed(() => auth.hasPermission('blog:post:create'))
 const selectedCategoryName = computed(() => {
   if (!selectedCategory.value) return t('blog.list.all')
   return categories.value.find((category) => category.id === selectedCategory.value)?.name || t('blog.list.all')
+})
+const selectedTagName = computed(() => {
+  if (!selectedTag.value) return t('blog.list.allTags')
+  return tagFilters.value.find((tag) => tag.slug === selectedTag.value)?.name || selectedTag.value
 })
 
 onMounted(() => {
@@ -33,14 +46,17 @@ onMounted(() => {
 async function load() {
   loading.value = true
   try {
-    const [categoryData, postData] = await Promise.all([
+    const [categoryData, tagData, postData] = await Promise.all([
       fetchBlogCategories(),
+      fetchBlogTags(),
       fetchBlogPosts({
         keyword: keyword.value.trim(),
         categoryId: selectedCategory.value,
+        tag: selectedTag.value,
       }),
     ])
     categories.value = categoryData
+    tagFilters.value = tagData
     posts.value = postData
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.loadFailed'))
@@ -51,6 +67,11 @@ async function load() {
 
 function selectCategory(categoryId: string | null) {
   selectedCategory.value = categoryId
+  void load()
+}
+
+function selectTag(tagSlug: string | null) {
+  selectedTag.value = tagSlug
   void load()
 }
 
@@ -115,6 +136,27 @@ function formatDate(value?: string | null) {
           </div>
         </div>
 
+        <div v-if="tagFilters.length" class="tag-filter-card">
+          <div class="filter-title">
+            <n-icon :component="Tags" />
+            <span>{{ selectedTagName }}</span>
+          </div>
+          <div class="tag-filter-list">
+            <button :class="{ active: selectedTag === null }" @click="selectTag(null)">
+              <span>{{ t('blog.list.allTags') }}</span>
+            </button>
+            <button
+              v-for="tag in tagFilters"
+              :key="tag.id"
+              :class="{ active: selectedTag === tag.slug }"
+              @click="selectTag(tag.slug)"
+            >
+              <span>#{{ tag.name }}</span>
+              <strong class="category-count">{{ tag.usageCount }}</strong>
+            </button>
+          </div>
+        </div>
+
         <n-button secondary block @click="load">
           <template #icon>
             <n-icon :component="Refresh" />
@@ -145,7 +187,15 @@ function formatDate(value?: string | null) {
                 <div class="post-taxonomy">
                   <span class="post-category">{{ post.category?.name || t('blog.list.uncategorized') }}</span>
                   <div class="tag-row">
-                    <strong v-for="tag in post.tags.slice(0, 3)" :key="tag.id">#{{ tag.name }}</strong>
+                    <button
+                      v-for="tag in post.tags.slice(0, 4)"
+                      :key="tag.id"
+                      type="button"
+                      :class="{ active: selectedTag === tag.slug }"
+                      @click.stop="selectTag(tag.slug)"
+                    >
+                      #{{ tag.name }}
+                    </button>
                   </div>
                 </div>
                 <span class="post-stats">
@@ -226,7 +276,8 @@ function formatDate(value?: string | null) {
   backdrop-filter: blur(18px);
 }
 
-.category-card {
+.category-card,
+.tag-filter-card {
   border: 1px solid var(--sw-border);
   border-radius: 8px;
   background: var(--sw-panel-bg-strong);
@@ -250,12 +301,14 @@ function formatDate(value?: string | null) {
   font-size: 17px;
 }
 
-.category-tabs {
+.category-tabs,
+.tag-filter-list {
   display: grid;
   gap: 6px;
 }
 
-.category-tabs button {
+.category-tabs button,
+.tag-filter-list button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -275,19 +328,22 @@ function formatDate(value?: string | null) {
     transform var(--sw-motion-standard);
 }
 
-.category-tabs button:hover {
+.category-tabs button:hover,
+.tag-filter-list button:hover {
   background: var(--sw-surface-muted);
   color: var(--sw-text);
   transform: translate3d(2px, 0, 0);
 }
 
-.category-tabs button.active {
+.category-tabs button.active,
+.tag-filter-list button.active {
   border-color: color-mix(in srgb, var(--sw-accent) 34%, transparent);
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
 }
 
-.category-tabs button:active {
+.category-tabs button:active,
+.tag-filter-list button:active {
   transform: translate3d(2px, 1px, 0);
 }
 
@@ -412,13 +468,26 @@ function formatDate(value?: string | null) {
   min-width: 0;
 }
 
-.tag-row strong {
+.tag-row button {
+  border: 0;
   border-radius: 999px;
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
+  cursor: pointer;
   padding: 4px 9px;
   font-size: 12px;
   font-weight: 800;
+  transition:
+    background-color var(--sw-motion-standard),
+    color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
+}
+
+.tag-row button:hover,
+.tag-row button.active {
+  background: color-mix(in srgb, var(--sw-accent) 18%, transparent);
+  color: var(--sw-accent);
+  transform: translate3d(0, -1px, 0);
 }
 
 .post-stats {
@@ -467,7 +536,9 @@ function formatDate(value?: string | null) {
 
   .post-card,
   .post-card::before,
-  .category-tabs button {
+  .category-tabs button,
+  .tag-filter-list button,
+  .tag-row button {
     transition: none;
   }
 }
@@ -488,13 +559,15 @@ function formatDate(value?: string | null) {
     position: static;
   }
 
-  .category-tabs {
+  .category-tabs,
+  .tag-filter-list {
     display: flex;
     overflow-x: auto;
     padding-bottom: 2px;
   }
 
-  .category-tabs button {
+  .category-tabs button,
+  .tag-filter-list button {
     min-width: max-content;
   }
 }

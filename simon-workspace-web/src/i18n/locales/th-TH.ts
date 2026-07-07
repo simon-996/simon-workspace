@@ -110,6 +110,8 @@ export default {
       searchPlaceholder: 'ค้นหาบทความ',
       categories: 'หมวดหมู่',
       all: 'ทั้งหมด',
+      tags: 'แท็ก',
+      allTags: 'แท็กทั้งหมด',
       uncategorized: 'ไม่ระบุหมวดหมู่',
       noSummary: 'ยังไม่มีสรุป',
       emptyTitle: 'ยังไม่มีบทความ',

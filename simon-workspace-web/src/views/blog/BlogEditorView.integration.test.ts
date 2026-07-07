@@ -40,6 +40,16 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain(':status="categorySelectStatus"')
   })
 
+  it('searches reusable tags from the database and normalizes duplicate selections', () => {
+    expect(editorSource).toContain('fetchBlogTags')
+    expect(editorSource).toContain('remoteTags')
+    expect(editorSource).toContain('tagOptions')
+    expect(editorSource).toContain('searchTags')
+    expect(editorSource).toContain(':remote="true"')
+    expect(editorSource).toContain('@search="searchTags"')
+    expect(editorSource).toContain('normalizeSelectedTags(tags.value)')
+  })
+
   it('shows an error when editor image upload fails', () => {
     expect(editorSource).toContain("t('blog.messages.imageUploadFailed')")
     expect(editorSource).toContain('catch (error)')

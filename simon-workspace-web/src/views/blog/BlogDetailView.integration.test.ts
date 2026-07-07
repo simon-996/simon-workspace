@@ -39,7 +39,8 @@ describe('BlogDetailView', () => {
 
   it('adds breathing room between the article frame and rendered markdown', () => {
     expect(detailSource).toContain('grid-template-columns: minmax(0, 1fr) 230px;')
-    expect(detailSource).toContain('padding: 40px 44px;')
+    expect(detailSource).toContain('padding: 16px;')
+    expect(detailSource).toContain('padding: 44px 48px;')
     expect(detailSource).toContain('max-width: 76ch;')
   })
 })

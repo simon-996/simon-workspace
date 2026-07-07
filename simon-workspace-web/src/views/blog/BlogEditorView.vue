@@ -21,7 +21,9 @@ import {
   createBlogPost,
   fetchBlogCategories,
   fetchBlogPostDetail,
+  fetchBlogTags,
   type BlogCategory,
+  type BlogTag,
   updateBlogPost,
   uploadBlogEditorImage,
 } from '../../api/workspace'
@@ -39,8 +41,10 @@ const title = ref('')
 const summary = ref('')
 const categoryId = ref<string | null>(null)
 const tags = ref<string[]>([])
+const remoteTags = ref<BlogTag[]>([])
 const content = ref('')
 const saving = ref(false)
+const tagLoading = ref(false)
 const uploadingImages = ref(false)
 const uploadProgress = ref(0)
 const publishAttempted = ref(false)
@@ -52,6 +56,19 @@ let bypassUnsavedGuard = false
 
 const canManageCategory = computed(() => auth.hasPermission('blog:category:manage'))
 const categoryOptions = computed(() => categories.value.map((item) => ({ label: item.name, value: item.id })))
+const tagOptions = computed(() => {
+  const options = new Map<string, { label: string; value: string }>()
+  for (const item of remoteTags.value) {
+    options.set(normalizeTagKey(item.name), { label: item.name, value: item.name })
+  }
+  for (const item of tags.value) {
+    const tag = normalizeTagName(item)
+    if (tag) {
+      options.set(normalizeTagKey(tag), { label: tag, value: tag })
+    }
+  }
+  return Array.from(options.values())
+})
 const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 const editingPostId = computed(() => {
   const id = route.params.id
@@ -83,7 +100,10 @@ onMounted(async () => {
     })
     return
   }
-  await loadCategories()
+  await Promise.all([
+    loadCategories(),
+    searchTags(''),
+  ])
   if (isEditing.value) {
     await loadPostForEdit()
   }
@@ -115,6 +135,17 @@ async function loadCategories() {
   categories.value = await fetchBlogCategories()
 }
 
+async function searchTags(keyword: string) {
+  tagLoading.value = true
+  try {
+    remoteTags.value = await fetchBlogTags(keyword.trim())
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : t('blog.messages.loadFailed'))
+  } finally {
+    tagLoading.value = false
+  }
+}
+
 async function loadPostForEdit() {
   if (!editingPostId.value) return
   const existing = await fetchBlogPostDetail(editingPostId.value)
@@ -141,11 +172,12 @@ async function save(status: 'DRAFT' | 'PUBLISHED') {
   }
   saving.value = true
   try {
+    tags.value = normalizeSelectedTags(tags.value)
     const payload = {
       title: title.value.trim(),
       summary: summary.value.trim() || null,
       categoryId: categoryId.value,
-      tags: tags.value,
+      tags: normalizeSelectedTags(tags.value),
       contentMd: content.value,
       status,
     }
@@ -191,6 +223,25 @@ function importMarkdown(file: File) {
     if (!title.value && heading?.[1]) title.value = heading[1].trim()
   }
   reader.readAsText(file)
+}
+
+function normalizeSelectedTags(values: string[]) {
+  const normalized = new Map<string, string>()
+  for (const value of values) {
+    const tag = normalizeTagName(value)
+    if (tag) {
+      normalized.set(normalizeTagKey(tag), tag)
+    }
+  }
+  return Array.from(normalized.values())
+}
+
+function normalizeTagName(value: string) {
+  return value.trim().replace(/\s+/g, ' ')
+}
+
+function normalizeTagKey(value: string) {
+  return normalizeTagName(value).toLowerCase()
 }
 
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
@@ -280,8 +331,11 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           multiple
           tag
           filterable
+          :remote="true"
+          :loading="tagLoading"
           :placeholder="t('blog.editor.tagsPlaceholder')"
-          :options="tags.map(tag => ({ label: tag, value: tag }))"
+          :options="tagOptions"
+          @search="searchTags"
         />
       </section>
 

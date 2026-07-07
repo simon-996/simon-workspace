@@ -110,6 +110,8 @@ export default {
       searchPlaceholder: 'Search posts',
       categories: 'Categories',
       all: 'All',
+      tags: 'Tags',
+      allTags: 'All tags',
       uncategorized: 'Uncategorized',
       noSummary: 'No summary.',
       emptyTitle: 'No posts yet',

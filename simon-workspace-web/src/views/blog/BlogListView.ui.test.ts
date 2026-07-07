@@ -43,4 +43,19 @@ describe('BlogListView UI', () => {
     expect(listSource).toContain('v-if="post.summary"')
     expect(listSource).not.toContain("post.summary || t('blog.list.noSummary')")
   })
+
+  it('loads reusable tags and uses them as a blog filter', () => {
+    expect(listSource).toContain('fetchBlogTags')
+    expect(listSource).toContain('selectedTag')
+    expect(listSource).toContain('selectedTagName')
+    expect(listSource).toContain('tag: selectedTag.value')
+    expect(listSource).toContain('selectTag(tag.slug)')
+    expect(listSource).toContain('class="tag-filter-card"')
+  })
+
+  it('lets post tag chips filter the list without opening the post', () => {
+    expect(listSource).toContain('@click.stop="selectTag(tag.slug)"')
+    expect(listSource).toContain(':class="{ active: selectedTag === tag.slug }"')
+    expect(listSource).not.toContain('<strong v-for="tag in post.tags.slice(0, 3)"')
+  })
 })
