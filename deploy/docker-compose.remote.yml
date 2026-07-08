@@ -1,0 +1,86 @@
+services:
+  simon-workspace-api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    image: simon-workspace-api:remote
+    container_name: simon-workspace-api
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8080
+      SPRING_PROFILES_ACTIVE: prod
+
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_PORT: ${MYSQL_PORT}
+      MYSQL_URL: ${MYSQL_URL}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USERNAME: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_DATABASE: ${REDIS_DATABASE:-0}
+
+      SA_TOKEN_TIMEOUT: ${SA_TOKEN_TIMEOUT:-43200}
+      SA_TOKEN_ACTIVE_TIMEOUT: ${SA_TOKEN_ACTIVE_TIMEOUT:--1}
+      SA_TOKEN_IS_LOG: ${SA_TOKEN_IS_LOG:-false}
+
+      FLYWAY_ENABLED: ${FLYWAY_ENABLED:-true}
+      APP_FILE_STORAGE_ROOT: /data/files
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+
+      APP_STORAGE_ACTIVE_PROVIDER: ${APP_STORAGE_ACTIVE_PROVIDER:-LOCAL}
+      APP_STORAGE_LOCAL_ENABLED: ${APP_STORAGE_LOCAL_ENABLED:-true}
+      APP_STORAGE_LOCAL_PUBLIC_BASE_URL: ${APP_STORAGE_LOCAL_PUBLIC_BASE_URL:-}
+
+      TENCENT_COS_ENABLED: ${TENCENT_COS_ENABLED:-false}
+      TENCENT_COS_ENDPOINT: ${TENCENT_COS_ENDPOINT:-}
+      TENCENT_COS_REGION: ${TENCENT_COS_REGION:-}
+      TENCENT_COS_BUCKET: ${TENCENT_COS_BUCKET:-}
+      TENCENT_COS_SECRET_ID: ${TENCENT_COS_SECRET_ID:-}
+      TENCENT_COS_SECRET_KEY: ${TENCENT_COS_SECRET_KEY:-}
+      TENCENT_COS_PUBLIC_BASE_URL: ${TENCENT_COS_PUBLIC_BASE_URL:-}
+
+      ALIYUN_OSS_ENABLED: ${ALIYUN_OSS_ENABLED:-false}
+      ALIYUN_OSS_ENDPOINT: ${ALIYUN_OSS_ENDPOINT:-}
+      ALIYUN_OSS_REGION: ${ALIYUN_OSS_REGION:-}
+      ALIYUN_OSS_BUCKET: ${ALIYUN_OSS_BUCKET:-}
+      ALIYUN_OSS_ACCESS_KEY_ID: ${ALIYUN_OSS_ACCESS_KEY_ID:-}
+      ALIYUN_OSS_ACCESS_KEY_SECRET: ${ALIYUN_OSS_ACCESS_KEY_SECRET:-}
+      ALIYUN_OSS_PUBLIC_BASE_URL: ${ALIYUN_OSS_PUBLIC_BASE_URL:-}
+
+      CLOUDFLARE_R2_ENABLED: ${CLOUDFLARE_R2_ENABLED:-false}
+      CLOUDFLARE_R2_ENDPOINT: ${CLOUDFLARE_R2_ENDPOINT:-}
+      CLOUDFLARE_R2_ACCOUNT_ID: ${CLOUDFLARE_R2_ACCOUNT_ID:-}
+      CLOUDFLARE_R2_BUCKET: ${CLOUDFLARE_R2_BUCKET:-}
+      CLOUDFLARE_R2_ACCESS_KEY_ID: ${CLOUDFLARE_R2_ACCESS_KEY_ID:-}
+      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${CLOUDFLARE_R2_SECRET_ACCESS_KEY:-}
+      CLOUDFLARE_R2_PUBLIC_BASE_URL: ${CLOUDFLARE_R2_PUBLIC_BASE_URL:-}
+    volumes:
+      - api-files:/data/files
+    ports:
+      - "${API_PUBLIC_PORT:-9527}:8080"
+    networks:
+      - simon-workspace-net
+
+  simon-workspace-web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    image: simon-workspace-web:remote
+    container_name: simon-workspace-web
+    restart: unless-stopped
+    depends_on:
+      - simon-workspace-api
+    ports:
+      - "${WEB_PUBLIC_PORT:-9526}:80"
+    networks:
+      - simon-workspace-net
+
+networks:
+  simon-workspace-net:
+    driver: bridge
+
+volumes:
+  api-files:
