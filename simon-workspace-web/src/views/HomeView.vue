@@ -15,7 +15,7 @@ const defaultContactEmail = 'simon996chen@outlook.com'
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
 const introKicker = computed(() => t('home.intro.kicker').trim())
 const introShort = computed(() => site.value?.heroSubtitle?.trim() || t('home.intro.shortLine').trim())
-const profileBio = computed(() => site.value?.profileBio?.trim() || t('home.intro.body').trim())
+const profileBio = computed(() => site.value?.profileBio?.trim() || '')
 const contactLabel = computed(() => t('home.intro.contactLabel').trim())
 const contactEmail = computed(() => site.value?.contactEmail?.trim() || defaultContactEmail)
 const contactHref = computed(() => `mailto:${contactEmail.value}`)
