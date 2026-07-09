@@ -38,44 +38,44 @@ Goal: allow public registration, but require owner/admin review before the accou
 
 ### Backend
 
-- [ ] Add account registration API.
-- [ ] Add username uniqueness validation.
-- [ ] Add email uniqueness validation if email is provided.
-- [ ] Add password strength validation with clear error messages.
-- [ ] Add account review status, such as `PENDING`, `APPROVED`, `REJECTED`.
-- [ ] Make newly registered accounts default to `PENDING`.
-- [ ] Prevent `PENDING` accounts from entering workspace APIs.
-- [ ] Prevent `REJECTED` accounts from logging in or using workspace APIs.
-- [ ] Keep login response clear when an account is waiting for review.
-- [ ] Add admin API for pending account list.
-- [ ] Add admin API for approving an account.
-- [ ] Add admin API for rejecting an account.
-- [ ] Add admin API for disabling an account after approval.
-- [ ] Add admin API for assigning roles during or after approval.
+- [x] Add account registration API.
+- [x] Add username uniqueness validation.
+- [x] Add email uniqueness validation if email is provided.
+- [x] Add password strength validation with clear error messages.
+- [x] Add account review status, such as `PENDING`, `APPROVED`, `REJECTED`.
+- [x] Make newly registered accounts default to `PENDING`.
+- [x] Prevent `PENDING` accounts from entering workspace APIs.
+- [x] Prevent `REJECTED` accounts from logging in or using workspace APIs.
+- [x] Keep login response clear when an account is waiting for review.
+- [x] Add admin API for pending account list.
+- [x] Add admin API for approving an account.
+- [x] Add admin API for rejecting an account.
+- [x] Add admin API for disabling an account after approval.
+- [x] Add admin API for assigning roles during or after approval.
 - [ ] Add audit fields for reviewer, review time, and review remark.
 - [ ] Add tests for registration, duplicate fields, pending login, approve, reject, and permission boundaries.
 
 ### Frontend
 
-- [ ] Add public register page.
-- [ ] Add register entry near login.
-- [ ] Add registration success state explaining that review is required.
-- [ ] Add friendly pending/rejected login messages.
-- [ ] Add workspace account review page or review panel.
-- [ ] Show pending accounts with username, nickname, email, register time, and review actions.
-- [ ] Support approve with role assignment.
+- [x] Add public register page.
+- [x] Add register entry near login.
+- [x] Add registration success state explaining that review is required.
+- [x] Add friendly pending/rejected login messages.
+- [x] Add workspace account review page or review panel.
+- [x] Show pending accounts with username, nickname, email, register time, and review actions.
+- [x] Support approve with role assignment.
 - [ ] Support reject with optional reason.
-- [ ] Add route guards so pending accounts cannot enter the workspace.
-- [ ] Add i18n strings for Chinese, English, and Thai.
-- [ ] Add mobile layout for registration and review pages.
+- [x] Add route guards so pending accounts cannot enter the workspace.
+- [x] Add i18n strings for Chinese, English, and Thai.
+- [x] Add mobile layout for registration and review pages.
 
 ### Acceptance
 
-- [ ] A visitor can register.
-- [ ] The new account cannot use workspace features before approval.
-- [ ] An approved account can log in and use only its assigned permissions.
-- [ ] A rejected account receives a clear message.
-- [ ] Owner/admin can review accounts from the workspace.
+- [x] A visitor can register.
+- [x] The new account cannot use workspace features before approval.
+- [x] An approved account can log in and use only its assigned permissions.
+- [x] A rejected account receives a clear message.
+- [x] Owner/admin can review accounts from the workspace.
 
 ## Phase B: Editable Homepage And Site Profile
 

@@ -8,15 +8,19 @@ import {
   NIcon,
   NInput,
   NModal,
+  NPopconfirm,
   NSpin,
   NTag,
   useMessage,
 } from 'naive-ui'
-import { AlertTriangle, CircleCheck, Edit, Refresh, Search, Users } from '@vicons/tabler'
+import { AlertTriangle, Ban, CircleCheck, Edit, Refresh, Search, UserCheck, UserX, Users } from '@vicons/tabler'
 
 import {
+  approveSecurityUser,
+  disableSecurityUser,
   fetchSecurityRoles,
   fetchSecurityUsers,
+  rejectSecurityUser,
   updateSecurityUserRoles,
   type ManagedUser,
   type Role,
@@ -34,6 +38,7 @@ const error = ref('')
 const modalVisible = ref(false)
 const editingUser = ref<ManagedUser | null>(null)
 const selectedRoles = ref<string[]>([])
+const roleMode = ref<'roles' | 'approve'>('roles')
 
 const enabledCount = computed(() => users.value.filter((user) => user.status === 'ENABLED').length)
 const ownerCount = computed(() => users.value.filter((user) => user.roles.includes('OWNER')).length)
@@ -45,6 +50,11 @@ const permissionCount = computed(() => {
 const modalTitle = computed(() => {
   if (!editingUser.value) {
     return t('workspace.security.roles.defaultModalTitle')
+  }
+  if (roleMode.value === 'approve') {
+    return t('workspace.security.review.approveTitle', {
+      name: editingUser.value.nickname || editingUser.value.username,
+    })
   }
   return t('workspace.security.roles.modalTitle', {
     name: editingUser.value.nickname || editingUser.value.username,
@@ -76,6 +86,14 @@ async function loadSecurity() {
 function openRoleModal(user: ManagedUser) {
   editingUser.value = user
   selectedRoles.value = [...user.roles]
+  roleMode.value = 'roles'
+  modalVisible.value = true
+}
+
+function openApproveModal(user: ManagedUser) {
+  editingUser.value = user
+  selectedRoles.value = user.roles.length > 0 ? [...user.roles] : ['VIEWER']
+  roleMode.value = 'approve'
   modalVisible.value = true
 }
 
@@ -86,11 +104,14 @@ async function submitRoles() {
 
   saving.value = true
   try {
-    const updated = await updateSecurityUserRoles(editingUser.value.id, {
-      roleCodes: selectedRoles.value,
-    })
+    const payload = { roleCodes: selectedRoles.value }
+    const updated = roleMode.value === 'approve'
+      ? await approveSecurityUser(editingUser.value.id, payload)
+      : await updateSecurityUserRoles(editingUser.value.id, payload)
     users.value = users.value.map((user) => user.id === updated.id ? updated : user)
-    message.success(t('workspace.security.messages.updated'))
+    message.success(roleMode.value === 'approve'
+      ? t('workspace.security.messages.approved')
+      : t('workspace.security.messages.updated'))
     modalVisible.value = false
   } catch (err) {
     message.error(err instanceof Error ? err.message : t('workspace.security.messages.updateFailed'))
@@ -106,7 +127,36 @@ function roleName(roleCode: string) {
 function statusText(status: string) {
   if (status === 'ENABLED') return t('common.states.enabled')
   if (status === 'DISABLED') return t('common.states.disabled')
+  if (status === 'PENDING') return t('common.states.pending')
+  if (status === 'REJECTED') return t('workspace.security.status.rejected')
   return status
+}
+
+function statusTagType(status: string) {
+  if (status === 'ENABLED') return 'success'
+  if (status === 'PENDING') return 'warning'
+  if (status === 'REJECTED') return 'error'
+  return 'default'
+}
+
+async function rejectUser(user: ManagedUser) {
+  try {
+    const updated = await rejectSecurityUser(user.id)
+    users.value = users.value.map((item) => item.id === updated.id ? updated : item)
+    message.success(t('workspace.security.messages.rejected'))
+  } catch (err) {
+    message.error(err instanceof Error ? err.message : t('workspace.security.messages.reviewFailed'))
+  }
+}
+
+async function disableUser(user: ManagedUser) {
+  try {
+    const updated = await disableSecurityUser(user.id)
+    users.value = users.value.map((item) => item.id === updated.id ? updated : item)
+    message.success(t('workspace.security.messages.disabled'))
+  } catch (err) {
+    message.error(err instanceof Error ? err.message : t('workspace.security.messages.reviewFailed'))
+  }
 }
 </script>
 
@@ -190,9 +240,10 @@ function statusText(status: string) {
                 <span>{{ user.username }} · {{ user.email || '-' }}</span>
               </td>
               <td>
-                <n-tag :type="user.status === 'ENABLED' ? 'success' : 'warning'" size="small" round>
+                <n-tag :type="statusTagType(user.status)" size="small" round>
                   {{ statusText(user.status) }}
                 </n-tag>
+                <span v-if="user.reviewRemark">{{ user.reviewRemark }}</span>
               </td>
               <td>
                 <div class="role-tags">
@@ -210,6 +261,41 @@ function statusText(status: string) {
                     <n-icon :component="Edit" />
                   </template>
                 </n-button>
+                <n-button v-if="user.status === 'PENDING'" quaternary size="small" type="success" @click="openApproveModal(user)">
+                  <template #icon>
+                    <n-icon :component="UserCheck" />
+                  </template>
+                </n-button>
+                <n-popconfirm
+                  v-if="user.status === 'PENDING'"
+                  :positive-text="t('workspace.security.review.reject')"
+                  :negative-text="t('common.actions.cancel')"
+                  @positive-click="rejectUser(user)"
+                >
+                  <template #trigger>
+                    <n-button quaternary size="small" type="error">
+                      <template #icon>
+                        <n-icon :component="UserX" />
+                      </template>
+                    </n-button>
+                  </template>
+                  {{ t('workspace.security.review.rejectConfirm') }}
+                </n-popconfirm>
+                <n-popconfirm
+                  v-if="user.status === 'ENABLED'"
+                  :positive-text="t('workspace.security.review.disable')"
+                  :negative-text="t('common.actions.cancel')"
+                  @positive-click="disableUser(user)"
+                >
+                  <template #trigger>
+                    <n-button quaternary size="small" type="warning">
+                      <template #icon>
+                        <n-icon :component="Ban" />
+                      </template>
+                    </n-button>
+                  </template>
+                  {{ t('workspace.security.review.disableConfirm') }}
+                </n-popconfirm>
               </td>
             </tr>
           </tbody>
@@ -254,7 +340,9 @@ function statusText(status: string) {
 
         <div class="form-actions">
           <n-button @click="modalVisible = false">{{ t('common.actions.cancel') }}</n-button>
-          <n-button type="primary" attr-type="submit" :loading="saving">{{ t('common.actions.save') }}</n-button>
+          <n-button type="primary" attr-type="submit" :loading="saving">
+            {{ roleMode === 'approve' ? t('workspace.security.review.approve') : t('common.actions.save') }}
+          </n-button>
         </div>
       </form>
     </n-modal>

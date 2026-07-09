@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
 import WorkspaceView from '../views/WorkspaceView.vue'
 import BlogDetailView from '../views/blog/BlogDetailView.vue'
 import BlogEditorView from '../views/blog/BlogEditorView.vue'
@@ -145,6 +146,11 @@ export const router = createRouter({
       component: LoginView,
     },
     {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+    },
+    {
       path: '/blog',
       name: 'blog',
       component: BlogListView,
@@ -210,7 +216,7 @@ router.beforeEach(async (to) => {
     }
   }
 
-  if (to.name === 'login' && await auth.restore()) {
+  if ((to.name === 'login' || to.name === 'register') && await auth.restore()) {
     return { name: 'workspace' }
   }
 })

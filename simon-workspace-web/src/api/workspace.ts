@@ -329,6 +329,8 @@ export interface ManagedUser {
   email?: string | null
   status: string
   lastLoginTime?: string | null
+  reviewedTime?: string | null
+  reviewRemark?: string | null
   roles: string[]
   createdTime?: string
   updatedTime?: string
@@ -650,6 +652,21 @@ export async function fetchSecurityRoles() {
 
 export async function updateSecurityUserRoles(id: string, payload: UpdateUserRolesPayload) {
   const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/roles`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function approveSecurityUser(id: string, payload: UpdateUserRolesPayload) {
+  const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/approve`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function rejectSecurityUser(id: string, remark?: string | null) {
+  const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/reject`, { remark: remark || null })
+  return unwrapApiResponse(response.data)
+}
+
+export async function disableSecurityUser(id: string, remark?: string | null) {
+  const response = await http.put<ApiResponse<ManagedUser>>(`/security/users/${id}/disable`, { remark: remark || null })
   return unwrapApiResponse(response.data)
 }
 

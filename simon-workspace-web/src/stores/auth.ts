@@ -28,6 +28,21 @@ interface LoginData {
   user: CurrentUser
 }
 
+export interface RegisterPayload {
+  username: string
+  password: string
+  nickname: string
+  email?: string | null
+}
+
+export interface RegisterResult {
+  id: string
+  username: string
+  nickname: string
+  email?: string | null
+  status: string
+}
+
 export interface ProfileUpdatePayload {
   nickname: string
   email?: string | null
@@ -135,3 +150,8 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 })
+
+export async function registerAccount(payload: RegisterPayload) {
+  const response = await http.post<ApiResponse<RegisterResult>>('/auth/register', payload)
+  return unwrapApiResponse(response.data)
+}

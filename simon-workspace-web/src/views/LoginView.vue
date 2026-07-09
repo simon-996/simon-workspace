@@ -75,6 +75,9 @@ async function submitLogin() {
         <n-button class="login-button" type="primary" size="large" attr-type="submit" :loading="submitting">
           <n-icon :component="ArrowRight" /> {{ t('login.submit') }}
         </n-button>
+        <n-button text class="register-link" @click="router.push('/register')">
+          {{ t('login.register') }}
+        </n-button>
       </form>
     </section>
   </main>
@@ -152,6 +155,12 @@ label {
 
 .login-button :deep(.n-button__content) {
   gap: 10px;
+}
+
+.register-link {
+  justify-self: center;
+  color: var(--sw-muted);
+  font-weight: 700;
 }
 
 @keyframes login-panel-in {
