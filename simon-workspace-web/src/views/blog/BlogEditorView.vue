@@ -20,7 +20,7 @@ import {
   createBlogCategory,
   createBlogPost,
   fetchBlogCategories,
-  fetchBlogPostDetail,
+  fetchManageBlogPostDetail,
   fetchBlogTags,
   type BlogCategory,
   type BlogTag,
@@ -148,7 +148,7 @@ async function searchTags(keyword: string) {
 
 async function loadPostForEdit() {
   if (!editingPostId.value) return
-  const existing = await fetchBlogPostDetail(editingPostId.value)
+  const existing = await fetchManageBlogPostDetail(editingPostId.value)
   title.value = existing.title
   summary.value = existing.summary || ''
   categoryId.value = existing.category?.id || null
@@ -186,7 +186,7 @@ async function save(status: 'DRAFT' | 'PUBLISHED') {
       : await createBlogPost(payload)
     message.success(status === 'PUBLISHED' ? t('blog.messages.published') : t('blog.messages.draftSaved'))
     bypassUnsavedGuard = true
-    await router.push(`/blog/${post.id}`)
+    await router.push(status === 'PUBLISHED' ? `/blog/${post.id}` : `/blog/${post.id}/edit`)
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.saveFailed'))
   } finally {

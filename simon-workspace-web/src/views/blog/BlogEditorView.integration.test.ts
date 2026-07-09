@@ -25,12 +25,16 @@ describe('BlogEditorView', () => {
 
   it('loads an existing post and updates it when used from the edit route', () => {
     expect(editorSource).toContain('useRoute')
-    expect(editorSource).toContain('fetchBlogPostDetail')
+    expect(editorSource).toContain('fetchManageBlogPostDetail')
     expect(editorSource).toContain('updateBlogPost')
     expect(editorSource).toContain('editingPostId')
     expect(editorSource).toContain('loadPostForEdit')
     expect(editorSource).toContain('updateBlogPost(editingPostId.value')
     expect(editorSource).toContain("t('blog.editor.editKicker')")
+  })
+
+  it('keeps saved drafts in the editable route instead of the public detail route', () => {
+    expect(editorSource).toContain("status === 'PUBLISHED' ? `/blog/${post.id}` : `/blog/${post.id}/edit`")
   })
 
   it('requires a category before publishing a blog post', () => {

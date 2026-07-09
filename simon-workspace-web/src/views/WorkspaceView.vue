@@ -33,6 +33,7 @@ const navItems = [
   { to: '/workspace/files', labelKey: 'workspace.nav.files', icon: Files, permission: 'file:manage' },
   { to: '/workspace/storage', labelKey: 'workspace.nav.storage', icon: Cloud, permission: 'file:manage' },
   { to: '/workspace/history', labelKey: 'workspace.nav.history', icon: History, permission: 'generation:history' },
+  { to: '/workspace/posts', labelKey: 'workspace.nav.blogPosts', icon: Notebook, permission: 'blog:post:create' },
   { to: '/workspace/blog', labelKey: 'workspace.nav.blog', icon: Notebook, permission: 'blog:category:manage' },
   { to: '/workspace/security', labelKey: 'workspace.nav.security', icon: Users, permission: 'user:manage' },
   { to: '/workspace/site', labelKey: 'workspace.nav.site', icon: Settings, permission: 'site:config' },

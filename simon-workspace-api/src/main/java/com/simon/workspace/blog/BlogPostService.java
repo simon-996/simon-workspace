@@ -4,6 +4,7 @@ import com.simon.workspace.auth.model.CurrentUser;
 import com.simon.workspace.auth.session.AuthContextHolder;
 import com.simon.workspace.blog.dto.BlogPostDetailResponse;
 import com.simon.workspace.blog.dto.BlogPostRequest;
+import com.simon.workspace.blog.dto.BlogPostSummaryResponse;
 import com.simon.workspace.file.FileReferenceService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -63,6 +64,54 @@ public class BlogPostService extends BlogService {
             throw new IllegalArgumentException("文章不存在或无权操作");
         }
         fileReferenceService.syncReferences("BLOG_POST", String.valueOf(id), "CONTENT_IMAGE", List.of());
+    }
+
+    public List<BlogPostSummaryResponse> managePosts(String status, String keyword) {
+        CurrentUser user = AuthContextHolder.requireUser();
+        StringBuilder sql = new StringBuilder("""
+                SELECT DISTINCT p.*, u.nickname AS author_name, c.name AS category_name, c.slug AS category_slug,
+                       c.description AS category_description, c.sort_order AS category_sort_order, c.status AS category_status,
+                       c.created_time AS category_created_time, c.updated_time AS category_updated_time
+                FROM blog_post p
+                JOIN user u ON u.id = p.author_user_id
+                LEFT JOIN blog_category c ON c.id = p.category_id AND c.deleted = 0
+                WHERE p.deleted = 0 AND p.author_user_id = ?
+                """);
+        java.util.ArrayList<Object> args = new java.util.ArrayList<>();
+        args.add(user.id());
+
+        if (StringUtils.hasText(status)) {
+            sql.append(" AND p.status = ?");
+            args.add(normalizeStatus(status, "DRAFT", List.of("DRAFT", "PUBLISHED")));
+        }
+        if (StringUtils.hasText(keyword)) {
+            sql.append(" AND (p.title LIKE ? OR p.summary LIKE ? OR p.content_md LIKE ?)");
+            String like = "%" + keyword.trim() + "%";
+            args.add(like);
+            args.add(like);
+            args.add(like);
+        }
+
+        sql.append(" ORDER BY p.updated_time DESC, p.id DESC");
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> summaryFromRow(rs), args.toArray());
+    }
+
+    public BlogPostDetailResponse manageDetail(long id) {
+        CurrentUser user = AuthContextHolder.requireUser();
+        return jdbcTemplate.query("""
+                        SELECT p.*, u.nickname AS author_name, c.name AS category_name, c.slug AS category_slug,
+                               c.description AS category_description, c.sort_order AS category_sort_order, c.status AS category_status,
+                               c.created_time AS category_created_time, c.updated_time AS category_updated_time
+                        FROM blog_post p
+                        JOIN user u ON u.id = p.author_user_id
+                        LEFT JOIN blog_category c ON c.id = p.category_id AND c.deleted = 0
+                        WHERE p.id = ? AND p.author_user_id = ? AND p.deleted = 0
+                        LIMIT 1
+                        """,
+                (rs, rowNum) -> detailFromRow(rs),
+                id,
+                user.id()
+        ).stream().findFirst().orElseThrow(() -> new IllegalArgumentException("文章不存在或无权操作"));
     }
 
     private long insertPost(

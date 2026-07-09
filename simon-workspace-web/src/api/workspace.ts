@@ -730,8 +730,23 @@ export async function fetchBlogPosts(params?: { keyword?: string; categoryId?: s
   return unwrapApiResponse(response.data)
 }
 
+export async function fetchManageBlogPosts(params?: { keyword?: string; status?: string | null }) {
+  const response = await http.get<ApiResponse<BlogPostSummary[]>>('/blog/manage/posts', {
+    params: {
+      keyword: params?.keyword || undefined,
+      status: params?.status || undefined,
+    },
+  })
+  return unwrapApiResponse(response.data)
+}
+
 export async function fetchBlogPostDetail(id: string) {
   const response = await http.get<ApiResponse<BlogPostDetail>>(`/blog/posts/${id}`)
+  return unwrapApiResponse(response.data)
+}
+
+export async function fetchManageBlogPostDetail(id: string) {
+  const response = await http.get<ApiResponse<BlogPostDetail>>(`/blog/manage/posts/${id}`)
   return unwrapApiResponse(response.data)
 }
 
@@ -742,6 +757,11 @@ export async function createBlogPost(payload: BlogPostPayload) {
 
 export async function updateBlogPost(id: string, payload: BlogPostPayload) {
   const response = await http.put<ApiResponse<BlogPostDetail>>(`/blog/posts/${id}`, payload)
+  return unwrapApiResponse(response.data)
+}
+
+export async function deleteBlogPost(id: string) {
+  const response = await http.delete<ApiResponse<void>>(`/blog/posts/${id}`)
   return unwrapApiResponse(response.data)
 }
 

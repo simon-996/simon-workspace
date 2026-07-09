@@ -140,13 +140,14 @@ Goal: make the blog suitable for technical posts, teaching notes, project record
 
 ### Drafts And Editing
 
-- [ ] Add draft list in workspace or blog editor.
-- [ ] Support saving a post as draft.
-- [ ] Support editing existing drafts.
-- [ ] Support editing published posts.
+- [x] Add draft list in workspace or blog editor.
+- [x] Support saving a post as draft.
+- [x] Support editing existing drafts.
+- [x] Support editing published posts.
 - [ ] Support preview before publishing.
-- [ ] Add status display for draft/published/archived posts.
-- [ ] Add unsaved-change warning in the editor.
+- [x] Add status display for draft/published posts.
+- [ ] Add archived status display after archive/unpublish flow exists.
+- [x] Add unsaved-change warning in the editor.
 - [ ] Add autosave or manual save feedback if needed.
 
 ### Post Metadata

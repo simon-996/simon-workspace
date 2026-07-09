@@ -12,6 +12,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -96,5 +97,27 @@ class BlogPostServiceTests {
         )))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("发布文章必须选择分类");
+    }
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void managePostsRestrictsListToCurrentAuthorAndFilters() {
+        JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+        FileReferenceService fileReferenceService = mock(FileReferenceService.class);
+        BlogPostService service = new BlogPostService(jdbcTemplate, fileReferenceService);
+        AuthContextHolder.set(new CurrentUser(7L, "simon", "Simon", null, null, List.of(), List.of("blog:post:create")));
+        when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any(Object[].class)))
+                .thenReturn(List.of());
+
+        service.managePosts("DRAFT", "hello");
+
+        verify(jdbcTemplate).query(
+                contains("p.author_user_id = ?"),
+                any(org.springframework.jdbc.core.RowMapper.class),
+                eq(7L),
+                eq("DRAFT"),
+                eq("%hello%"),
+                eq("%hello%"),
+                eq("%hello%")
+        );
     }
 }

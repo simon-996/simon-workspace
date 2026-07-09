@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { NIcon } from 'naive-ui'
-import { Book, Calendar, CircleCheck, Files, History, Template } from '@vicons/tabler'
+import { Book, Calendar, CircleCheck, Files, History, Notes, Template } from '@vicons/tabler'
 
 const { t } = useI18n()
 
@@ -10,6 +10,7 @@ const modules = [
   { labelKey: 'workspace.home.modules.classes', valueKey: 'workspace.home.apiReady', icon: CircleCheck, to: '/workspace/classes' },
   { labelKey: 'workspace.home.modules.semesters', valueKey: 'workspace.home.apiReady', icon: Calendar, to: '/workspace/semesters' },
   { labelKey: 'workspace.home.modules.templates', valueKey: 'workspace.home.apiReady', icon: Template, to: '/workspace/templates' },
+  { labelKey: 'workspace.home.modules.blogPosts', valueKey: 'workspace.home.apiReady', icon: Notes, to: '/workspace/posts' },
   { labelKey: 'workspace.home.modules.files', valueKey: 'workspace.home.apiReady', icon: Files, to: '/workspace/files' },
   { labelKey: 'workspace.home.modules.history', valueKey: 'workspace.home.apiReady', icon: History, to: '/workspace/history' },
 ]

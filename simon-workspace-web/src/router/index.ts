@@ -11,6 +11,7 @@ import PublicCourseDetailView from '../views/course/PublicCourseDetailView.vue'
 import PublicCourseListView from '../views/course/PublicCourseListView.vue'
 import PublicMarkdownView from '../views/course/PublicMarkdownView.vue'
 import BlogManagementView from '../views/workspace/BlogManagementView.vue'
+import BlogPostManagementView from '../views/workspace/BlogPostManagementView.vue'
 import ClassManagementView from '../views/workspace/ClassManagementView.vue'
 import CourseManagementView from '../views/workspace/CourseManagementView.vue'
 import FileCenterView from '../views/workspace/FileCenterView.vue'
@@ -109,6 +110,15 @@ export const router = createRouter({
           meta: {
             titleKey: 'workspace.pages.history',
             permission: 'generation:history',
+          },
+        },
+        {
+          path: 'posts',
+          name: 'workspace-blog-posts',
+          component: BlogPostManagementView,
+          meta: {
+            titleKey: 'workspace.pages.blogPosts',
+            permission: 'blog:post:create',
           },
         },
         {

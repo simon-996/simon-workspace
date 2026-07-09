@@ -85,6 +85,21 @@ public class BlogController {
         return ApiResponse.ok(blogService.posts(keyword, categoryId, tag));
     }
 
+    @GetMapping("/manage/posts")
+    @SaCheckPermission("blog:post:create")
+    public ApiResponse<List<BlogPostSummaryResponse>> managePosts(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword
+    ) {
+        return ApiResponse.ok(blogPostService.managePosts(status, keyword));
+    }
+
+    @GetMapping("/manage/posts/{id}")
+    @SaCheckPermission("blog:post:update")
+    public ApiResponse<BlogPostDetailResponse> managePostDetail(@PathVariable long id) {
+        return ApiResponse.ok(blogPostService.manageDetail(id));
+    }
+
     @GetMapping("/posts/{id}")
     public ApiResponse<BlogPostDetailResponse> detail(@PathVariable long id) {
         return ApiResponse.ok(blogService.detail(id));
