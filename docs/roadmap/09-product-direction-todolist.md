@@ -127,14 +127,14 @@ Goal: make the blog suitable for technical posts, teaching notes, project record
 
 ### Markdown Reading Quality
 
-- [ ] Improve Markdown detail rendering typography.
-- [ ] Add code block copy button.
-- [ ] Add code block language label.
-- [ ] Add table overflow handling on mobile.
-- [ ] Add image responsive layout.
-- [ ] Add heading anchors.
-- [ ] Add generated table of contents for longer posts.
-- [ ] Add safe external-link handling.
+- [x] Improve Markdown detail rendering typography.
+- [x] Add code block copy button.
+- [x] Add code block language label.
+- [x] Add table overflow handling on mobile.
+- [x] Add image responsive layout.
+- [x] Add heading anchors.
+- [x] Add generated table of contents for longer posts.
+- [x] Add safe external-link handling.
 - [ ] Ensure Markdown preview and published rendering are visually consistent.
 - [ ] Add mobile visual QA for blog detail pages.
 

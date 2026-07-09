@@ -128,6 +128,8 @@ export default {
       send: 'Send',
       signInToComment: 'Sign in to comment.',
       noComments: 'No comments yet.',
+      copyCode: 'Copy',
+      copiedCode: 'Copied',
     },
     editor: {
       kicker: 'New Post',
@@ -158,6 +160,7 @@ export default {
       saveFailed: 'Failed to save post',
       categoryCreateFailed: 'Failed to create category',
       imageUploadFailed: 'Failed to upload image',
+      copyFailed: 'Failed to copy code',
       markdownOnly: 'Only .md files are supported',
     },
   },

@@ -128,6 +128,8 @@ export default {
       send: 'ส่ง',
       signInToComment: 'เข้าสู่ระบบเพื่อแสดงความคิดเห็น',
       noComments: 'ยังไม่มีความคิดเห็น',
+      copyCode: 'คัดลอก',
+      copiedCode: 'คัดลอกแล้ว',
     },
     editor: {
       kicker: 'บทความใหม่',
@@ -158,6 +160,7 @@ export default {
       saveFailed: 'บันทึกบทความไม่สำเร็จ',
       categoryCreateFailed: 'สร้างหมวดหมู่ไม่สำเร็จ',
       imageUploadFailed: 'อัปโหลดรูปภาพไม่สำเร็จ',
+      copyFailed: 'คัดลอกโค้ดไม่สำเร็จ',
       markdownOnly: 'รองรับเฉพาะไฟล์ .md',
     },
   },

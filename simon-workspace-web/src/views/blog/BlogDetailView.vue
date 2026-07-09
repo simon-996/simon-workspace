@@ -31,8 +31,10 @@ const articleBodyRef = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const submitting = ref(false)
 const activeHeadingId = ref('')
+const copiedCodeId = ref('')
 let headingObserver: IntersectionObserver | null = null
 let headingSyncFrame = 0
+let markdownEnhanceFrame = 0
 
 interface ArticleHeading {
   id: string
@@ -58,6 +60,9 @@ onBeforeUnmount(() => {
   if (headingSyncFrame) {
     window.cancelAnimationFrame(headingSyncFrame)
   }
+  if (markdownEnhanceFrame) {
+    window.cancelAnimationFrame(markdownEnhanceFrame)
+  }
 })
 
 watch(tocItems, async () => {
@@ -76,7 +81,7 @@ async function load() {
     post.value = postData
     comments.value = commentData
     await nextTick()
-    scheduleHeadingSync()
+    scheduleMarkdownEnhancement()
   } catch (error) {
     message.error(error instanceof Error ? error.message : t('blog.messages.postLoadFailed'))
   } finally {
@@ -211,6 +216,98 @@ function scrollToHeading(id: string) {
     block: 'start',
   })
 }
+
+function handleMarkdownRendered() {
+  scheduleMarkdownEnhancement()
+}
+
+function scheduleMarkdownEnhancement() {
+  if (typeof window === 'undefined') return
+  if (markdownEnhanceFrame) {
+    window.cancelAnimationFrame(markdownEnhanceFrame)
+  }
+  markdownEnhanceFrame = window.requestAnimationFrame(() => {
+    enhanceRenderedMarkdown()
+    scheduleHeadingSync()
+    markdownEnhanceFrame = 0
+  })
+}
+
+function enhanceRenderedMarkdown() {
+  const preview = articleBodyRef.value?.querySelector<HTMLElement>('.md-editor-preview')
+  if (!preview) return
+
+  preview.querySelectorAll<HTMLAnchorElement>('a[href^="http://"], a[href^="https://"]').forEach((anchor) => {
+    try {
+      if (new URL(anchor.href).origin !== window.location.origin) {
+        anchor.target = '_blank'
+        anchor.rel = 'noopener noreferrer'
+      }
+    } catch {
+      anchor.rel = 'noopener noreferrer'
+    }
+  })
+
+  preview.querySelectorAll<HTMLPreElement>('pre').forEach((pre, index) => {
+    if (pre.querySelector(':scope > .article-code-toolbar')) return
+    const code = pre.querySelector<HTMLElement>('code')
+    const language = codeLanguage(code)
+    const codeId = `code-${index}`
+    const toolbar = document.createElement('div')
+    toolbar.className = 'article-code-toolbar'
+    toolbar.innerHTML = `
+      <span>${escapeHtml(language)}</span>
+      <button type="button" class="article-code-copy" data-code-id="${codeId}">
+        ${escapeHtml(t('blog.detail.copyCode'))}
+      </button>
+    `
+    pre.dataset.codeId = codeId
+    pre.prepend(toolbar)
+  })
+}
+
+function codeLanguage(code?: HTMLElement | null) {
+  const raw = code?.getAttribute('language')
+    || Array.from(code?.classList || [])
+      .find((className) => className.startsWith('language-'))
+      ?.replace('language-', '')
+    || 'text'
+  return raw.trim() || 'text'
+}
+
+async function handleArticleBodyClick(event: MouseEvent) {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) return
+  const button = target.closest<HTMLButtonElement>('.article-code-copy')
+  if (!button) return
+
+  const codeId = button.dataset.codeId || ''
+  const code = button.closest('pre')?.querySelector('code')?.textContent || ''
+  if (!code.trim()) return
+
+  try {
+    await navigator.clipboard.writeText(code)
+    copiedCodeId.value = codeId
+    button.textContent = t('blog.detail.copiedCode')
+    window.setTimeout(() => {
+      if (copiedCodeId.value === codeId) {
+        copiedCodeId.value = ''
+        button.textContent = t('blog.detail.copyCode')
+      }
+    }, 1400)
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : t('blog.messages.copyFailed'))
+  }
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
 </script>
 
 <template>
@@ -252,8 +349,13 @@ function scrollToHeading(id: string) {
 
         <div class="article-layout">
           <div class="article-main">
-            <section ref="articleBodyRef" class="article-body">
-              <MdPreview :model-value="post.contentMd" :theme="theme.isDark ? 'dark' : 'light'" preview-theme="github" />
+            <section ref="articleBodyRef" class="article-body" @click="handleArticleBodyClick">
+              <MdPreview
+                :model-value="post.contentMd"
+                :theme="theme.isDark ? 'dark' : 'light'"
+                preview-theme="github"
+                @on-html-changed="handleMarkdownRendered"
+              />
             </section>
 
             <section class="comments">
@@ -456,6 +558,95 @@ function scrollToHeading(id: string) {
 .article-body :deep(.md-editor-preview li) {
   color: var(--sw-table-cell-text);
   line-height: 1.78;
+}
+
+.article-body :deep(.md-editor-preview a[href]) {
+  color: var(--sw-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.article-body :deep(.md-editor-preview img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  margin: 20px auto;
+}
+
+.article-body :deep(.md-editor-preview table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  border-spacing: 0;
+}
+
+.article-body :deep(.md-editor-preview th),
+.article-body :deep(.md-editor-preview td) {
+  min-width: 120px;
+  border-color: var(--sw-border);
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+.article-body :deep(.md-editor-preview pre) {
+  position: relative;
+  overflow: auto;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-code-bg, #101820);
+  padding-top: 42px;
+}
+
+.article-body :deep(.article-code-toolbar) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 34px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, #101820 88%, transparent);
+  margin: -42px 0 10px;
+  padding: 0 10px;
+}
+
+.article-body :deep(.article-code-toolbar span) {
+  color: rgba(238, 246, 250, 0.72);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.article-body :deep(.article-code-copy) {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(238, 246, 250, 0.9);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  transition:
+    background-color var(--sw-motion-standard),
+    border-color var(--sw-motion-standard),
+    transform var(--sw-motion-standard);
+}
+
+.article-body :deep(.article-code-copy:hover) {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.article-body :deep(.article-code-copy:active) {
+  transform: translate3d(0, 1px, 0);
 }
 
 .article-toc {

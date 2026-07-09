@@ -43,4 +43,16 @@ describe('BlogDetailView', () => {
     expect(detailSource).toContain('padding: 44px 48px;')
     expect(detailSource).toContain('max-width: 76ch;')
   })
+
+  it('enhances rendered markdown for technical reading', () => {
+    expect(detailSource).toContain('handleMarkdownRendered')
+    expect(detailSource).toContain('enhanceRenderedMarkdown')
+    expect(detailSource).toContain('article-code-toolbar')
+    expect(detailSource).toContain('article-code-copy')
+    expect(detailSource).toContain('navigator.clipboard.writeText')
+    expect(detailSource).toContain("anchor.rel = 'noopener noreferrer'")
+    expect(detailSource).toContain('display: block;')
+    expect(detailSource).toContain('overflow-x: auto;')
+    expect(detailSource).toContain('max-width: 100%;')
+  })
 })

@@ -128,6 +128,8 @@ export default {
       send: '发送',
       signInToComment: '登录后可以评论。',
       noComments: '暂无评论。',
+      copyCode: '复制',
+      copiedCode: '已复制',
     },
     editor: {
       kicker: '新文章',
@@ -158,6 +160,7 @@ export default {
       saveFailed: '文章保存失败',
       categoryCreateFailed: '分类创建失败',
       imageUploadFailed: '图片上传失败',
+      copyFailed: '复制代码失败',
       markdownOnly: '仅支持 .md 文件',
     },
   },
