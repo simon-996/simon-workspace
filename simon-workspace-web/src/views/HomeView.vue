@@ -14,11 +14,23 @@ const { site, failed: siteLoadFailed, loadSite } = usePublicSiteConfig()
 const defaultContactEmail = 'simon996chen@outlook.com'
 const homeStyle = computed(() => buildHomeScrollStyle(scrollProgress.value, viewport.value) as CSSProperties)
 const introKicker = computed(() => t('home.intro.kicker').trim())
-const introShort = computed(() => t('home.intro.shortLine').trim())
+const introShort = computed(() => site.value?.heroSubtitle?.trim() || t('home.intro.shortLine').trim())
+const profileBio = computed(() => site.value?.profileBio?.trim() || t('home.intro.body').trim())
 const contactLabel = computed(() => t('home.intro.contactLabel').trim())
 const contactEmail = computed(() => site.value?.contactEmail?.trim() || defaultContactEmail)
 const contactHref = computed(() => `mailto:${contactEmail.value}`)
 const detailsInteractive = computed(() => scrollProgress.value > 0.58)
+const techStackItems = computed(() => {
+  if (site.value?.techStack?.length) {
+    return site.value.techStack
+  }
+  return [
+    { label: t('home.intro.groups.backendLabel'), value: t('home.intro.groups.backendValue') },
+    { label: t('home.intro.groups.frontendLabel'), value: t('home.intro.groups.frontendValue') },
+    { label: t('home.intro.groups.mobileLabel'), value: t('home.intro.groups.mobileValue') },
+    { label: t('home.intro.groups.focusLabel'), value: t('home.intro.groups.focusValue') },
+  ]
+})
 
 let ticking = false
 let animationFrameId = 0
@@ -105,26 +117,15 @@ function updateViewport() {
             <p v-if="introShort" class="intro-short">{{ introShort }}</p>
 
             <div class="intro-details">
+              <p v-if="profileBio" class="profile-bio">{{ profileBio }}</p>
               <a class="contact-link" :href="contactHref">
                 <span v-if="contactLabel">{{ contactLabel }}</span>
                 <strong>{{ contactEmail }}</strong>
               </a>
               <div class="tech-grid" :aria-label="t('home.intro.techAria')">
-                <article>
-                  <span>{{ t('home.intro.groups.backendLabel') }}</span>
-                  <strong>{{ t('home.intro.groups.backendValue') }}</strong>
-                </article>
-                <article>
-                  <span>{{ t('home.intro.groups.frontendLabel') }}</span>
-                  <strong>{{ t('home.intro.groups.frontendValue') }}</strong>
-                </article>
-                <article>
-                  <span>{{ t('home.intro.groups.mobileLabel') }}</span>
-                  <strong>{{ t('home.intro.groups.mobileValue') }}</strong>
-                </article>
-                <article>
-                  <span>{{ t('home.intro.groups.focusLabel') }}</span>
-                  <strong>{{ t('home.intro.groups.focusValue') }}</strong>
+                <article v-for="item in techStackItems" :key="`${item.label}-${item.value}`">
+                  <span>{{ item.label }}</span>
+                  <strong>{{ item.value }}</strong>
                 </article>
               </div>
             </div>
@@ -385,6 +386,15 @@ h1 {
 
 .home-page.details-active .intro-details {
   pointer-events: auto;
+}
+
+.profile-bio {
+  max-width: min(620px, 100%);
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.75;
 }
 
 .terminal-stage {

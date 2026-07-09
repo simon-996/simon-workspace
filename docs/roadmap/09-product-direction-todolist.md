@@ -83,43 +83,43 @@ Goal: make the public homepage content editable from the workspace.
 
 ### Data And API
 
-- [ ] Extend site config with public profile fields.
-- [ ] Store owner display name.
-- [ ] Store owner introduction summary.
-- [ ] Store owner long bio.
-- [ ] Store owner role/title.
-- [ ] Store contact email.
-- [ ] Store technology stack list as structured data.
+- [x] Extend site config with public profile fields.
+- [x] Store owner display name.
+- [x] Store owner introduction summary.
+- [x] Store owner long bio.
+- [x] Store owner role/title.
+- [x] Store contact email.
+- [x] Store technology stack list as structured data.
 - [ ] Store profile avatar or portrait URL if needed.
 - [ ] Store homepage terminal display settings if they should be configurable.
-- [ ] Add validation for profile fields.
-- [ ] Add API tests for saving and reading site profile config.
+- [x] Add validation for required profile fields.
+- [x] Add API tests for saving and reading site profile config.
 
 ### Workspace UI
 
-- [ ] Add a "Profile" section in site settings.
-- [ ] Let owner edit short intro, long bio, role/title, email, and technology stack.
+- [x] Add profile fields in site settings.
+- [x] Let owner edit short intro, long bio, role/title, email, and technology stack.
 - [ ] Support adding, editing, sorting, and removing technology stack items.
 - [ ] Show a compact live preview of public profile content.
 - [ ] Keep the form consistent with the current minimal workspace style.
-- [ ] Add skeleton/loading state.
-- [ ] Add i18n strings.
+- [x] Add skeleton/loading state.
+- [x] Add i18n strings.
 
 ### Public Homepage
 
-- [ ] Load profile content from backend site config.
-- [ ] Remove remaining hard-coded personal introduction text from the frontend.
-- [ ] Keep first screen simple: navigation, intro, terminal.
-- [ ] Preserve the Apple-like scroll animation.
-- [ ] Ensure PC intro/title does not overlap after animation.
-- [ ] Ensure mobile email/profile layout is centered and readable.
-- [ ] Keep blog and courses as primary public navigation entries.
+- [x] Load profile content from backend site config.
+- [x] Remove remaining hard-coded personal introduction text from the frontend.
+- [x] Keep first screen simple: navigation, intro, terminal.
+- [x] Preserve the Apple-like scroll animation.
+- [x] Ensure PC intro/title does not overlap after animation.
+- [x] Ensure mobile email/profile layout is centered and readable.
+- [x] Keep blog and courses as primary public navigation entries.
 
 ### Acceptance
 
-- [ ] Editing site profile in workspace updates public homepage after refresh.
-- [ ] Homepage still works if some profile fields are empty.
-- [ ] Chinese/English/Thai UI strings switch correctly.
+- [x] Editing site profile in workspace updates public homepage after refresh.
+- [x] Homepage still works if some profile fields are empty.
+- [x] Chinese/English/Thai UI strings switch correctly.
 
 ## Phase C: Blog Publishing Enhancements
 

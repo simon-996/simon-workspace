@@ -1,6 +1,7 @@
 package com.simon.workspace.site.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 
 public record SiteConfigRequest(
         @NotBlank
@@ -10,6 +11,8 @@ public record SiteConfigRequest(
         @NotBlank
         String heroTitle,
         String heroSubtitle,
+        String profileBio,
+        List<SiteTechStackItem> techStack,
         String ownerRole,
         String contactEmail,
         String githubUrl,

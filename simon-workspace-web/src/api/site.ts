@@ -7,6 +7,8 @@ export interface SiteConfig {
   ownerName: string
   heroTitle: string
   heroSubtitle?: string | null
+  profileBio?: string | null
+  techStack: SiteTechStackItem[]
   ownerRole?: string | null
   contactEmail?: string | null
   githubUrl?: string | null
@@ -23,6 +25,8 @@ export interface SiteConfigPayload {
   ownerName: string
   heroTitle: string
   heroSubtitle?: string | null
+  profileBio?: string | null
+  techStack: SiteTechStackItem[]
   ownerRole?: string | null
   contactEmail?: string | null
   githubUrl?: string | null
@@ -31,6 +35,11 @@ export interface SiteConfigPayload {
   courseVisible: boolean
   projectsVisible: boolean
   workspaceEntryVisible: boolean
+}
+
+export interface SiteTechStackItem {
+  label: string
+  value: string
 }
 
 export async function fetchPublicSiteConfig() {

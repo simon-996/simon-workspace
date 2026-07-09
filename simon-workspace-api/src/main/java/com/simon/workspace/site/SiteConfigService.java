@@ -1,7 +1,10 @@
 package com.simon.workspace.site;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simon.workspace.site.dto.SiteConfigRequest;
 import com.simon.workspace.site.dto.SiteConfigResponse;
+import com.simon.workspace.site.dto.SiteTechStackItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,16 +12,21 @@ import org.springframework.util.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 @Service
 public class SiteConfigService {
 
     private static final long DEFAULT_CONFIG_ID = 1L;
+    private static final TypeReference<List<SiteTechStackItem>> TECH_STACK_TYPE = new TypeReference<>() {
+    };
 
     private final JdbcTemplate jdbcTemplate;
+    private final ObjectMapper objectMapper;
 
-    public SiteConfigService(JdbcTemplate jdbcTemplate) {
+    public SiteConfigService(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public SiteConfigResponse getPublicConfig() {
@@ -37,6 +45,8 @@ public class SiteConfigService {
                             owner_name = ?,
                             hero_title = ?,
                             hero_subtitle = ?,
+                            profile_bio = ?,
+                            tech_stack_json = ?,
                             owner_role = ?,
                             contact_email = ?,
                             github_url = ?,
@@ -51,6 +61,8 @@ public class SiteConfigService {
                 ownerName,
                 heroTitle,
                 blankToNull(request.heroSubtitle()),
+                blankToNull(request.profileBio()),
+                techStackJson(request.techStack()),
                 blankToNull(request.ownerRole()),
                 blankToNull(request.contactEmail()),
                 blankToNull(request.githubUrl()),
@@ -67,7 +79,7 @@ public class SiteConfigService {
 
     private SiteConfigResponse findConfig() {
         return jdbcTemplate.query("""
-                        SELECT id, site_title, owner_name, hero_title, hero_subtitle, owner_role,
+                        SELECT id, site_title, owner_name, hero_title, hero_subtitle, profile_bio, tech_stack_json, owner_role,
                                contact_email, github_url, profile_visible, blog_visible, course_visible, projects_visible,
                                workspace_entry_visible, updated_time
                         FROM site_config
@@ -87,6 +99,8 @@ public class SiteConfigService {
                 rs.getString("hero_title"),
                 rs.getString("hero_subtitle"),
                 rs.getString("owner_role"),
+                rs.getString("profile_bio"),
+                techStack(rs.getString("tech_stack_json")),
                 rs.getString("contact_email"),
                 rs.getString("github_url"),
                 rs.getBoolean("profile_visible"),
@@ -111,5 +125,28 @@ public class SiteConfigService {
 
     private boolean bool(Boolean value, boolean defaultValue) {
         return value == null ? defaultValue : value;
+    }
+
+    private String techStackJson(List<SiteTechStackItem> techStack) {
+        try {
+            List<SiteTechStackItem> normalized = techStack == null ? List.of() : techStack.stream()
+                    .filter(item -> item != null && StringUtils.hasText(item.label()) && StringUtils.hasText(item.value()))
+                    .map(item -> new SiteTechStackItem(item.label().trim(), item.value().trim()))
+                    .toList();
+            return objectMapper.writeValueAsString(normalized);
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("技术栈配置格式错误", exception);
+        }
+    }
+
+    private List<SiteTechStackItem> techStack(String json) {
+        if (!StringUtils.hasText(json)) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(json, TECH_STACK_TYPE);
+        } catch (Exception exception) {
+            return List.of();
+        }
     }
 }

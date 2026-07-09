@@ -24,6 +24,8 @@ const form = reactive<SiteConfigPayload>({
   ownerName: '',
   heroTitle: '',
   heroSubtitle: '',
+  profileBio: '',
+  techStack: [],
   ownerRole: '',
   contactEmail: '',
   githubUrl: '',
@@ -82,6 +84,10 @@ async function submitConfig() {
       ownerName: form.ownerName.trim(),
       heroTitle: form.heroTitle.trim(),
       heroSubtitle: textOrNull(form.heroSubtitle),
+      profileBio: textOrNull(form.profileBio),
+      techStack: form.techStack
+        .filter((item) => item.label.trim() && item.value.trim())
+        .map((item) => ({ label: item.label.trim(), value: item.value.trim() })),
       ownerRole: textOrNull(form.ownerRole),
       contactEmail: textOrNull(form.contactEmail),
       githubUrl: textOrNull(form.githubUrl),
@@ -106,6 +112,10 @@ function syncForm(data: SiteConfig) {
   form.ownerName = data.ownerName ?? ''
   form.heroTitle = data.heroTitle ?? ''
   form.heroSubtitle = data.heroSubtitle ?? ''
+  form.profileBio = data.profileBio ?? ''
+  form.techStack = data.techStack?.length
+    ? data.techStack.map((item) => ({ label: item.label, value: item.value }))
+    : defaultTechStack()
   form.ownerRole = data.ownerRole ?? ''
   form.contactEmail = data.contactEmail ?? ''
   form.githubUrl = data.githubUrl ?? ''
@@ -119,6 +129,26 @@ function syncForm(data: SiteConfig) {
 function textOrNull(value?: string | null) {
   const trimmed = value?.trim() ?? ''
   return trimmed ? trimmed : null
+}
+
+function defaultTechStack() {
+  return [
+    { label: 'Backend', value: 'Java / MySQL' },
+    { label: 'Frontend', value: 'JavaScript / Vue' },
+    { label: 'Mobile', value: 'WeChat Mini Program / Flutter' },
+    { label: 'Focus', value: 'Teaching tools / Project practice' },
+  ]
+}
+
+function addTechStackItem() {
+  form.techStack.push({ label: '', value: '' })
+}
+
+function removeTechStackItem(index: number) {
+  form.techStack.splice(index, 1)
+  if (form.techStack.length === 0) {
+    addTechStackItem()
+  }
 }
 </script>
 
@@ -197,6 +227,34 @@ function textOrNull(value?: string | null) {
               :placeholder="t('workspace.site.fields.heroSubtitlePlaceholder')"
             />
           </label>
+
+          <label class="field span-2">
+            <span>{{ t('workspace.site.fields.profileBio') }}</span>
+            <n-input
+              v-model:value="form.profileBio"
+              type="textarea"
+              :autosize="{ minRows: 3, maxRows: 6 }"
+              :placeholder="t('workspace.site.fields.profileBioPlaceholder')"
+            />
+          </label>
+
+          <section class="tech-stack-editor span-2">
+            <header>
+              <span>{{ t('workspace.site.fields.techStack') }}</span>
+              <n-button size="small" secondary @click="addTechStackItem">
+                {{ t('common.actions.create') }}
+              </n-button>
+            </header>
+            <div class="tech-stack-list">
+              <article v-for="(item, index) in form.techStack" :key="index">
+                <n-input v-model:value="item.label" :placeholder="t('workspace.site.fields.techLabel')" />
+                <n-input v-model:value="item.value" :placeholder="t('workspace.site.fields.techValue')" />
+                <n-button quaternary type="error" @click="removeTechStackItem(index)">
+                  {{ t('common.actions.delete') }}
+                </n-button>
+              </article>
+            </div>
+          </section>
 
           <label class="field">
             <span>{{ t('workspace.site.fields.ownerRole') }}</span>
@@ -382,6 +440,34 @@ function textOrNull(value?: string | null) {
   gap: 10px;
 }
 
+.tech-stack-editor {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #e2e8ee;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.tech-stack-editor header,
+.tech-stack-list article {
+  display: grid;
+  align-items: center;
+  gap: 10px;
+}
+
+.tech-stack-editor header {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.tech-stack-list {
+  display: grid;
+  gap: 8px;
+}
+
+.tech-stack-list article {
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr) auto;
+}
+
 .switch-item {
   display: flex;
   align-items: center;
@@ -432,6 +518,7 @@ function textOrNull(value?: string | null) {
   .summary-grid,
   .config-skeleton,
   .config-form,
+  .tech-stack-list article,
   .switch-grid {
     grid-template-columns: 1fr;
   }
