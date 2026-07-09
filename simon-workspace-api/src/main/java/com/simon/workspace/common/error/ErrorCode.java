@@ -10,6 +10,8 @@ public enum ErrorCode {
     AUTH_UNAUTHORIZED(40101, HttpStatus.UNAUTHORIZED, "Unauthorized"),
     AUTH_BAD_CREDENTIALS(40102, HttpStatus.UNAUTHORIZED, "Invalid username or password"),
     AUTH_ACCOUNT_DISABLED(40103, HttpStatus.FORBIDDEN, "Account disabled"),
+    AUTH_ACCOUNT_PENDING(40104, HttpStatus.FORBIDDEN, "Account pending review"),
+    AUTH_ACCOUNT_REJECTED(40105, HttpStatus.FORBIDDEN, "Account rejected"),
     AUTH_FORBIDDEN(40301, HttpStatus.FORBIDDEN, "Forbidden"),
     RESOURCE_NOT_FOUND(40401, HttpStatus.NOT_FOUND, "Resource not found"),
     CONFLICT(40901, HttpStatus.CONFLICT, "Conflict"),

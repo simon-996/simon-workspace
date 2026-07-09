@@ -36,7 +36,7 @@ public class SecurityManagementService {
         if (StringUtils.hasText(keyword)) {
             String like = "%" + keyword.trim() + "%";
             return jdbcTemplate.query("""
-                            SELECT id, username, nickname, email, status, last_login_time, created_time, updated_time
+                            SELECT id, username, nickname, email, status, last_login_time, reviewed_time, review_remark, created_time, updated_time
                             FROM `user`
                             WHERE deleted = 0
                               AND (username LIKE ? OR nickname LIKE ? OR email LIKE ?)
@@ -50,7 +50,7 @@ public class SecurityManagementService {
         }
 
         return jdbcTemplate.query("""
-                        SELECT id, username, nickname, email, status, last_login_time, created_time, updated_time
+                        SELECT id, username, nickname, email, status, last_login_time, reviewed_time, review_remark, created_time, updated_time
                         FROM `user`
                         WHERE deleted = 0
                         ORDER BY updated_time DESC, id DESC
@@ -90,9 +90,56 @@ public class SecurityManagementService {
         return findUser(userId);
     }
 
+    @Transactional
+    public ManagedUserResponse approveUser(long userId, UpdateUserRolesRequest request) {
+        ensureUserExists(userId);
+        jdbcTemplate.update("""
+                        UPDATE `user`
+                        SET status = 'ENABLED', reviewed_time = NOW(), updated_time = NOW()
+                        WHERE id = ? AND deleted = 0
+                        """,
+                userId
+        );
+        if (request != null && request.roleCodes() != null && !request.roleCodes().isEmpty()) {
+            return updateUserRoles(userId, request);
+        }
+        return findUser(userId);
+    }
+
+    @Transactional
+    public ManagedUserResponse rejectUser(long userId, String remark) {
+        ensureUserExists(userId);
+        jdbcTemplate.update("""
+                        UPDATE `user`
+                        SET status = 'REJECTED', review_remark = ?, reviewed_time = NOW(), updated_time = NOW()
+                        WHERE id = ? AND deleted = 0
+                        """,
+                blankToNull(remark),
+                userId
+        );
+        return findUser(userId);
+    }
+
+    @Transactional
+    public ManagedUserResponse disableUser(long userId, String remark) {
+        ensureUserExists(userId);
+        if (userHasRole(userId, OWNER_ROLE) && ownerUserCount() <= 1) {
+            throw new IllegalArgumentException("至少保留一个 OWNER 账号");
+        }
+        jdbcTemplate.update("""
+                        UPDATE `user`
+                        SET status = 'DISABLED', review_remark = ?, updated_time = NOW()
+                        WHERE id = ? AND deleted = 0
+                        """,
+                blankToNull(remark),
+                userId
+        );
+        return findUser(userId);
+    }
+
     private ManagedUserResponse findUser(long userId) {
         return jdbcTemplate.query("""
-                        SELECT id, username, nickname, email, status, last_login_time, created_time, updated_time
+                        SELECT id, username, nickname, email, status, last_login_time, reviewed_time, review_remark, created_time, updated_time
                         FROM `user`
                         WHERE id = ? AND deleted = 0
                         LIMIT 1
@@ -122,6 +169,8 @@ public class SecurityManagementService {
                 rs.getString("email"),
                 rs.getString("status"),
                 toLocalDateTime(rs.getTimestamp("last_login_time")),
+                toLocalDateTime(rs.getTimestamp("reviewed_time")),
+                rs.getString("review_remark"),
                 findUserRoles(userId),
                 rs.getTimestamp("created_time").toLocalDateTime(),
                 rs.getTimestamp("updated_time").toLocalDateTime()
@@ -241,6 +290,10 @@ public class SecurityManagementService {
 
     private LocalDateTime toLocalDateTime(Timestamp timestamp) {
         return timestamp == null ? null : timestamp.toLocalDateTime();
+    }
+
+    private String blankToNull(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
     }
 
     private record RoleIdRow(String roleCode, long id) {

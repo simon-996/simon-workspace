@@ -3,6 +3,7 @@ package com.simon.workspace.security;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.simon.workspace.common.ApiResponse;
 import com.simon.workspace.security.dto.ManagedUserResponse;
+import com.simon.workspace.security.dto.ReviewUserRequest;
 import com.simon.workspace.security.dto.RoleResponse;
 import com.simon.workspace.security.dto.UpdateUserRolesRequest;
 import jakarta.validation.Valid;
@@ -43,5 +44,29 @@ public class SecurityManagementController {
             @Valid @RequestBody UpdateUserRolesRequest request
     ) {
         return ApiResponse.ok(securityManagementService.updateUserRoles(id, request));
+    }
+
+    @PutMapping("/users/{id}/approve")
+    public ApiResponse<ManagedUserResponse> approveUser(
+            @PathVariable long id,
+            @Valid @RequestBody UpdateUserRolesRequest request
+    ) {
+        return ApiResponse.ok(securityManagementService.approveUser(id, request));
+    }
+
+    @PutMapping("/users/{id}/reject")
+    public ApiResponse<ManagedUserResponse> rejectUser(
+            @PathVariable long id,
+            @Valid @RequestBody ReviewUserRequest request
+    ) {
+        return ApiResponse.ok(securityManagementService.rejectUser(id, request.remark()));
+    }
+
+    @PutMapping("/users/{id}/disable")
+    public ApiResponse<ManagedUserResponse> disableUser(
+            @PathVariable long id,
+            @Valid @RequestBody ReviewUserRequest request
+    ) {
+        return ApiResponse.ok(securityManagementService.disableUser(id, request.remark()));
     }
 }

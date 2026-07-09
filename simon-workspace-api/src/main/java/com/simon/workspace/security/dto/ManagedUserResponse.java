@@ -10,6 +10,8 @@ public record ManagedUserResponse(
         String email,
         String status,
         LocalDateTime lastLoginTime,
+        LocalDateTime reviewedTime,
+        String reviewRemark,
         List<String> roles,
         LocalDateTime createdTime,
         LocalDateTime updatedTime

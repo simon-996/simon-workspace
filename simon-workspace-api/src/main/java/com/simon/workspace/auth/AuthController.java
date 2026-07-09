@@ -5,6 +5,8 @@ import com.simon.workspace.auth.dto.LoginRequest;
 import com.simon.workspace.auth.dto.LoginResponse;
 import com.simon.workspace.auth.dto.PasswordUpdateRequest;
 import com.simon.workspace.auth.dto.ProfileUpdateRequest;
+import com.simon.workspace.auth.dto.RegisterRequest;
+import com.simon.workspace.auth.dto.RegisterResponse;
 import com.simon.workspace.auth.session.AuthContextHolder;
 import com.simon.workspace.common.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +31,11 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         return ApiResponse.ok(authService.login(request, httpRequest));
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        return ApiResponse.ok(authService.register(request, httpRequest));
     }
 
     @PostMapping("/logout")

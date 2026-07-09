@@ -1,6 +1,8 @@
 package com.simon.workspace.auth;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.simon.workspace.auth.dto.RegisterRequest;
+import com.simon.workspace.auth.dto.RegisterResponse;
 import com.simon.workspace.auth.dto.PasswordUpdateRequest;
 import com.simon.workspace.auth.dto.ProfileUpdateRequest;
 import com.simon.workspace.auth.dto.LoginRequest;
@@ -23,6 +25,9 @@ public class AuthService {
 
     private static final String LOGIN_SUCCESS = "SUCCESS";
     private static final String LOGIN_FAILED = "FAILED";
+    private static final String STATUS_PENDING = "PENDING";
+    private static final String STATUS_ENABLED = "ENABLED";
+    private static final String STATUS_REJECTED = "REJECTED";
 
     private final JdbcTemplate jdbcTemplate;
     private final PasswordHashVerifier passwordHashVerifier;
@@ -39,6 +44,40 @@ public class AuthService {
     }
 
     @Transactional
+    public RegisterResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
+        String username = required(request.username(), "用户名不能为空");
+        String nickname = required(request.nickname(), "昵称不能为空");
+        String password = required(request.password(), "密码不能为空");
+        String email = blankToNull(request.email());
+
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("密码至少需要 8 位");
+        }
+        if (existsByUsername(username)) {
+            throw new BusinessException(ErrorCode.CONFLICT);
+        }
+        if (email != null && existsByEmail(email)) {
+            throw new BusinessException(ErrorCode.CONFLICT);
+        }
+
+        String passwordHash = "sha256:" + passwordHashVerifier.sha256(password);
+        String registerIp = clientIp(httpRequest);
+        String userAgent = userAgent(httpRequest);
+        jdbcTemplate.update("""
+                        INSERT INTO `user` (username, password_hash, nickname, email, status, review_remark)
+                        VALUES (?, ?, ?, ?, 'PENDING', ?)
+                        """,
+                username,
+                passwordHash,
+                nickname,
+                email,
+                registerIp + " | " + (userAgent == null ? "" : userAgent)
+        );
+        Long id = jdbcTemplate.queryForObject("SELECT id FROM `user` WHERE username = ? AND deleted = 0", Long.class, username);
+        return new RegisterResponse(String.valueOf(id), username, nickname, email, STATUS_PENDING);
+    }
+
+    @Transactional
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         String username = request.username().trim();
         Optional<AuthUser> user = authAccountService.findUserByUsername(username);
@@ -49,8 +88,15 @@ public class AuthService {
         }
 
         AuthUser authUser = user.get();
-        if (!"ENABLED".equalsIgnoreCase(authUser.status())) {
-            recordLogin(authUser.id(), username, httpRequest, LOGIN_FAILED, "USER_DISABLED");
+        if (!STATUS_ENABLED.equalsIgnoreCase(authUser.status())) {
+            String status = authUser.status();
+            recordLogin(authUser.id(), username, httpRequest, LOGIN_FAILED, "USER_" + status);
+            if (STATUS_PENDING.equalsIgnoreCase(status)) {
+                throw new BusinessException(ErrorCode.AUTH_ACCOUNT_PENDING);
+            }
+            if (STATUS_REJECTED.equalsIgnoreCase(status)) {
+                throw new BusinessException(ErrorCode.AUTH_ACCOUNT_REJECTED);
+            }
             throw new BusinessException(ErrorCode.AUTH_ACCOUNT_DISABLED);
         }
 
@@ -156,6 +202,24 @@ public class AuthService {
 
     private String blankToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private boolean existsByUsername(String username) {
+        Long count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(1) FROM `user` WHERE username = ? AND deleted = 0",
+                Long.class,
+                username
+        );
+        return count != null && count > 0;
+    }
+
+    private boolean existsByEmail(String email) {
+        Long count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(1) FROM `user` WHERE email = ? AND deleted = 0",
+                Long.class,
+                email
+        );
+        return count != null && count > 0;
     }
 
 }
