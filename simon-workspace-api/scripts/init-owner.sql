@@ -1,5 +1,8 @@
 -- Configure these values for the target environment before running this file.
 -- Restore the CHANGE_ME values immediately after execution so credentials are not committed.
+-- Match the schema collation so MySQL 8 client defaults do not break variable comparisons.
+SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 SET @owner_username = 'CHANGE_ME_USERNAME';
 SET @owner_nickname = 'CHANGE_ME_NICKNAME';
 SET @owner_email = 'CHANGE_ME_EMAIL';

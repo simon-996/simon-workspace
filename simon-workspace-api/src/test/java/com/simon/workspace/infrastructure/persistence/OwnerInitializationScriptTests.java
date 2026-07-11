@@ -25,6 +25,16 @@ class OwnerInitializationScriptTests {
     }
 
     @Test
+    void alignsTheConnectionCollationWithTheSchemaBeforeDefiningVariables() throws IOException {
+        String script = readScript();
+
+        assertThat(script)
+                .contains("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
+        assertThat(script.indexOf("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;"))
+                .isLessThan(script.indexOf("SET @owner_username"));
+    }
+
+    @Test
     void createsOnlyANewEnabledUserAndBindsTheOwnerRole() throws IOException {
         String script = readScript();
 
