@@ -48,6 +48,7 @@ redis-data/
 # Local tool indexes and caches
 .codegraph/
 .cache/
+.worktrees/
 
 # Docker override files
 docker-compose.override.yml
