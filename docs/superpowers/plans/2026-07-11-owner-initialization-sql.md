@@ -266,10 +266,10 @@ Expected: commands exit 0 and the temporary schema contains `user`, `role`, and 
 Run the script through substitutions without modifying the tracked file:
 
 ```bash
-sed -e 's/CHANGE_ME_USERNAME/owner_one/' \
-  -e 's/CHANGE_ME_NICKNAME/Owner One/' \
-  -e 's/CHANGE_ME_EMAIL/owner-one@example.test/' \
-  -e 's/CHANGE_ME_PASSWORD/owner-one-secret/' \
+sed -e "s/^SET @owner_username = .*;$/SET @owner_username = 'owner_one';/" \
+  -e "s/^SET @owner_nickname = .*;$/SET @owner_nickname = 'Owner One';/" \
+  -e "s/^SET @owner_email = .*;$/SET @owner_email = 'owner-one@example.test';/" \
+  -e "s/^SET @owner_password = .*;$/SET @owner_password = 'owner-one-secret';/" \
   simon-workspace-api/scripts/init-owner.sql \
   | docker exec -i mysql-docker sh -lc 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" simon_workspace_owner_init_test'
 ```
