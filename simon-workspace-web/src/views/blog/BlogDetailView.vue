@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
-import { useMessage, NButton, NIcon, NInput, NSpin } from 'naive-ui'
-import { ArrowLeft, Edit, Eye, MessageCircle, Send } from '@vicons/tabler'
+import { useMessage, NButton, NDrawer, NDrawerContent, NIcon, NInput, NSpin } from 'naive-ui'
+import { ArrowLeft, Edit, Eye, ListDetails, MessageCircle, Send } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
 import {
@@ -31,6 +31,7 @@ const articleBodyRef = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const submitting = ref(false)
 const activeHeadingId = ref('')
+const mobileTocOpen = ref(false)
 const copiedCodeId = ref('')
 let headingObserver: IntersectionObserver | null = null
 let headingSyncFrame = 0
@@ -211,6 +212,7 @@ function renderedHeadingElements() {
 
 function scrollToHeading(id: string) {
   activeHeadingId.value = id
+  mobileTocOpen.value = false
   document.getElementById(id)?.scrollIntoView({
     behavior: 'smooth',
     block: 'start',
@@ -397,7 +399,7 @@ function escapeHtml(value: string) {
             </section>
           </div>
 
-          <aside v-if="tocItems.length" class="article-toc" :aria-label="t('blog.detail.toc')">
+          <aside v-if="tocItems.length" class="article-toc article-toc--desktop" :aria-label="t('blog.detail.toc')">
             <strong>{{ t('blog.detail.toc') }}</strong>
             <nav>
               <button
@@ -412,7 +414,42 @@ function escapeHtml(value: string) {
               </button>
             </nav>
           </aside>
-            </div>
+        </div>
+
+        <n-button
+          v-if="tocItems.length"
+          circle
+          type="primary"
+          class="mobile-toc-trigger"
+          :title="t('blog.detail.toc')"
+          :aria-label="t('blog.detail.toc')"
+          @click="mobileTocOpen = true"
+        >
+          <template #icon>
+            <n-icon :component="ListDetails" />
+          </template>
+        </n-button>
+
+        <n-drawer
+          v-model:show="mobileTocOpen"
+          placement="right"
+          width="min(86vw, 360px)"
+        >
+          <n-drawer-content :title="t('blog.detail.toc')" closable>
+            <nav class="mobile-toc-nav">
+              <button
+                v-for="item in tocItems"
+                :key="item.id"
+                type="button"
+                :class="{ active: activeHeadingId === item.id }"
+                :style="{ '--toc-depth': item.level - 1 }"
+                @click="scrollToHeading(item.id)"
+              >
+                {{ item.text }}
+              </button>
+            </nav>
+          </n-drawer-content>
+        </n-drawer>
       </article>
     </n-spin>
   </main>
@@ -688,12 +725,14 @@ function escapeHtml(value: string) {
   font-weight: 800;
 }
 
-.article-toc nav {
+.article-toc nav,
+.mobile-toc-nav {
   display: grid;
   gap: 4px;
 }
 
-.article-toc button {
+.article-toc button,
+.mobile-toc-nav button {
   display: block;
   width: 100%;
   border: 0;
@@ -715,14 +754,34 @@ function escapeHtml(value: string) {
 }
 
 .article-toc button:hover,
-.article-toc button.active {
+.article-toc button.active,
+.mobile-toc-nav button:hover,
+.mobile-toc-nav button.active {
   border-color: var(--sw-accent);
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
 }
 
-.article-toc button:active {
+.article-toc button:active,
+.mobile-toc-nav button:active {
   transform: translate3d(1px, 1px, 0);
+}
+
+.mobile-toc-trigger {
+  --n-border-radius: 50% !important;
+  position: fixed;
+  right: 16px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 30;
+  display: none;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--sw-text) 18%, transparent);
+}
+
+.mobile-toc-trigger .n-icon {
+  font-size: 20px;
 }
 
 .comments {
@@ -833,10 +892,12 @@ function escapeHtml(value: string) {
     grid-template-columns: 1fr;
   }
 
-  .article-toc {
-    position: static;
-    max-height: none;
-    order: -1;
+  .article-toc--desktop {
+    display: none;
+  }
+
+  .mobile-toc-trigger {
+    display: inline-flex;
   }
 }
 

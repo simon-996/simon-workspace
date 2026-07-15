@@ -31,10 +31,23 @@ describe('BlogDetailView', () => {
     expect(detailSource).toContain('activeHeadingId')
     expect(detailSource).toContain('IntersectionObserver')
     expect(detailSource).toContain('scrollToHeading')
-    expect(detailSource).toContain('class="article-toc"')
+    expect(detailSource).toContain('class="article-toc article-toc--desktop"')
     expect(detailSource).toContain(':class="{ active: activeHeadingId === item.id }"')
     expect(detailSource).toContain('position: sticky;')
     expect(detailSource).toContain('scroll-margin-top: 104px;')
+  })
+
+  it('moves the table of contents into an icon-triggered drawer on mobile', () => {
+    expect(detailSource).toContain('NDrawer')
+    expect(detailSource).toContain('NDrawerContent')
+    expect(detailSource).toContain('ListDetails')
+    expect(detailSource).toContain('mobileTocOpen')
+    expect(detailSource).toContain('class="mobile-toc-trigger"')
+    expect(detailSource).toContain('class="mobile-toc-nav"')
+    expect(detailSource).toContain('v-model:show="mobileTocOpen"')
+    expect(detailSource).toContain('mobileTocOpen.value = false')
+    expect(detailSource).toContain('.article-toc--desktop')
+    expect(detailSource).toContain('position: fixed;')
   })
 
   it('keeps rendered markdown left-aligned and shrinkable on narrow screens', () => {
