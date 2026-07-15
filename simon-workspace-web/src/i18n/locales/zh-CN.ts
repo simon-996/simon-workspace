@@ -143,7 +143,7 @@ export default {
       titlePlaceholder: '标题',
       summaryPlaceholder: '摘要',
       categoryPlaceholder: '分类',
-      tagsPlaceholder: '标签',
+      tagsPlaceholder: '搜索已有标签，回车创建',
       newCategory: '新建分类',
       categoryNamePlaceholder: '分类名称',
       uploadingImage: '图片上传中...',

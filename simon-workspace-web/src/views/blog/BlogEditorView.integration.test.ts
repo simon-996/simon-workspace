@@ -44,13 +44,16 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain(':status="categorySelectStatus"')
   })
 
-  it('searches reusable tags from the database and normalizes duplicate selections', () => {
+  it('searches reusable tags and lets authors create normalized tags inline', () => {
     expect(editorSource).toContain('fetchBlogTags')
     expect(editorSource).toContain('remoteTags')
     expect(editorSource).toContain('tagOptions')
-    expect(editorSource).toContain('searchTags')
-    expect(editorSource).toContain(':remote="true"')
-    expect(editorSource).toContain('@search="searchTags"')
+    expect(editorSource).not.toContain(':remote="true"')
+    expect(editorSource).toContain(':on-create="createTagOption"')
+    expect(editorSource).toContain(':max-tag-count="\'responsive\'"')
+    expect(editorSource).toContain('@search="queueTagSearch"')
+    expect(editorSource).toContain('tagSearchTimer')
+    expect(editorSource).toContain('tagSearchSequence')
     expect(editorSource).toContain('normalizeSelectedTags(tags.value)')
   })
 

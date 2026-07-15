@@ -143,7 +143,7 @@ export default {
       titlePlaceholder: 'Title',
       summaryPlaceholder: 'Summary',
       categoryPlaceholder: 'Category',
-      tagsPlaceholder: 'Tags',
+      tagsPlaceholder: 'Search tags or press Enter to create',
       newCategory: 'New category',
       categoryNamePlaceholder: 'Category name',
       uploadingImage: 'Uploading image...',

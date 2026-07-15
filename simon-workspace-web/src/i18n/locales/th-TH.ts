@@ -143,7 +143,7 @@ export default {
       titlePlaceholder: 'ชื่อเรื่อง',
       summaryPlaceholder: 'สรุป',
       categoryPlaceholder: 'หมวดหมู่',
-      tagsPlaceholder: 'แท็ก',
+      tagsPlaceholder: 'ค้นหาแท็กหรือกด Enter เพื่อสร้าง',
       newCategory: 'หมวดหมู่ใหม่',
       categoryNamePlaceholder: 'ชื่อหมวดหมู่',
       uploadingImage: 'กำลังอัปโหลดรูปภาพ...',

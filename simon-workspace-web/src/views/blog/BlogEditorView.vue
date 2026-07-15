@@ -29,6 +29,11 @@ import {
 } from '../../api/workspace'
 import { useAuthStore } from '../../stores/auth'
 import { useThemeStore } from '../../stores/theme'
+import {
+  buildTagOptions,
+  createTagOption,
+  normalizeSelectedTags,
+} from './blogTagOptions'
 
 const route = useRoute()
 const router = useRouter()
@@ -53,22 +58,12 @@ const categoryName = ref('')
 const blogEditorSourceType = 'BLOG_EDITOR'
 const blogImageUploadingClass = 'blog-image-uploading'
 let bypassUnsavedGuard = false
+let tagSearchTimer: number | undefined
+let tagSearchSequence = 0
 
 const canManageCategory = computed(() => auth.hasPermission('blog:category:manage'))
 const categoryOptions = computed(() => categories.value.map((item) => ({ label: item.name, value: item.id })))
-const tagOptions = computed(() => {
-  const options = new Map<string, { label: string; value: string }>()
-  for (const item of remoteTags.value) {
-    options.set(normalizeTagKey(item.name), { label: item.name, value: item.name })
-  }
-  for (const item of tags.value) {
-    const tag = normalizeTagName(item)
-    if (tag) {
-      options.set(normalizeTagKey(tag), { label: tag, value: tag })
-    }
-  }
-  return Array.from(options.values())
-})
+const tagOptions = computed(() => buildTagOptions(remoteTags.value, tags.value))
 const editorLanguage = computed(() => locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 const editingPostId = computed(() => {
   const id = route.params.id
@@ -102,7 +97,7 @@ onMounted(async () => {
   }
   await Promise.all([
     loadCategories(),
-    searchTags(''),
+    loadTags(''),
   ])
   if (isEditing.value) {
     await loadPostForEdit()
@@ -115,6 +110,8 @@ watch(uploadingImages, (uploading) => {
 
 onBeforeUnmount(() => {
   document.body.classList.remove(blogImageUploadingClass)
+  if (tagSearchTimer !== undefined) window.clearTimeout(tagSearchTimer)
+  tagSearchSequence += 1
 })
 
 onBeforeRouteLeave((_to, _from, next) => {
@@ -135,15 +132,31 @@ async function loadCategories() {
   categories.value = await fetchBlogCategories()
 }
 
-async function searchTags(keyword: string) {
+async function loadTags(keyword: string) {
+  const sequence = ++tagSearchSequence
   tagLoading.value = true
   try {
-    remoteTags.value = await fetchBlogTags(keyword.trim())
+    const results = await fetchBlogTags(keyword.trim())
+    if (sequence === tagSearchSequence) {
+      remoteTags.value = results
+    }
   } catch (error) {
-    message.error(error instanceof Error ? error.message : t('blog.messages.loadFailed'))
+    if (sequence === tagSearchSequence) {
+      message.error(error instanceof Error ? error.message : t('blog.messages.loadFailed'))
+    }
   } finally {
-    tagLoading.value = false
+    if (sequence === tagSearchSequence) {
+      tagLoading.value = false
+    }
   }
+}
+
+function queueTagSearch(keyword: string) {
+  if (tagSearchTimer !== undefined) window.clearTimeout(tagSearchTimer)
+  tagSearchTimer = window.setTimeout(() => {
+    tagSearchTimer = undefined
+    void loadTags(keyword)
+  }, 220)
 }
 
 async function loadPostForEdit() {
@@ -223,25 +236,6 @@ function importMarkdown(file: File) {
     if (!title.value && heading?.[1]) title.value = heading[1].trim()
   }
   reader.readAsText(file)
-}
-
-function normalizeSelectedTags(values: string[]) {
-  const normalized = new Map<string, string>()
-  for (const value of values) {
-    const tag = normalizeTagName(value)
-    if (tag) {
-      normalized.set(normalizeTagKey(tag), tag)
-    }
-  }
-  return Array.from(normalized.values())
-}
-
-function normalizeTagName(value: string) {
-  return value.trim().replace(/\s+/g, ' ')
-}
-
-function normalizeTagKey(value: string) {
-  return normalizeTagName(value).toLowerCase()
 }
 
 async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
@@ -331,11 +325,13 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           multiple
           tag
           filterable
-          :remote="true"
+          clearable
           :loading="tagLoading"
           :placeholder="t('blog.editor.tagsPlaceholder')"
           :options="tagOptions"
-          @search="searchTags"
+          :on-create="createTagOption"
+          :max-tag-count="'responsive'"
+          @search="queueTagSearch"
         />
       </section>
 
