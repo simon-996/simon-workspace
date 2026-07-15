@@ -35,6 +35,7 @@ const mobileTocOpen = ref(false)
 const copiedCodeId = ref('')
 let headingObserver: IntersectionObserver | null = null
 let headingSyncFrame = 0
+let headingScrollFrame = 0
 let markdownEnhanceFrame = 0
 
 interface ArticleHeading {
@@ -52,14 +53,19 @@ const canEditPost = computed(() => Boolean(
 const tocItems = computed(() => extractArticleHeadings(post.value?.contentMd || ''))
 
 onMounted(() => {
+  window.addEventListener('scroll', handleWindowScroll, { passive: true })
   void auth.restore()
   void load()
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleWindowScroll)
   headingObserver?.disconnect()
   if (headingSyncFrame) {
     window.cancelAnimationFrame(headingSyncFrame)
+  }
+  if (headingScrollFrame) {
+    window.cancelAnimationFrame(headingScrollFrame)
   }
   if (markdownEnhanceFrame) {
     window.cancelAnimationFrame(markdownEnhanceFrame)
@@ -216,6 +222,18 @@ function scrollToHeading(id: string) {
   document.getElementById(id)?.scrollIntoView({
     behavior: 'smooth',
     block: 'start',
+  })
+}
+
+function handleWindowScroll() {
+  if (headingScrollFrame) return
+  headingScrollFrame = window.requestAnimationFrame(() => {
+    const distanceToBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY
+    const finalHeading = tocItems.value.at(-1)
+    if (distanceToBottom <= 2 && finalHeading) {
+      activeHeadingId.value = finalHeading.id
+    }
+    headingScrollFrame = 0
   })
 }
 
