@@ -50,7 +50,7 @@ const canEditPost = computed(() => Boolean(
   && post.value.authorUserId === auth.user.id
   && auth.hasPermission('blog:post:update'),
 ))
-const tocItems = computed(() => extractArticleHeadings(post.value?.contentMd || ''))
+const tocItems = ref<ArticleHeading[]>([])
 
 onMounted(() => {
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
@@ -119,42 +119,6 @@ function openEditor() {
   void router.push(`/blog/${post.value.id}/edit`)
 }
 
-function extractArticleHeadings(markdown: string): ArticleHeading[] {
-  const headings: ArticleHeading[] = []
-  const usedIds = new Map<string, number>()
-  let inCodeFence = false
-
-  for (const line of markdown.split(/\r?\n/)) {
-    const trimmed = line.trim()
-    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-      inCodeFence = !inCodeFence
-      continue
-    }
-    if (inCodeFence) continue
-
-    const match = /^(#{1,4})\s+(.+?)\s*#*$/.exec(trimmed)
-    if (!match) continue
-
-    const text = cleanHeadingText(match[2])
-    if (!text) continue
-    headings.push({
-      id: createHeadingId(text, headings.length, usedIds),
-      level: match[1].length,
-      text,
-    })
-  }
-
-  return headings
-}
-
-function cleanHeadingText(value: string) {
-  return value
-    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .replace(/[`*_~]/g, '')
-    .trim()
-}
-
 function createHeadingId(text: string, index: number, usedIds: Map<string, number>) {
   const base = text
     .toLowerCase()
@@ -175,13 +139,14 @@ function scheduleHeadingSync() {
 
 function setupHeadingObserver() {
   headingObserver?.disconnect()
-  syncRenderedHeadingIds()
-  const headingElements = renderedHeadingElements()
+  const headingElements = syncRenderedHeadings()
   if (!headingElements.length) {
     activeHeadingId.value = ''
     return
   }
-  activeHeadingId.value = activeHeadingId.value || headingElements[0].id
+  if (!headingElements.some((heading) => heading.id === activeHeadingId.value)) {
+    activeHeadingId.value = headingElements[0].id
+  }
 
   if (!('IntersectionObserver' in window)) return
   headingObserver = new IntersectionObserver((entries) => {
@@ -200,14 +165,30 @@ function setupHeadingObserver() {
   headingElements.forEach((element) => headingObserver?.observe(element))
 }
 
-function syncRenderedHeadingIds() {
-  const headingElements = renderedHeadingElements()
-  tocItems.value.forEach((item, index) => {
-    const element = headingElements[index]
-    if (element) {
-      element.id = item.id
-    }
-  })
+function syncRenderedHeadings() {
+  const usedIds = new Map<string, number>()
+  const nextItems: ArticleHeading[] = []
+  const headingElements: HTMLElement[] = []
+
+  for (const heading of renderedHeadingElements()) {
+    const text = heading.textContent?.trim() || ''
+    if (!text) continue
+    const level = Number.parseInt(heading.tagName.slice(1), 10)
+    const id = createHeadingId(text, nextItems.length, usedIds)
+    heading.id = id
+    headingElements.push(heading)
+    nextItems.push({ id, level, text })
+  }
+
+  const changed = nextItems.length !== tocItems.value.length
+    || nextItems.some((item, index) => {
+      const current = tocItems.value[index]
+      return !current || current.id !== item.id || current.level !== item.level || current.text !== item.text
+    })
+  if (changed) {
+    tocItems.value = nextItems
+  }
+  return headingElements
 }
 
 function renderedHeadingElements() {

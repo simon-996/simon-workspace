@@ -27,7 +27,10 @@ describe('BlogDetailView', () => {
   })
 
   it('renders a floating table of contents with scroll-aware active headings', () => {
-    expect(detailSource).toContain('extractArticleHeadings')
+    expect(detailSource).not.toContain('extractArticleHeadings')
+    expect(detailSource).toContain('syncRenderedHeadings')
+    expect(detailSource).toContain('heading.tagName.slice(1)')
+    expect(detailSource).toContain('heading.textContent')
     expect(detailSource).toContain('activeHeadingId')
     expect(detailSource).toContain('IntersectionObserver')
     expect(detailSource).toContain('scrollToHeading')
