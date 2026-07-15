@@ -155,6 +155,7 @@ export default {
       commentFailed: '评论失败',
       titleContentRequired: '标题和内容不能为空',
       categoryRequired: '发布博客必须选择分类',
+      tagLimit: '最多添加 8 个标签',
       published: '已发布',
       draftSaved: '草稿已保存',
       saveFailed: '博客保存失败',

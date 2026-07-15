@@ -29,6 +29,13 @@ describe('blog tag options', () => {
     })
   })
 
+  it('reuses the canonical spelling of an existing tag', () => {
+    expect(createTagOption(' vue ', [{ name: 'Vue' }])).toEqual({
+      label: 'Vue',
+      value: 'Vue',
+    })
+  })
+
   it('keeps selected spelling while merging reusable database tags', () => {
     expect(buildTagOptions(
       [{ name: 'Vue' }],

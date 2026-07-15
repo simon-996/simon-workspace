@@ -155,6 +155,7 @@ export default {
       commentFailed: 'Failed to comment',
       titleContentRequired: 'Title and content are required',
       categoryRequired: 'Choose a category before publishing',
+      tagLimit: 'You can add up to 8 tags',
       published: 'Published',
       draftSaved: 'Draft saved',
       saveFailed: 'Failed to save post',

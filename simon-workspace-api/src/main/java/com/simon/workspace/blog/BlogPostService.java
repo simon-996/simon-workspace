@@ -219,7 +219,7 @@ public class BlogPostService extends BlogService {
             jdbcTemplate.update("""
                             INSERT INTO blog_tag (name, slug, usage_count)
                             VALUES (?, ?, 0)
-                            ON DUPLICATE KEY UPDATE name = VALUES(name), deleted = 0
+                            ON DUPLICATE KEY UPDATE deleted = 0
                             """,
                     name,
                     slug

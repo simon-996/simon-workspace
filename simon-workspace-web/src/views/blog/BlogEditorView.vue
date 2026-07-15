@@ -31,7 +31,7 @@ import { useAuthStore } from '../../stores/auth'
 import { useThemeStore } from '../../stores/theme'
 import {
   buildTagOptions,
-  createTagOption,
+  createTagOption as buildCreatedTagOption,
   normalizeSelectedTags,
 } from './blogTagOptions'
 
@@ -157,6 +157,21 @@ function queueTagSearch(keyword: string) {
     tagSearchTimer = undefined
     void loadTags(keyword)
   }, 220)
+}
+
+function createTagOption(value: string) {
+  return buildCreatedTagOption(
+    value,
+    tagOptions.value.map((option) => ({ name: option.value })),
+  )
+}
+
+function updateTags(values: Array<string | number>) {
+  const stringValues = values.map(String)
+  if (normalizeSelectedTags(stringValues, 9).length > 8) {
+    message.warning(t('blog.messages.tagLimit'))
+  }
+  tags.value = normalizeSelectedTags(stringValues)
 }
 
 async function loadPostForEdit() {
@@ -321,7 +336,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           </n-button>
         </div>
         <n-select
-          v-model:value="tags"
+          :value="tags"
           multiple
           tag
           filterable
@@ -331,6 +346,7 @@ async function onUploadImg(files: File[], callback: (urls: string[]) => void) {
           :options="tagOptions"
           :on-create="createTagOption"
           :max-tag-count="'responsive'"
+          @update:value="updateTags"
           @search="queueTagSearch"
         />
       </section>

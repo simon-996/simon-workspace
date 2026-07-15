@@ -155,6 +155,7 @@ export default {
       commentFailed: 'ส่งความคิดเห็นไม่สำเร็จ',
       titleContentRequired: 'ต้องกรอกชื่อเรื่องและเนื้อหา',
       categoryRequired: 'เลือกหมวดหมู่ก่อนเผยแพร่',
+      tagLimit: 'เพิ่มแท็กได้สูงสุด 8 แท็ก',
       published: 'เผยแพร่แล้ว',
       draftSaved: 'บันทึกฉบับร่างแล้ว',
       saveFailed: 'บันทึกบทความไม่สำเร็จ',

@@ -15,8 +15,11 @@ export function normalizeTagKey(value: string) {
   return normalizeTagName(value).toLowerCase()
 }
 
-export function createTagOption(value: string): BlogTagOption {
-  const tag = normalizeTagName(value)
+export function createTagOption(value: string, existingTags: BlogTagLike[] = []): BlogTagOption {
+  const normalizedValue = normalizeTagName(value)
+  const key = normalizeTagKey(normalizedValue)
+  const existing = existingTags.find((tag) => normalizeTagKey(tag.name) === key)
+  const tag = normalizeTagName(existing?.name || normalizedValue)
   return { label: tag, value: tag }
 }
 
