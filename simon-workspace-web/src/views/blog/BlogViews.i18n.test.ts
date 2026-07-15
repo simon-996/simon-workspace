@@ -19,6 +19,25 @@ describe('blog views i18n', () => {
     }
   })
 
+  it('uses blog wording for Chinese write actions', () => {
+    expect(zhCN.blog.list.write).toBe('写博客')
+    expect(zhCN.workspace.blogPosts.actions.write).toBe('写博客')
+  })
+
+  it('uses blog wording throughout the Chinese blog interface', () => {
+    const blogCopy = {
+      publicBlog: zhCN.blog,
+      homeBlogLabel: zhCN.home.notesAndEssays,
+      workspaceNav: zhCN.workspace.nav.blogPosts,
+      workspacePage: zhCN.workspace.pages.blogPosts,
+      workspaceModule: zhCN.workspace.home.modules.blogPosts,
+      workspaceBlogCategories: zhCN.workspace.blog,
+      workspaceBlogPosts: zhCN.workspace.blogPosts,
+    }
+
+    expect(JSON.stringify(blogCopy)).not.toContain('文章')
+  })
+
   it('does not hard-code common operation text in blog views', () => {
     const combined = `${listSource}\n${detailSource}\n${editorSource}`
 
