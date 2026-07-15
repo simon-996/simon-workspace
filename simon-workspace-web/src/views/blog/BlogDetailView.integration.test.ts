@@ -37,11 +37,18 @@ describe('BlogDetailView', () => {
     expect(detailSource).toContain('scroll-margin-top: 104px;')
   })
 
-  it('adds breathing room between the article frame and rendered markdown', () => {
+  it('keeps rendered markdown left-aligned and shrinkable on narrow screens', () => {
     expect(detailSource).toContain('grid-template-columns: minmax(0, 1fr) 230px;')
     expect(detailSource).toContain('padding: 16px;')
     expect(detailSource).toContain('padding: 44px 48px;')
     expect(detailSource).toContain('max-width: 76ch;')
+    expect(detailSource).not.toContain('max-width: 14ch;')
+    expect(detailSource).toContain('max-width: 100%;')
+    expect(detailSource).toContain('text-align: left;')
+    expect(detailSource).toContain('min-width: 0;')
+    expect(detailSource).toContain('box-sizing: border-box;')
+    expect(detailSource).toContain('overflow-wrap: anywhere;')
+    expect(detailSource).toContain('padding: 24px 18px;')
   })
 
   it('enhances rendered markdown for technical reading', () => {

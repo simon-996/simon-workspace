@@ -465,13 +465,14 @@ function escapeHtml(value: string) {
 }
 
 .post-detail h1 {
-  max-width: 14ch;
+  max-width: 100%;
   margin: 14px 0 12px;
   color: var(--sw-text);
   font-size: clamp(32px, 6vw, 58px);
   font-weight: 800;
   letter-spacing: 0;
   line-height: 1.02;
+  overflow-wrap: anywhere;
 }
 
 .article-header p,
@@ -528,22 +529,38 @@ function escapeHtml(value: string) {
 }
 
 .article-body {
+  min-width: 0;
   overflow: hidden;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
   background: var(--sw-panel-bg-strong);
   box-shadow: var(--sw-shadow-soft);
   padding: 16px;
+  box-sizing: border-box;
+}
+
+.article-body :deep(.md-editor),
+.article-body :deep(.md-editor-content),
+.article-body :deep(.md-editor-preview-wrapper) {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .article-body :deep(.md-editor-preview) {
+  width: 100%;
   max-width: 76ch;
-  margin: 0 auto;
+  min-width: 0;
+  margin: 0;
   color: var(--sw-text);
   padding: 44px 48px;
+  box-sizing: border-box;
   font-family:
     Outfit, Geist, Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", "Microsoft YaHei", sans-serif;
+  overflow-wrap: anywhere;
+  text-align: left;
+  word-break: normal;
 }
 
 .article-body :deep(.md-editor-preview h1),
@@ -577,6 +594,7 @@ function escapeHtml(value: string) {
 
 .article-body :deep(.md-editor-preview table) {
   display: block;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--sw-border);
@@ -827,12 +845,13 @@ function escapeHtml(value: string) {
     width: min(100% - 24px, 1180px);
   }
 
-  .post-detail h1 {
-    max-width: none;
+  .article-body {
+    padding: 0;
   }
 
   .article-body :deep(.md-editor-preview) {
-    padding: 30px 22px;
+    max-width: 100%;
+    padding: 24px 18px;
   }
 }
 </style>
