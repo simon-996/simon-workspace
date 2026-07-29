@@ -32,7 +32,6 @@ const loading = ref(false)
 const submitting = ref(false)
 const activeHeadingId = ref('')
 const mobileTocOpen = ref(false)
-const copiedCodeId = ref('')
 let headingObserver: IntersectionObserver | null = null
 let headingSyncFrame = 0
 let headingScrollFrame = 0
@@ -248,66 +247,6 @@ function enhanceRenderedMarkdown() {
       anchor.rel = 'noopener noreferrer'
     }
   })
-
-  preview.querySelectorAll<HTMLPreElement>('pre').forEach((pre, index) => {
-    if (pre.querySelector(':scope > .article-code-toolbar')) return
-    const code = pre.querySelector<HTMLElement>('code')
-    const language = codeLanguage(code)
-    const codeId = `code-${index}`
-    const toolbar = document.createElement('div')
-    toolbar.className = 'article-code-toolbar'
-    toolbar.innerHTML = `
-      <span>${escapeHtml(language)}</span>
-      <button type="button" class="article-code-copy" data-code-id="${codeId}">
-        ${escapeHtml(t('blog.detail.copyCode'))}
-      </button>
-    `
-    pre.dataset.codeId = codeId
-    pre.prepend(toolbar)
-  })
-}
-
-function codeLanguage(code?: HTMLElement | null) {
-  const raw = code?.getAttribute('language')
-    || Array.from(code?.classList || [])
-      .find((className) => className.startsWith('language-'))
-      ?.replace('language-', '')
-    || 'text'
-  return raw.trim() || 'text'
-}
-
-async function handleArticleBodyClick(event: MouseEvent) {
-  const target = event.target
-  if (!(target instanceof HTMLElement)) return
-  const button = target.closest<HTMLButtonElement>('.article-code-copy')
-  if (!button) return
-
-  const codeId = button.dataset.codeId || ''
-  const code = button.closest('pre')?.querySelector('code')?.textContent || ''
-  if (!code.trim()) return
-
-  try {
-    await navigator.clipboard.writeText(code)
-    copiedCodeId.value = codeId
-    button.textContent = t('blog.detail.copiedCode')
-    window.setTimeout(() => {
-      if (copiedCodeId.value === codeId) {
-        copiedCodeId.value = ''
-        button.textContent = t('blog.detail.copyCode')
-      }
-    }, 1400)
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : t('blog.messages.copyFailed'))
-  }
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
 }
 </script>
 
@@ -350,7 +289,7 @@ function escapeHtml(value: string) {
 
         <div class="article-layout">
           <div class="article-main">
-            <section ref="articleBodyRef" class="article-body" @click="handleArticleBodyClick">
+            <section ref="articleBodyRef" class="article-body">
               <MdPreview
                 :model-value="post.contentMd"
                 :theme="theme.isDark ? 'dark' : 'light'"
@@ -651,56 +590,7 @@ function escapeHtml(value: string) {
   overflow: auto;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: var(--sw-code-bg, #101820);
-  padding-top: 42px;
-}
-
-.article-body :deep(.article-code-toolbar) {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 34px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: color-mix(in srgb, #101820 88%, transparent);
-  margin: -42px 0 10px;
-  padding: 0 10px;
-}
-
-.article-body :deep(.article-code-toolbar span) {
-  color: rgba(238, 246, 250, 0.72);
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.article-body :deep(.article-code-copy) {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(238, 246, 250, 0.9);
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 8px;
-  transition:
-    background-color var(--sw-motion-standard),
-    border-color var(--sw-motion-standard),
-    transform var(--sw-motion-standard);
-}
-
-.article-body :deep(.article-code-copy:hover) {
-  border-color: rgba(255, 255, 255, 0.32);
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.article-body :deep(.article-code-copy:active) {
-  transform: translate3d(0, 1px, 0);
+  background: transparent;
 }
 
 .article-toc {

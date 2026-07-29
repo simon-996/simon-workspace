@@ -74,9 +74,9 @@ describe('BlogDetailView', () => {
   it('enhances rendered markdown for technical reading', () => {
     expect(detailSource).toContain('handleMarkdownRendered')
     expect(detailSource).toContain('enhanceRenderedMarkdown')
-    expect(detailSource).toContain('article-code-toolbar')
-    expect(detailSource).toContain('article-code-copy')
-    expect(detailSource).toContain('navigator.clipboard.writeText')
+    expect(detailSource).not.toContain('article-code-toolbar')
+    expect(detailSource).not.toContain('article-code-copy')
+    expect(detailSource).not.toContain('navigator.clipboard.writeText')
     expect(detailSource).toContain("anchor.rel = 'noopener noreferrer'")
     expect(detailSource).toContain('display: block;')
     expect(detailSource).toContain('overflow-x: auto;')
