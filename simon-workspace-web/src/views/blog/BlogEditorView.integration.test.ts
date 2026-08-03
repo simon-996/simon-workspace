@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import editorSource from './BlogEditorView.vue?raw'
+import rawEditorSource from './BlogEditorView.vue?raw'
+
+const editorSource = rawEditorSource.replace(/\r\n/g, '\n')
 
 describe('BlogEditorView', () => {
   it('uses md-editor-v3 and uploads blog editor images as public blog assets', () => {
