@@ -6,7 +6,6 @@ import { NDrawer, NDrawerContent, NIcon } from 'naive-ui'
 import { Menu2 } from '@vicons/tabler'
 
 import AppHeader from '../components/AppHeader.vue'
-// Workspace routes, including /workspace/posts, are owned by the shared navigation model.
 import { buildWorkspaceNavigation } from '../navigation/workspaceNavigation'
 import { useAuthStore } from '../stores/auth'
 
