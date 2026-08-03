@@ -49,6 +49,7 @@ redis-data/
 .codegraph/
 .cache/
 .worktrees/
+.superpowers/
 
 # Docker override files
 docker-compose.override.yml
