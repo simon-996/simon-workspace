@@ -290,6 +290,12 @@ export default {
     aria: 'Workspace navigation',
     mobileAria: 'Mobile navigation',
     logout: 'Logout',
+    navGroups: {
+      teaching: 'Teaching',
+      content: 'Content',
+      records: 'Records',
+      system: 'System',
+    },
     nav: {
       overview: 'Overview',
       courses: 'Courses',
@@ -303,6 +309,7 @@ export default {
       blogPosts: 'Posts',
       security: 'Security',
       site: 'Site',
+      more: 'More',
     },
     pages: {
       overview: 'Workspace Overview',

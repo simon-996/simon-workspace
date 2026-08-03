@@ -290,6 +290,12 @@ export default {
     aria: '工作台导航',
     mobileAria: '移动端导航',
     logout: '退出',
+    navGroups: {
+      teaching: '教学',
+      content: '内容',
+      records: '记录',
+      system: '系统',
+    },
     nav: {
       overview: '总览',
       courses: '课程',
@@ -303,6 +309,7 @@ export default {
       blogPosts: '博客',
       security: '权限',
       site: '站点',
+      more: '更多',
     },
     pages: {
       overview: '工作台总览',

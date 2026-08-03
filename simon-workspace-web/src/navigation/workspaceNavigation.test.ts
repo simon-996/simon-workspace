@@ -13,7 +13,7 @@ import {
   Users,
 } from '@vicons/tabler'
 
-import { buildWorkspaceNavigation } from './workspaceNavigation'
+import { buildWorkspaceNavigation, isWorkspaceNavigationActive } from './workspaceNavigation'
 
 const expectedGroups = [
   {
@@ -210,5 +210,18 @@ describe('buildWorkspaceNavigation', () => {
     groupClasses.to = '/workspace/classes'
 
     expect(observedRoutes).toEqual(['/workspace', '/workspace/classes', '/workspace', '/workspace/classes'])
+  })
+})
+
+describe('isWorkspaceNavigationActive', () => {
+  it('normalizes trailing slashes without treating sibling prefixes as descendants', () => {
+    const targets = expectedGroups.flatMap((group) => group.items.map((item) => item.to))
+
+    expect(targets.filter((to) => isWorkspaceNavigationActive('/workspace', to))).toEqual(['/workspace'])
+    expect(targets.filter((to) => isWorkspaceNavigationActive('/workspace/', to))).toEqual(['/workspace'])
+    expect(isWorkspaceNavigationActive('/workspace/courses', '/workspace/courses')).toBe(true)
+    expect(isWorkspaceNavigationActive('/workspace/courses/42', '/workspace/courses')).toBe(true)
+    expect(isWorkspaceNavigationActive('/workspace/courses-other', '/workspace/courses')).toBe(false)
+    expect(isWorkspaceNavigationActive('/workspace/courses', '/workspace')).toBe(false)
   })
 })

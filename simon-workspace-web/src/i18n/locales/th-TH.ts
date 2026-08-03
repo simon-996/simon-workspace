@@ -290,6 +290,12 @@ export default {
     aria: 'เมนูเวิร์กสเปซ',
     mobileAria: 'เมนูมือถือ',
     logout: 'ออกจากระบบ',
+    navGroups: {
+      teaching: 'การสอน',
+      content: 'เนื้อหา',
+      records: 'บันทึก',
+      system: 'ระบบ',
+    },
     nav: {
       overview: 'ภาพรวม',
       courses: 'หลักสูตร',
@@ -303,6 +309,7 @@ export default {
       blogPosts: 'บทความ',
       security: 'สิทธิ์',
       site: 'ไซต์',
+      more: 'เพิ่มเติม',
     },
     pages: {
       overview: 'ภาพรวมเวิร์กสเปซ',

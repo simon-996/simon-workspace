@@ -177,6 +177,21 @@ function copyWorkspaceNavItem(item: WorkspaceNavItem): WorkspaceNavItem {
   return { ...item }
 }
 
+function normalizeNavigationPath(path: string): string {
+  return path.replace(/\/+$/, '') || '/'
+}
+
+export function isWorkspaceNavigationActive(currentPath: string, to: string): boolean {
+  const normalizedCurrentPath = normalizeNavigationPath(currentPath)
+  const normalizedTarget = normalizeNavigationPath(to)
+
+  if (normalizedTarget === '/workspace') {
+    return normalizedCurrentPath === normalizedTarget
+  }
+
+  return normalizedCurrentPath === normalizedTarget || normalizedCurrentPath.startsWith(`${normalizedTarget}/`)
+}
+
 export function buildWorkspaceNavigation(hasPermission: (permission: string) => boolean): WorkspaceNavigation {
   const permittedGroups = workspaceNavigationGroups
     .map((group) => ({

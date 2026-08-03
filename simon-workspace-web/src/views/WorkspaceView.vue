@@ -6,7 +6,7 @@ import { NDrawer, NDrawerContent, NIcon } from 'naive-ui'
 import { Menu2 } from '@vicons/tabler'
 
 import AppHeader from '../components/AppHeader.vue'
-import { buildWorkspaceNavigation } from '../navigation/workspaceNavigation'
+import { buildWorkspaceNavigation, isWorkspaceNavigationActive } from '../navigation/workspaceNavigation'
 import { useAuthStore } from '../stores/auth'
 
 const { t } = useI18n()
@@ -20,13 +20,7 @@ const pageTitle = computed(() => {
   return t(titleKey)
 })
 
-const isActive = (to: string) => {
-  if (to === '/workspace') {
-    return route.path === to
-  }
-
-  return route.path === to || route.path.startsWith(`${to}/`)
-}
+const isActive = (to: string) => isWorkspaceNavigationActive(route.path, to)
 
 const moreIsActive = computed(() =>
   navigation.value.moreGroups.some((group) => group.items.some((item) => isActive(item.to))),
@@ -46,7 +40,7 @@ watch(
 
     <section class="workspace-body">
       <aside class="workspace-sider" :aria-label="t('workspace.aria')">
-        <nav class="side-nav">
+        <nav class="side-nav" :aria-label="t('workspace.aria')">
           <section v-for="group in navigation.groups" :key="group.key" class="nav-group">
             <h2 class="nav-group-label">{{ t(group.labelKey) }}</h2>
             <RouterLink
@@ -94,6 +88,7 @@ watch(
         class="mobile-tab"
         :class="{ 'mobile-tab-active': moreIsActive }"
         :aria-expanded="moreOpen"
+        aria-haspopup="dialog"
         aria-controls="workspace-more-navigation"
         @click="moreOpen = true"
       >
@@ -108,6 +103,7 @@ watch(
       placement="bottom"
       height="min(72dvh, 560px)"
       class="workspace-more-drawer"
+      :aria-label="t('workspace.nav.more')"
     >
       <n-drawer-content :title="t('workspace.nav.more')" closable>
         <div class="more-groups">
