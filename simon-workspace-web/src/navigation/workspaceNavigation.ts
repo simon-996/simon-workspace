@@ -30,27 +30,27 @@ export type WorkspaceNavItemKey =
   | 'site'
 
 export interface WorkspaceNavItem {
-  key: WorkspaceNavItemKey
-  to: string
-  labelKey: string
-  permission: string
-  icon: Component
-  mobile: boolean
+  readonly key: WorkspaceNavItemKey
+  readonly to: string
+  readonly labelKey: string
+  readonly permission: string
+  readonly icon: Component
+  readonly mobile: boolean
 }
 
 export interface WorkspaceNavGroup {
-  key: WorkspaceNavGroupKey
-  labelKey: string
-  items: WorkspaceNavItem[]
+  readonly key: WorkspaceNavGroupKey
+  readonly labelKey: string
+  readonly items: ReadonlyArray<WorkspaceNavItem>
 }
 
 export interface WorkspaceNavigation {
-  groups: WorkspaceNavGroup[]
-  mobileItems: WorkspaceNavItem[]
-  moreGroups: WorkspaceNavGroup[]
+  readonly groups: ReadonlyArray<WorkspaceNavGroup>
+  readonly mobileItems: ReadonlyArray<WorkspaceNavItem>
+  readonly moreGroups: ReadonlyArray<WorkspaceNavGroup>
 }
 
-const workspaceNavigationGroups: WorkspaceNavGroup[] = [
+const workspaceNavigationGroups: ReadonlyArray<WorkspaceNavGroup> = [
   {
     key: 'teaching',
     labelKey: 'workspace.navGroups.teaching',
@@ -173,19 +173,30 @@ const workspaceNavigationGroups: WorkspaceNavGroup[] = [
   },
 ]
 
+function copyWorkspaceNavItem(item: WorkspaceNavItem): WorkspaceNavItem {
+  return { ...item }
+}
+
 export function buildWorkspaceNavigation(hasPermission: (permission: string) => boolean): WorkspaceNavigation {
-  const groups = workspaceNavigationGroups
+  const permittedGroups = workspaceNavigationGroups
     .map((group) => ({
       ...group,
       items: group.items.filter((item) => hasPermission(item.permission)),
     }))
     .filter((group) => group.items.length > 0)
 
-  const mobileItems = groups.flatMap((group) => group.items.filter((item) => item.mobile))
-  const moreGroups = groups
+  const groups = permittedGroups.map((group) => ({
+    ...group,
+    items: group.items.map(copyWorkspaceNavItem),
+  }))
+  const mobileItems = permittedGroups.flatMap((group) =>
+    group.items.filter((item) => item.mobile).map(copyWorkspaceNavItem),
+  )
+  const mobileItemKeys = new Set(mobileItems.map((item) => item.key))
+  const moreGroups = permittedGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.mobile),
+      items: group.items.filter((item) => !mobileItemKeys.has(item.key)).map(copyWorkspaceNavItem),
     }))
     .filter((group) => group.items.length > 0)
 
