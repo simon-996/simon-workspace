@@ -7,6 +7,7 @@ import { Book, FileUpload, Notes } from '@vicons/tabler'
 
 import { useAuthStore } from '../../stores/auth'
 import { useWorkspaceOverview } from './useWorkspaceOverview'
+import { useWorkspaceSectionRetry } from './useWorkspaceSectionRetry'
 
 const { locale, t } = useI18n()
 const auth = useAuthStore()
@@ -48,13 +49,25 @@ const overview = useWorkspaceOverview({
 
 const courseItems = overview.courses.items
 const coursesLoading = overview.courses.loading
-const coursesError = overview.courses.error
 const fileItems = overview.files.items
 const filesLoading = overview.files.loading
-const filesError = overview.files.error
 const draftItems = overview.drafts.items
 const draftsLoading = overview.drafts.loading
-const draftsError = overview.drafts.error
+const {
+  retry: retryCourses,
+  running: coursesRetrying,
+  visibleError: coursesVisibleError,
+} = useWorkspaceSectionRetry(overview.courses.error, overview.courses.load)
+const {
+  retry: retryFiles,
+  running: filesRetrying,
+  visibleError: filesVisibleError,
+} = useWorkspaceSectionRetry(overview.files.error, overview.files.load)
+const {
+  retry: retryDrafts,
+  running: draftsRetrying,
+  visibleError: draftsVisibleError,
+} = useWorkspaceSectionRetry(overview.drafts.error, overview.drafts.load)
 
 onMounted(() => void overview.loadAll())
 
@@ -103,17 +116,17 @@ function formatDate(value?: string | null) {
             <h3>{{ t('workspace.home.recent.courses') }}</h3>
           </header>
 
+          <div v-if="coursesVisibleError" class="recent-error" role="alert">
+            <span>{{ coursesVisibleError }}</span>
+            <button type="button" :disabled="coursesLoading || coursesRetrying" @click="retryCourses">
+              {{ t('workspace.home.recent.retry') }}
+            </button>
+          </div>
           <div v-if="coursesLoading" class="recent-skeletons">
             <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
           </div>
           <div v-else class="recent-content">
-            <div v-if="coursesError" class="recent-error" role="alert">
-              <span>{{ coursesError }}</span>
-              <button type="button" :disabled="coursesLoading" @click="overview.courses.load">
-                {{ t('workspace.home.recent.retry') }}
-              </button>
-            </div>
-            <p v-if="!coursesError && courseItems.length === 0" class="recent-empty">
+            <p v-if="!coursesVisibleError && courseItems.length === 0" class="recent-empty">
               {{ t('workspace.home.recent.emptyCourses') }}
             </p>
             <div v-else-if="courseItems.length" class="recent-rows">
@@ -130,17 +143,17 @@ function formatDate(value?: string | null) {
             <h3>{{ t('workspace.home.recent.files') }}</h3>
           </header>
 
+          <div v-if="filesVisibleError" class="recent-error" role="alert">
+            <span>{{ filesVisibleError }}</span>
+            <button type="button" :disabled="filesLoading || filesRetrying" @click="retryFiles">
+              {{ t('workspace.home.recent.retry') }}
+            </button>
+          </div>
           <div v-if="filesLoading" class="recent-skeletons">
             <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
           </div>
           <div v-else class="recent-content">
-            <div v-if="filesError" class="recent-error" role="alert">
-              <span>{{ filesError }}</span>
-              <button type="button" :disabled="filesLoading" @click="overview.files.load">
-                {{ t('workspace.home.recent.retry') }}
-              </button>
-            </div>
-            <p v-if="!filesError && fileItems.length === 0" class="recent-empty">
+            <p v-if="!filesVisibleError && fileItems.length === 0" class="recent-empty">
               {{ t('workspace.home.recent.emptyFiles') }}
             </p>
             <div v-else-if="fileItems.length" class="recent-rows">
@@ -157,17 +170,17 @@ function formatDate(value?: string | null) {
             <h3>{{ t('workspace.home.recent.drafts') }}</h3>
           </header>
 
+          <div v-if="draftsVisibleError" class="recent-error" role="alert">
+            <span>{{ draftsVisibleError }}</span>
+            <button type="button" :disabled="draftsLoading || draftsRetrying" @click="retryDrafts">
+              {{ t('workspace.home.recent.retry') }}
+            </button>
+          </div>
           <div v-if="draftsLoading" class="recent-skeletons">
             <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
           </div>
           <div v-else class="recent-content">
-            <div v-if="draftsError" class="recent-error" role="alert">
-              <span>{{ draftsError }}</span>
-              <button type="button" :disabled="draftsLoading" @click="overview.drafts.load">
-                {{ t('workspace.home.recent.retry') }}
-              </button>
-            </div>
-            <p v-if="!draftsError && draftItems.length === 0" class="recent-empty">
+            <p v-if="!draftsVisibleError && draftItems.length === 0" class="recent-empty">
               {{ t('workspace.home.recent.emptyDrafts') }}
             </p>
             <div v-else-if="draftItems.length" class="recent-rows">
@@ -336,6 +349,7 @@ function formatDate(value?: string | null) {
   border-radius: 8px;
   background: var(--sw-panel-bg);
   color: var(--sw-muted);
+  margin: 8px 8px 0;
   padding: 9px 10px;
   font-size: 12px;
 }
