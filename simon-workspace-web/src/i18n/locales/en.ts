@@ -324,8 +324,6 @@ export default {
       site: 'Site Configuration',
     },
     home: {
-      apiReady: 'API Ready',
-      phase: 'Ready',
       title: 'Start your work',
       description: 'Choose a course, file, or article to continue.',
       noAvailableTasks: 'No workspace tasks are available for this account.',

@@ -324,8 +324,6 @@ export default {
       site: '站点配置',
     },
     home: {
-      apiReady: 'API 就绪',
-      phase: '就绪',
       title: '开始今天的工作',
       description: '从课程、资料或文章中选择一项继续。',
       noAvailableTasks: '当前账号没有可处理的工作。',
