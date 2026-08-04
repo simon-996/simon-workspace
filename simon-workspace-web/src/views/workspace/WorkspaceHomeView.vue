@@ -1,39 +1,189 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { NIcon } from 'naive-ui'
-import { Book, Calendar, CircleCheck, Files, History, Notes, Template } from '@vicons/tabler'
+import { RouterLink } from 'vue-router'
+import { NIcon, NSkeleton } from 'naive-ui'
+import { Book, FileUpload, Notes } from '@vicons/tabler'
 
-const { t } = useI18n()
+import { useAuthStore } from '../../stores/auth'
+import { useWorkspaceOverview } from './useWorkspaceOverview'
 
-const modules = [
-  { labelKey: 'workspace.home.modules.courses', valueKey: 'workspace.home.apiReady', icon: Book, to: '/workspace/courses' },
-  { labelKey: 'workspace.home.modules.classes', valueKey: 'workspace.home.apiReady', icon: CircleCheck, to: '/workspace/classes' },
-  { labelKey: 'workspace.home.modules.semesters', valueKey: 'workspace.home.apiReady', icon: Calendar, to: '/workspace/semesters' },
-  { labelKey: 'workspace.home.modules.templates', valueKey: 'workspace.home.apiReady', icon: Template, to: '/workspace/templates' },
-  { labelKey: 'workspace.home.modules.blogPosts', valueKey: 'workspace.home.apiReady', icon: Notes, to: '/workspace/posts' },
-  { labelKey: 'workspace.home.modules.files', valueKey: 'workspace.home.apiReady', icon: Files, to: '/workspace/files' },
-  { labelKey: 'workspace.home.modules.history', valueKey: 'workspace.home.apiReady', icon: History, to: '/workspace/history' },
-]
+const { locale, t } = useI18n()
+const auth = useAuthStore()
+
+const actionMetadata = [
+  { to: '/workspace/courses', permission: 'course:manage' },
+  { to: '/workspace/files?action=upload', permission: 'file:manage' },
+  { to: '/blog/new', permission: 'blog:post:create' },
+] as const
+
+const actionPresentation = [
+  {
+    icon: Book,
+    titleKey: 'workspace.home.actions.courses',
+    descriptionKey: 'workspace.home.actions.coursesHelp',
+  },
+  {
+    icon: FileUpload,
+    titleKey: 'workspace.home.actions.upload',
+    descriptionKey: 'workspace.home.actions.uploadHelp',
+  },
+  {
+    icon: Notes,
+    titleKey: 'workspace.home.actions.write',
+    descriptionKey: 'workspace.home.actions.writeHelp',
+  },
+] as const
+
+const actions = computed(() => actionMetadata
+  .map((metadata, index) => ({ ...metadata, ...actionPresentation[index] }))
+  .filter((action) => auth.hasPermission(action.permission)))
+
+const overview = useWorkspaceOverview({
+  courses: auth.hasPermission('course:manage'),
+  files: auth.hasPermission('file:manage'),
+  drafts: auth.hasPermission('blog:post:create'),
+  fallbackError: () => t('workspace.home.recent.loadFailed'),
+})
+
+const courseItems = overview.courses.items
+const coursesLoading = overview.courses.loading
+const coursesError = overview.courses.error
+const fileItems = overview.files.items
+const filesLoading = overview.files.loading
+const filesError = overview.files.error
+const draftItems = overview.drafts.items
+const draftsLoading = overview.drafts.loading
+const draftsError = overview.drafts.error
+
+onMounted(() => void overview.loadAll())
+
+function courseStatus(status: string) {
+  return status === 'ARCHIVED' ? t('common.states.archived') : t('common.states.active')
+}
+
+function formatFileSize(size: number) {
+  const formatter = new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 })
+  if (size >= 1024 * 1024) return `${formatter.format(size / 1024 / 1024)} MB`
+  if (size >= 1024) return `${formatter.format(size / 1024)} KB`
+  return `${formatter.format(size)} B`
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value.slice(0, 10)
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(date)
+}
 </script>
 
 <template>
   <section class="workspace-home">
-    <div class="status-grid">
-      <router-link v-for="module in modules" :key="module.labelKey" :to="module.to" class="status-card">
-        <n-icon :component="module.icon" />
-        <div>
-          <span>{{ t(module.valueKey) }}</span>
-          <h2>{{ t(module.labelKey) }}</h2>
-        </div>
-      </router-link>
-    </div>
-
-    <section class="home-band">
-      <div>
-        <span>{{ t('workspace.home.phase') }}</span>
-        <h2>{{ t('workspace.home.title') }}</h2>
-      </div>
+    <header class="home-intro">
+      <h1>{{ t('workspace.home.title') }}</h1>
       <p>{{ t('workspace.home.description') }}</p>
+    </header>
+
+    <nav v-if="actions.length" class="action-grid" :aria-label="t('workspace.home.title')">
+      <RouterLink v-for="action in actions" :key="action.to" :to="action.to" class="action-card">
+        <n-icon :component="action.icon" aria-hidden="true" />
+        <span>
+          <strong>{{ t(action.titleKey) }}</strong>
+          <small>{{ t(action.descriptionKey) }}</small>
+        </span>
+      </RouterLink>
+    </nav>
+
+    <section class="recent-work">
+      <h2>{{ t('workspace.home.recent.title') }}</h2>
+
+      <div class="recent-grid">
+        <section v-if="overview.courses.enabled" class="recent-panel">
+          <header>
+            <h3>{{ t('workspace.home.recent.courses') }}</h3>
+          </header>
+
+          <div v-if="coursesLoading" class="recent-skeletons">
+            <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
+          </div>
+          <div v-else class="recent-content">
+            <div v-if="coursesError" class="recent-error" role="alert">
+              <span>{{ coursesError }}</span>
+              <button type="button" :disabled="coursesLoading" @click="overview.courses.load">
+                {{ t('workspace.home.recent.retry') }}
+              </button>
+            </div>
+            <p v-if="!coursesError && courseItems.length === 0" class="recent-empty">
+              {{ t('workspace.home.recent.emptyCourses') }}
+            </p>
+            <div v-else-if="courseItems.length" class="recent-rows">
+              <RouterLink v-for="course in courseItems" :key="course.id" to="/workspace/courses" class="recent-row">
+                <strong>{{ course.courseName }}</strong>
+                <span>{{ course.courseCode || '—' }} · {{ courseStatus(course.status) }}</span>
+              </RouterLink>
+            </div>
+          </div>
+        </section>
+
+        <section v-if="overview.files.enabled" class="recent-panel">
+          <header>
+            <h3>{{ t('workspace.home.recent.files') }}</h3>
+          </header>
+
+          <div v-if="filesLoading" class="recent-skeletons">
+            <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
+          </div>
+          <div v-else class="recent-content">
+            <div v-if="filesError" class="recent-error" role="alert">
+              <span>{{ filesError }}</span>
+              <button type="button" :disabled="filesLoading" @click="overview.files.load">
+                {{ t('workspace.home.recent.retry') }}
+              </button>
+            </div>
+            <p v-if="!filesError && fileItems.length === 0" class="recent-empty">
+              {{ t('workspace.home.recent.emptyFiles') }}
+            </p>
+            <div v-else-if="fileItems.length" class="recent-rows">
+              <RouterLink v-for="file in fileItems" :key="file.id" to="/workspace/files" class="recent-row">
+                <strong>{{ file.originalFilename }}</strong>
+                <span>{{ formatFileSize(file.fileSize) }} · {{ formatDate(file.updatedTime || file.createdTime) }}</span>
+              </RouterLink>
+            </div>
+          </div>
+        </section>
+
+        <section v-if="overview.drafts.enabled" class="recent-panel">
+          <header>
+            <h3>{{ t('workspace.home.recent.drafts') }}</h3>
+          </header>
+
+          <div v-if="draftsLoading" class="recent-skeletons">
+            <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
+          </div>
+          <div v-else class="recent-content">
+            <div v-if="draftsError" class="recent-error" role="alert">
+              <span>{{ draftsError }}</span>
+              <button type="button" :disabled="draftsLoading" @click="overview.drafts.load">
+                {{ t('workspace.home.recent.retry') }}
+              </button>
+            </div>
+            <p v-if="!draftsError && draftItems.length === 0" class="recent-empty">
+              {{ t('workspace.home.recent.emptyDrafts') }}
+            </p>
+            <div v-else-if="draftItems.length" class="recent-rows">
+              <RouterLink
+                v-for="draft in draftItems"
+                :key="draft.id"
+                :to="`/blog/${draft.id}/edit`"
+                class="recent-row"
+              >
+                <strong>{{ draft.title }}</strong>
+                <span>{{ formatDate(draft.updatedTime) }}</span>
+              </RouterLink>
+            </div>
+          </div>
+        </section>
+      </div>
     </section>
   </section>
 </template>
@@ -41,105 +191,228 @@ const modules = [
 <style scoped>
 .workspace-home {
   display: grid;
-  gap: 16px;
+  gap: 24px;
 }
 
-.status-grid {
+.home-intro {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 1px;
-  overflow: hidden;
+  gap: 5px;
+}
+
+.home-intro h1,
+.recent-work h2,
+.recent-panel h3 {
+  margin: 0;
+  color: var(--sw-text);
+}
+
+.home-intro h1 {
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.home-intro p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.action-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 86px;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: var(--sw-border-soft);
-  box-shadow: var(--sw-shadow-soft);
-}
-
-.status-card {
-  display: grid;
-  align-content: space-between;
-  gap: 22px;
-  min-height: 132px;
-  border: 0;
-  border-radius: 0;
   background: var(--sw-panel-bg-strong);
-  padding: 18px;
+  padding: 14px;
   transition:
-    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.status-card:hover {
+.action-card:hover {
+  border-color: color-mix(in srgb, var(--sw-accent) 42%, var(--sw-border));
   background: var(--sw-panel-bg-hover);
-  transform: translate3d(0, -2px, 0);
+  transform: translate3d(0, -1px, 0);
 }
 
-.status-card .n-icon {
+.action-card:active {
+  transform: translate3d(0, 1px, 0);
+}
+
+.action-card .n-icon {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 8px;
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
-  font-size: 22px;
+  font-size: 20px;
 }
 
-.status-card span,
-.home-band span {
-  color: var(--sw-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.action-card > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
-.status-card h2 {
-  margin: 6px 0 0;
+.action-card strong {
   color: var(--sw-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.action-card small {
+  overflow: hidden;
+  color: var(--sw-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-work {
+  display: grid;
+  gap: 12px;
+}
+
+.recent-work > h2 {
   font-size: 18px;
   font-weight: 700;
 }
 
-.home-band {
+.recent-grid {
   display: grid;
-  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
-  gap: 22px;
-  border: 1px solid var(--sw-border);
-  border-radius: 8px;
-  background: var(--sw-panel-bg);
-  box-shadow: var(--sw-shadow-soft);
-  padding: 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.home-band h2 {
-  margin: 6px 0 0;
-  color: var(--sw-text);
-  font-size: 22px;
+.recent-panel {
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg-strong);
+}
+
+.recent-panel > header {
+  border-bottom: 1px solid var(--sw-border-soft);
+  padding: 13px 14px;
+}
+
+.recent-panel h3 {
+  font-size: 14px;
   font-weight: 700;
 }
 
-.home-band p {
-  margin: 0;
-  color: var(--sw-muted);
-  font-size: 15px;
-  line-height: 1.7;
+.recent-skeletons,
+.recent-content {
+  display: grid;
+  gap: 1px;
+  padding: 8px;
 }
 
-@media (max-width: 1180px) {
-  .status-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.recent-skeletons {
+  gap: 7px;
+}
+
+.recent-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg);
+  color: var(--sw-muted);
+  padding: 9px 10px;
+  font-size: 12px;
+}
+
+.recent-error span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.recent-error button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 6px;
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
+  padding: 5px 9px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.recent-error button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.recent-empty {
+  margin: 0;
+  color: var(--sw-muted);
+  padding: 22px 10px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.recent-rows {
+  display: grid;
+}
+
+.recent-row {
+  display: grid;
+  gap: 3px;
+  border-bottom: 1px solid var(--sw-border-soft);
+  border-radius: 6px;
+  padding: 10px;
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.recent-row:last-child {
+  border-bottom: 0;
+}
+
+.recent-row:hover {
+  background: var(--sw-panel-bg-hover);
+}
+
+.recent-row strong {
+  overflow: hidden;
+  color: var(--sw-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-row span {
+  overflow: hidden;
+  color: var(--sw-muted);
+  font-size: 11px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 860px) {
-  .status-grid,
-  .home-band {
+  .action-grid,
+  .recent-grid {
     grid-template-columns: 1fr;
-  }
-
-  .status-card {
-    min-height: 104px;
   }
 }
 </style>

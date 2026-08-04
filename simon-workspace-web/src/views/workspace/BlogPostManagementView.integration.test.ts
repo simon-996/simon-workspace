@@ -25,7 +25,8 @@ describe('BlogPostManagementView', () => {
       key: 'blogPosts',
       to: '/workspace/posts',
     })
-    expect(homeSource).toContain('/workspace/posts')
+    expect(homeSource).toContain('/blog/new')
+    expect(homeSource).not.toContain("to: '/workspace/posts'")
   })
 
   it('supports status filtering and draft editing from the workspace', () => {
