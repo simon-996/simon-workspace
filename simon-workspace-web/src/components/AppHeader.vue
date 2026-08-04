@@ -435,6 +435,76 @@ async function selectAccountAction(key: string | number) {
   }
 }
 
+@media (max-width: 480px) {
+  .app-header-inner {
+    gap: 8px;
+  }
+
+  .app-brand {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+
+  .app-header-controls {
+    flex: 0 0 auto;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .theme-toggle {
+    width: 56px;
+    min-height: 44px;
+  }
+
+  .theme-toggle-track {
+    height: 32px;
+  }
+
+  .theme-toggle.dark .theme-toggle-indicator {
+    transform: translateX(23px);
+  }
+
+  .account-button {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    max-width: 44px;
+    padding: 0 !important;
+  }
+
+  .account-name,
+  .account-chevron {
+    display: none;
+  }
+
+  .app-header-controls :deep(.language-switcher) {
+    min-height: 44px;
+  }
+
+  .menu-button {
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .app-header-controls :deep(.language-switcher) {
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+    padding: 0 !important;
+  }
+
+  .app-header-controls :deep(.language-switcher .n-button__content > span),
+  .app-header-controls :deep(.language-switcher .chevron) {
+    display: none;
+  }
+}
+
 @keyframes header-skeleton {
   0%,
   100% {

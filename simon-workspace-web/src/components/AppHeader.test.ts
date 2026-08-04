@@ -44,6 +44,28 @@ describe('AppHeader', () => {
     expect(source).toContain('watch(')
   })
 
+  it('defines a compact-header CSS contract for narrow screens', () => {
+    const compactStart = source.indexOf('@media (max-width: 480px)')
+    const extraCompactStart = source.indexOf('@media (max-width: 400px)')
+
+    expect(compactStart).toBeGreaterThan(-1)
+    expect(extraCompactStart).toBeGreaterThan(compactStart)
+
+    const compactCss = source.slice(compactStart, extraCompactStart)
+    expect(compactCss).toContain('flex: 1 1 auto')
+    expect(compactCss).toContain('flex: 0 0 auto')
+    expect(compactCss).toContain('.account-name,')
+    expect(compactCss).toContain('.account-chevron')
+    expect(compactCss).toContain('display: none')
+    expect(compactCss).toContain('.app-header-controls :deep(.language-switcher)')
+    expect(compactCss.match(/min-height: 44px/g)).toHaveLength(4)
+
+    const extraCompactCss = source.slice(extraCompactStart)
+    expect(extraCompactCss).toContain('.language-switcher .n-button__content > span')
+    expect(extraCompactCss).toContain('.language-switcher .chevron')
+    expect(extraCompactCss).toContain('min-width: 44px')
+  })
+
   it('prevents accidental text selection in the navigation bar', () => {
     expect(source).toContain('user-select: none')
   })
