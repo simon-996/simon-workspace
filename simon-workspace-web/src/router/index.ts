@@ -1,27 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import WorkspaceView from '../views/WorkspaceView.vue'
-import BlogDetailView from '../views/blog/BlogDetailView.vue'
-import BlogEditorView from '../views/blog/BlogEditorView.vue'
-import BlogListView from '../views/blog/BlogListView.vue'
-import PublicCourseDetailView from '../views/course/PublicCourseDetailView.vue'
-import PublicCourseListView from '../views/course/PublicCourseListView.vue'
-import PublicMarkdownView from '../views/course/PublicMarkdownView.vue'
-import BlogManagementView from '../views/workspace/BlogManagementView.vue'
-import BlogPostManagementView from '../views/workspace/BlogPostManagementView.vue'
-import ClassManagementView from '../views/workspace/ClassManagementView.vue'
-import CourseManagementView from '../views/workspace/CourseManagementView.vue'
-import FileCenterView from '../views/workspace/FileCenterView.vue'
-import GenerationHistoryView from '../views/workspace/GenerationHistoryView.vue'
-import SecurityManagementView from '../views/workspace/SecurityManagementView.vue'
-import SemesterManagementView from '../views/workspace/SemesterManagementView.vue'
-import SiteConfigView from '../views/workspace/SiteConfigView.vue'
-import StorageManagementView from '../views/workspace/StorageManagementView.vue'
-import TemplateManagementView from '../views/workspace/TemplateManagementView.vue'
-import WorkspaceHomeView from '../views/workspace/WorkspaceHomeView.vue'
+const HomeView = () => import('../views/HomeView.vue')
+const LoginView = () => import('../views/LoginView.vue')
+const RegisterView = () => import('../views/RegisterView.vue')
+const WorkspaceView = () => import('../views/WorkspaceView.vue')
+const BlogDetailView = () => import('../views/blog/BlogDetailView.vue')
+const BlogEditorView = () => import('../views/blog/BlogEditorView.vue')
+const BlogListView = () => import('../views/blog/BlogListView.vue')
+const PublicCourseDetailView = () => import('../views/course/PublicCourseDetailView.vue')
+const PublicCourseListView = () => import('../views/course/PublicCourseListView.vue')
+const PublicMarkdownView = () => import('../views/course/PublicMarkdownView.vue')
+const BlogManagementView = () => import('../views/workspace/BlogManagementView.vue')
+const BlogPostManagementView = () => import('../views/workspace/BlogPostManagementView.vue')
+const ClassManagementView = () => import('../views/workspace/ClassManagementView.vue')
+const CourseManagementView = () => import('../views/workspace/CourseManagementView.vue')
+const FileCenterView = () => import('../views/workspace/FileCenterView.vue')
+const GenerationHistoryView = () => import('../views/workspace/GenerationHistoryView.vue')
+const SecurityManagementView = () => import('../views/workspace/SecurityManagementView.vue')
+const SemesterManagementView = () => import('../views/workspace/SemesterManagementView.vue')
+const SiteConfigView = () => import('../views/workspace/SiteConfigView.vue')
+const StorageManagementView = () => import('../views/workspace/StorageManagementView.vue')
+const TemplateManagementView = () => import('../views/workspace/TemplateManagementView.vue')
+const WorkspaceHomeView = () => import('../views/workspace/WorkspaceHomeView.vue')
 import { useAuthStore } from '../stores/auth'
 
 export const router = createRouter({
