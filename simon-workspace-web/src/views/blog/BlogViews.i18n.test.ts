@@ -29,7 +29,6 @@ describe('blog views i18n', () => {
       publicBlog: zhCN.blog,
       homeBlogLabel: zhCN.home.notesAndEssays,
       workspacePage: zhCN.workspace.pages.blogPosts,
-      workspaceModule: zhCN.workspace.home.modules.blogPosts,
       workspaceBlogCategories: zhCN.workspace.blog,
       workspaceBlogPosts: zhCN.workspace.blogPosts,
     }

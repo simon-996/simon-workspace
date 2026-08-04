@@ -346,15 +346,6 @@ export default {
         retry: '重试',
         loadFailed: '加载失败',
       },
-      modules: {
-        courses: '课程管理',
-        classes: '班级管理',
-        semesters: '学期周历',
-        templates: '模板字段',
-        blogPosts: '博客',
-        files: '文件中心',
-        history: '生成记录',
-      },
     },
     courses: {
       summary: {

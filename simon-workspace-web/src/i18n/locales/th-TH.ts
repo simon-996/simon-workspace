@@ -346,15 +346,6 @@ export default {
         retry: 'ลองอีกครั้ง',
         loadFailed: 'โหลดข้อมูลไม่สำเร็จ',
       },
-      modules: {
-        courses: 'จัดการหลักสูตร',
-        classes: 'จัดการชั้นเรียน',
-        semesters: 'ปฏิทินภาคเรียน',
-        templates: 'ฟิลด์เทมเพลต',
-        blogPosts: 'บทความบล็อก',
-        files: 'ศูนย์ไฟล์',
-        history: 'ประวัติการสร้าง',
-      },
     },
     courses: {
       summary: {

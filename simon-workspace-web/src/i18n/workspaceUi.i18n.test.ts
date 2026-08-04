@@ -41,6 +41,7 @@ const requiredWorkspaceUiKeys = Array.from(
     'workspace.files.upload.succeeded',
     'workspace.files.visibility.private',
     'workspace.files.visibility.public',
+    'terminal.opening',
     ...terminalCommands.map((command) => command.descriptionKey),
   ]),
 )
@@ -60,7 +61,7 @@ function getPlaceholders(value: string) {
 }
 
 describe('workspace UI translations', () => {
-  it('provides every label used by workspace navigation, home, upload, and terminal help', () => {
+  it('provides canonical workspace navigation, home, upload, and terminal labels', () => {
     for (const [locale, message] of Object.entries(messages)) {
       for (const key of requiredWorkspaceUiKeys) {
         const value = getMessageValue(message, key)
@@ -110,10 +111,29 @@ describe('workspace UI translations', () => {
     }
   })
 
-  it('does not retain retired workspace home status copy', () => {
+  it('interpolates the terminal login destination through vue-i18n in every locale', () => {
+    expect(getPlaceholders(getMessageValue(messages.en, 'terminal.opening') as string)).toEqual(['to'])
+
+    const i18n = createI18n({
+      legacy: false,
+      locale: 'en',
+      messages,
+    })
+
+    for (const locale of Object.keys(messages)) {
+      i18n.global.locale.value = locale as keyof typeof messages
+      const translated = i18n.global.t('terminal.opening', { to: '/login' })
+
+      expect(translated, locale).toContain('/login')
+      expect(translated, locale).not.toContain('{to}')
+    }
+  })
+
+  it('does not retain retired workspace home status or module copy', () => {
     for (const message of Object.values(messages)) {
       expect(message.workspace.home).not.toHaveProperty('apiReady')
       expect(message.workspace.home).not.toHaveProperty('phase')
+      expect(message.workspace.home).not.toHaveProperty('modules')
     }
   })
 })

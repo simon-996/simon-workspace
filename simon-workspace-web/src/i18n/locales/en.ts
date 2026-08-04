@@ -346,15 +346,6 @@ export default {
         retry: 'Retry',
         loadFailed: 'Unable to load',
       },
-      modules: {
-        courses: 'Course Management',
-        classes: 'Class Management',
-        semesters: 'Semester Calendar',
-        templates: 'Template Fields',
-        blogPosts: 'Blog Posts',
-        files: 'File Center',
-        history: 'Generation History',
-      },
     },
     courses: {
       summary: {
