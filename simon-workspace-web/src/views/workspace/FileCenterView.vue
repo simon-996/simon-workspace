@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { NButton, NIcon, NInput, NPopconfirm, NSpin, useMessage } from 'naive-ui'
-import { AlertTriangle, Download, FileText, Files, Refresh, Search, Trash } from '@vicons/tabler'
+import { AlertTriangle, Download, FileText, Files, Refresh, Search, Trash, Upload } from '@vicons/tabler'
 
 import {
   deleteFileResource,
@@ -10,15 +11,20 @@ import {
   fetchFiles,
   type FileResource,
 } from '../../api/workspace'
+import FileUploadDialog from '../../components/FileUploadDialog.vue'
+import { consumeFileUploadAction, shouldOpenFileUpload } from './fileUploadRoute'
 
 const { t } = useI18n()
 const message = useMessage()
+const route = useRoute()
+const router = useRouter()
 
 const files = ref<FileResource[]>([])
 const keyword = ref('')
 const loading = ref(false)
 const downloadingId = ref<string | null>(null)
 const error = ref('')
+const uploadOpen = ref(false)
 
 const totalSize = computed(() => files.value.reduce((sum, item) => sum + (item.fileSize ?? 0), 0))
 const generatedCount = computed(() => files.value.filter((item) => item.sourceType === 'GENERATED').length)
@@ -26,6 +32,11 @@ const uploadCount = computed(() => files.value.filter((item) => item.sourceType 
 
 onMounted(() => {
   void loadFiles()
+
+  if (shouldOpenFileUpload(route.query)) {
+    uploadOpen.value = true
+    void router.replace({ query: consumeFileUploadAction(route.query) })
+  }
 })
 
 async function loadFiles() {
@@ -68,6 +79,11 @@ async function confirmDelete(item: FileResource) {
   } catch (err) {
     message.error(err instanceof Error ? err.message : t('workspace.files.messages.deleteFailed'))
   }
+}
+
+async function handleUploaded(resource: FileResource) {
+  message.success(t('workspace.files.upload.succeeded', { filename: resource.originalFilename }))
+  await loadFiles()
 }
 
 function formatSize(size: number) {
@@ -124,12 +140,25 @@ function visibilityText(visibility: string) {
           <n-icon :component="Search" />
         </template>
       </n-input>
-      <n-button secondary class="icon-button" @click="loadFiles">
-        <template #icon>
-          <n-icon :component="Refresh" />
-        </template>
-        {{ t('common.actions.refresh') }}
-      </n-button>
+      <div class="toolbar-actions">
+        <n-button
+          type="primary"
+          class="icon-button"
+          data-testid="toolbar-upload"
+          @click="uploadOpen = true"
+        >
+          <template #icon>
+            <n-icon :component="Upload" />
+          </template>
+          {{ t('common.actions.upload') }}
+        </n-button>
+        <n-button secondary class="icon-button" @click="loadFiles">
+          <template #icon>
+            <n-icon :component="Refresh" />
+          </template>
+          {{ t('common.actions.refresh') }}
+        </n-button>
+      </div>
     </section>
 
     <section class="table-panel">
@@ -148,6 +177,17 @@ function visibilityText(visibility: string) {
       <div v-else-if="files.length === 0" class="empty-state">
         <strong>{{ t('workspace.files.emptyTitle') }}</strong>
         <span>{{ t('workspace.files.emptyText') }}</span>
+        <n-button
+          type="primary"
+          class="icon-button"
+          data-testid="empty-upload"
+          @click="uploadOpen = true"
+        >
+          <template #icon>
+            <n-icon :component="Upload" />
+          </template>
+          {{ t('common.actions.upload') }}
+        </n-button>
       </div>
 
       <div v-else class="file-table-wrap">
@@ -213,6 +253,8 @@ function visibilityText(visibility: string) {
         </table>
       </div>
     </section>
+
+    <file-upload-dialog v-model:show="uploadOpen" @uploaded="handleUploaded" />
   </section>
 </template>
 
@@ -270,6 +312,8 @@ function visibilityText(visibility: string) {
 
 .toolbar {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   grid-template-columns: minmax(0, 440px) auto;
   align-items: center;
   justify-content: space-between;
@@ -283,6 +327,14 @@ function visibilityText(visibility: string) {
 .icon-button {
   --n-border-radius: 8px !important;
   font-weight: 700;
+}
+
+.toolbar-actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .table-panel {
@@ -420,8 +472,21 @@ function visibilityText(visibility: string) {
     grid-template-columns: 1fr;
   }
 
-  .toolbar .n-button {
+  .toolbar-actions {
     width: 100%;
+    justify-content: stretch;
+  }
+
+  .toolbar-actions :deep(.n-button) {
+    min-width: 0;
+    flex: 1 1 160px;
+  }
+}
+
+@media (max-width: 390px) {
+  .toolbar-actions :deep(.n-button) {
+    max-width: 100%;
+    flex-basis: 100%;
   }
 }
 </style>
