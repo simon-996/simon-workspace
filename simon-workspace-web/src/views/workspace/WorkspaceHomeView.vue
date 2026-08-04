@@ -3,42 +3,21 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { NIcon, NSkeleton } from 'naive-ui'
-import { Book, FileUpload, Notes } from '@vicons/tabler'
 
 import { useAuthStore } from '../../stores/auth'
 import { useWorkspaceOverview } from './useWorkspaceOverview'
 import { useWorkspaceSectionRetry } from './useWorkspaceSectionRetry'
+import { buildWorkspaceHomeActions } from './workspaceHomeActions'
+import {
+  formatWorkspaceCourseStatus,
+  formatWorkspaceDate,
+  formatWorkspaceFileSize,
+} from './workspaceHomeFormatters'
 
 const { locale, t } = useI18n()
 const auth = useAuthStore()
 
-const actionMetadata = [
-  { to: '/workspace/courses', permission: 'course:manage' },
-  { to: '/workspace/files?action=upload', permission: 'file:manage' },
-  { to: '/blog/new', permission: 'blog:post:create' },
-] as const
-
-const actionPresentation = [
-  {
-    icon: Book,
-    titleKey: 'workspace.home.actions.courses',
-    descriptionKey: 'workspace.home.actions.coursesHelp',
-  },
-  {
-    icon: FileUpload,
-    titleKey: 'workspace.home.actions.upload',
-    descriptionKey: 'workspace.home.actions.uploadHelp',
-  },
-  {
-    icon: Notes,
-    titleKey: 'workspace.home.actions.write',
-    descriptionKey: 'workspace.home.actions.writeHelp',
-  },
-] as const
-
-const actions = computed(() => actionMetadata
-  .map((metadata, index) => ({ ...metadata, ...actionPresentation[index] }))
-  .filter((action) => auth.hasPermission(action.permission)))
+const actions = computed(() => buildWorkspaceHomeActions((permission) => auth.hasPermission(permission)))
 
 const overview = useWorkspaceOverview({
   courses: auth.hasPermission('course:manage'),
@@ -49,10 +28,18 @@ const overview = useWorkspaceOverview({
 
 const courseItems = overview.courses.items
 const coursesLoading = overview.courses.loading
+const coursesInitialized = overview.courses.initialized
 const fileItems = overview.files.items
 const filesLoading = overview.files.loading
+const filesInitialized = overview.files.initialized
 const draftItems = overview.drafts.items
 const draftsLoading = overview.drafts.loading
+const draftsInitialized = overview.drafts.initialized
+const coursesPending = computed(() => !coursesInitialized.value || coursesLoading.value)
+const filesPending = computed(() => !filesInitialized.value || filesLoading.value)
+const draftsPending = computed(() => !draftsInitialized.value || draftsLoading.value)
+const hasRecentSections = overview.courses.enabled || overview.files.enabled || overview.drafts.enabled
+const hasAvailableWork = computed(() => actions.value.length > 0 || hasRecentSections)
 const {
   retry: retryCourses,
   running: coursesRetrying,
@@ -72,33 +59,28 @@ const {
 onMounted(() => void overview.loadAll())
 
 function courseStatus(status: string) {
-  return status === 'ARCHIVED' ? t('common.states.archived') : t('common.states.active')
+  return formatWorkspaceCourseStatus(status, t)
 }
 
 function formatFileSize(size: number) {
-  const formatter = new Intl.NumberFormat(locale.value, { maximumFractionDigits: 1 })
-  if (size >= 1024 * 1024) return `${formatter.format(size / 1024 / 1024)} MB`
-  if (size >= 1024) return `${formatter.format(size / 1024)} KB`
-  return `${formatter.format(size)} B`
+  return formatWorkspaceFileSize(size, locale.value)
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return '—'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value.slice(0, 10)
-  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(date)
+  return formatWorkspaceDate(value, locale.value)
 }
 </script>
 
 <template>
   <section class="workspace-home">
     <header class="home-intro">
-      <h1>{{ t('workspace.home.title') }}</h1>
-      <p>{{ t('workspace.home.description') }}</p>
+      <h2>{{ t('workspace.home.title') }}</h2>
+      <p v-if="hasAvailableWork">{{ t('workspace.home.description') }}</p>
+      <p v-else role="status">{{ t('workspace.home.noAvailableTasks') }}</p>
     </header>
 
     <nav v-if="actions.length" class="action-grid" :aria-label="t('workspace.home.title')">
-      <RouterLink v-for="action in actions" :key="action.to" :to="action.to" class="action-card">
+      <RouterLink v-for="action in actions" :key="action.key" :to="action.to" class="action-card">
         <n-icon :component="action.icon" aria-hidden="true" />
         <span>
           <strong>{{ t(action.titleKey) }}</strong>
@@ -107,11 +89,15 @@ function formatDate(value?: string | null) {
       </RouterLink>
     </nav>
 
-    <section class="recent-work">
+    <section v-if="hasRecentSections" class="recent-work">
       <h2>{{ t('workspace.home.recent.title') }}</h2>
 
       <div class="recent-grid">
-        <section v-if="overview.courses.enabled" class="recent-panel">
+        <section
+          v-if="overview.courses.enabled"
+          class="recent-panel"
+          :aria-busy="coursesPending"
+        >
           <header>
             <h3>{{ t('workspace.home.recent.courses') }}</h3>
           </header>
@@ -122,7 +108,7 @@ function formatDate(value?: string | null) {
               {{ t('workspace.home.recent.retry') }}
             </button>
           </div>
-          <div v-if="coursesLoading" class="recent-skeletons">
+          <div v-if="coursesPending" class="recent-skeletons">
             <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
           </div>
           <div v-else class="recent-content">
@@ -138,7 +124,11 @@ function formatDate(value?: string | null) {
           </div>
         </section>
 
-        <section v-if="overview.files.enabled" class="recent-panel">
+        <section
+          v-if="overview.files.enabled"
+          class="recent-panel"
+          :aria-busy="filesPending"
+        >
           <header>
             <h3>{{ t('workspace.home.recent.files') }}</h3>
           </header>
@@ -149,7 +139,7 @@ function formatDate(value?: string | null) {
               {{ t('workspace.home.recent.retry') }}
             </button>
           </div>
-          <div v-if="filesLoading" class="recent-skeletons">
+          <div v-if="filesPending" class="recent-skeletons">
             <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
           </div>
           <div v-else class="recent-content">
@@ -165,7 +155,11 @@ function formatDate(value?: string | null) {
           </div>
         </section>
 
-        <section v-if="overview.drafts.enabled" class="recent-panel">
+        <section
+          v-if="overview.drafts.enabled"
+          class="recent-panel"
+          :aria-busy="draftsPending"
+        >
           <header>
             <h3>{{ t('workspace.home.recent.drafts') }}</h3>
           </header>
@@ -176,7 +170,7 @@ function formatDate(value?: string | null) {
               {{ t('workspace.home.recent.retry') }}
             </button>
           </div>
-          <div v-if="draftsLoading" class="recent-skeletons">
+          <div v-if="draftsPending" class="recent-skeletons">
             <n-skeleton v-for="index in 3" :key="index" height="52px" :sharp="false" />
           </div>
           <div v-else class="recent-content">
@@ -212,14 +206,14 @@ function formatDate(value?: string | null) {
   gap: 5px;
 }
 
-.home-intro h1,
+.home-intro h2,
 .recent-work h2,
 .recent-panel h3 {
   margin: 0;
   color: var(--sw-text);
 }
 
-.home-intro h1 {
+.home-intro h2 {
   font-size: 24px;
   font-weight: 750;
   line-height: 1.2;
@@ -234,7 +228,7 @@ function formatDate(value?: string | null) {
 
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
   gap: 12px;
 }
 
@@ -288,12 +282,9 @@ function formatDate(value?: string | null) {
 }
 
 .action-card small {
-  overflow: hidden;
   color: var(--sw-muted);
   font-size: 12px;
   line-height: 1.45;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .recent-work {
@@ -365,7 +356,8 @@ function formatDate(value?: string | null) {
   border-radius: 6px;
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
-  padding: 5px 9px;
+  min-height: 36px;
+  padding: 7px 12px;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -424,9 +416,20 @@ function formatDate(value?: string | null) {
 }
 
 @media (max-width: 860px) {
-  .action-grid,
   .recent-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-card,
+  .recent-row {
+    transition: none;
+  }
+
+  .action-card:hover,
+  .action-card:active {
+    transform: none;
   }
 }
 </style>

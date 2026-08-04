@@ -71,6 +71,20 @@ describe('useWorkspaceOverview', () => {
     vi.resetAllMocks()
   })
 
+  it('tracks initialization without flashing empty enabled sections before their first load', async () => {
+    mockedFetchCourses.mockResolvedValue([])
+    const overview = createOverview({ courses: true, files: false, drafts: false })
+
+    expect(overview.courses.initialized.value).toBe(false)
+    expect(overview.files.initialized.value).toBe(true)
+    expect(overview.drafts.initialized.value).toBe(true)
+
+    await overview.courses.load()
+
+    expect(overview.courses.initialized.value).toBe(true)
+    expect(overview.courses.loading.value).toBe(false)
+  })
+
   it('loads only the first three items for every enabled section', async () => {
     const courses = Array.from({ length: 5 }, (_, index) => course(String(index + 1)))
     const files = Array.from({ length: 4 }, (_, index) => file(String(index + 1)))

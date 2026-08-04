@@ -20,6 +20,7 @@ interface OverviewSection<T> {
   enabled: boolean
   items: ShallowRef<T[]>
   loading: Ref<boolean>
+  initialized: Ref<boolean>
   error: Ref<string>
   load: () => Promise<void>
 }
@@ -31,6 +32,7 @@ function createSection<T>(
 ): OverviewSection<T> {
   const items = shallowRef<T[]>([])
   const loading = ref(false)
+  const initialized = ref(!enabled)
   const error = ref('')
 
   async function load(): Promise<void> {
@@ -46,10 +48,11 @@ function createSection<T>(
       error.value = caught instanceof Error ? caught.message : fallbackError()
     } finally {
       loading.value = false
+      initialized.value = true
     }
   }
 
-  return { enabled, items, loading, error, load }
+  return { enabled, items, loading, initialized, error, load }
 }
 
 export function useWorkspaceOverview(options: OverviewOptions) {

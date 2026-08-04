@@ -330,6 +330,7 @@ export default {
       phase: 'Ready',
       title: 'Start your work',
       description: 'Choose a course, file, or article to continue.',
+      noAvailableTasks: 'No workspace tasks are available for this account.',
       actions: {
         courses: 'Manage courses',
         coursesHelp: 'Open and update course information',

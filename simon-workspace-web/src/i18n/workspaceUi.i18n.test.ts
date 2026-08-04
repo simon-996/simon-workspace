@@ -11,6 +11,7 @@ const workspaceNavigationPaths = [
 ] as const
 
 const workspaceHomePaths = [
+  ['workspace', 'home', 'noAvailableTasks'],
   ['workspace', 'home', 'actions', 'courses'],
   ['workspace', 'home', 'actions', 'coursesHelp'],
   ['workspace', 'home', 'actions', 'upload'],
