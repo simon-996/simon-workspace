@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NIcon, NInput, NPopconfirm, NSpin, useMessage } from 'naive-ui'
@@ -12,9 +12,10 @@ import {
   type FileResource,
 } from '../../api/workspace'
 import FileUploadDialog from '../../components/FileUploadDialog.vue'
+import { formatBinaryFileSize } from '../../utils/fileFormatters'
 import { consumeFileUploadAction, shouldOpenFileUpload } from './fileUploadRoute'
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
 const message = useMessage()
 const route = useRoute()
 const router = useRouter()
@@ -25,30 +26,41 @@ const loading = ref(false)
 const downloadingId = ref<string | null>(null)
 const error = ref('')
 const uploadOpen = ref(false)
+let latestLoadRequestId = 0
 
 const totalSize = computed(() => files.value.reduce((sum, item) => sum + (item.fileSize ?? 0), 0))
 const generatedCount = computed(() => files.value.filter((item) => item.sourceType === 'GENERATED').length)
 const uploadCount = computed(() => files.value.filter((item) => item.sourceType === 'UPLOAD').length)
 
-onMounted(() => {
-  void loadFiles()
-
+watch(() => route.query.action, () => {
   if (shouldOpenFileUpload(route.query)) {
     uploadOpen.value = true
-    void router.replace({ query: consumeFileUploadAction(route.query) })
+    void router
+      .replace({ query: consumeFileUploadAction(route.query) })
+      .catch(() => undefined)
   }
+}, { immediate: true })
+
+onMounted(() => {
+  void loadFiles()
 })
 
 async function loadFiles() {
+  const requestId = ++latestLoadRequestId
   loading.value = true
   error.value = ''
   try {
-    files.value = await fetchFiles(keyword.value.trim())
+    const nextFiles = await fetchFiles(keyword.value.trim())
+    if (requestId !== latestLoadRequestId) return
+    files.value = nextFiles
   } catch (err) {
-    error.value = err instanceof Error ? err.message : t('workspace.files.messages.loadFailed')
+    if (requestId !== latestLoadRequestId) return
+    error.value = resolveErrorMessage(err, t('workspace.files.messages.loadFailed'))
     message.error(error.value)
   } finally {
-    loading.value = false
+    if (requestId === latestLoadRequestId) {
+      loading.value = false
+    }
   }
 }
 
@@ -65,7 +77,7 @@ async function downloadFile(item: FileResource) {
     link.remove()
     URL.revokeObjectURL(url)
   } catch (err) {
-    message.error(err instanceof Error ? err.message : t('workspace.files.messages.downloadFailed'))
+    message.error(resolveErrorMessage(err, t('workspace.files.messages.downloadFailed')))
   } finally {
     downloadingId.value = null
   }
@@ -77,7 +89,7 @@ async function confirmDelete(item: FileResource) {
     message.success(t('workspace.files.messages.deleted'))
     await loadFiles()
   } catch (err) {
-    message.error(err instanceof Error ? err.message : t('workspace.files.messages.deleteFailed'))
+    message.error(resolveErrorMessage(err, t('workspace.files.messages.deleteFailed')))
   }
 }
 
@@ -87,9 +99,15 @@ async function handleUploaded(resource: FileResource) {
 }
 
 function formatSize(size: number) {
-  if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MB`
-  if (size >= 1024) return `${(size / 1024).toFixed(1)} KB`
-  return `${size} B`
+  return formatBinaryFileSize(size, locale.value)
+}
+
+function resolveErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error && err.message.trim()) {
+    return err.message
+  }
+
+  return fallback
 }
 
 function sourceText(sourceType: string) {
@@ -225,6 +243,7 @@ function visibilityText(visibility: string) {
                   <n-button
                     quaternary
                     size="small"
+                    :aria-label="t('common.actions.download')"
                     :loading="downloadingId === item.id"
                     @click="downloadFile(item)"
                   >
@@ -238,7 +257,12 @@ function visibilityText(visibility: string) {
                     @positive-click="confirmDelete(item)"
                   >
                     <template #trigger>
-                      <n-button quaternary size="small" type="error">
+                      <n-button
+                        quaternary
+                        size="small"
+                        type="error"
+                        :aria-label="t('common.actions.delete')"
+                      >
                         <template #icon>
                           <n-icon :component="Trash" />
                         </template>
