@@ -304,7 +304,7 @@ export default {
       storage: 'Storage',
       history: 'History',
       blog: 'Blog',
-      blogPosts: 'Posts',
+      blogPosts: 'Articles',
       security: 'Security',
       site: 'Site',
       more: 'More',

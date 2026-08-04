@@ -28,7 +28,6 @@ describe('blog views i18n', () => {
     const blogCopy = {
       publicBlog: zhCN.blog,
       homeBlogLabel: zhCN.home.notesAndEssays,
-      workspaceNav: zhCN.workspace.nav.blogPosts,
       workspacePage: zhCN.workspace.pages.blogPosts,
       workspaceModule: zhCN.workspace.home.modules.blogPosts,
       workspaceBlogCategories: zhCN.workspace.blog,

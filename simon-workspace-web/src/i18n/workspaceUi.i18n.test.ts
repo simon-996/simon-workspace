@@ -82,6 +82,16 @@ describe('workspace UI translations', () => {
     }
   })
 
+  it('labels the fourth canonical mobile destination as articles in every locale', () => {
+    const mobileArticle = navigation.mobileItems[3]
+
+    expect(mobileArticle.key).toBe('blogPosts')
+    expect(mobileArticle.labelKey).toBe('workspace.nav.blogPosts')
+    expect.soft(getMessageValue(messages['zh-CN'], mobileArticle.labelKey)).toBe('文章')
+    expect.soft(getMessageValue(messages.en, mobileArticle.labelKey)).toBe('Articles')
+    expect.soft(getMessageValue(messages['th-TH'], mobileArticle.labelKey)).toBe('บทความ')
+  })
+
   it('interpolates the uploaded filename through vue-i18n in every locale', () => {
     const i18n = createI18n({
       legacy: false,

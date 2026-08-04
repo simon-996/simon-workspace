@@ -304,7 +304,7 @@ export default {
       storage: '存储',
       history: '记录',
       blog: '分类',
-      blogPosts: '博客',
+      blogPosts: '文章',
       security: '权限',
       site: '站点',
       more: '更多',
