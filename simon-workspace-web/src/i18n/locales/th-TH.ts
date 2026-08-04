@@ -249,8 +249,6 @@ export default {
     forbidden: 'สิทธิ์ไม่เพียงพอ: {permission}',
     opening: 'กำลังเปิด {to}',
     openUsage: 'วิธีใช้: open <target>',
-    loginUsage: 'วิธีใช้: login <username> <password>',
-    loginSuccess: 'เข้าสู่ระบบเป็น {username}',
     logoutReady: 'กำลังออกจากระบบ',
     logoutSuccess: 'ออกจากระบบแล้ว',
     whoami: 'เข้าสู่ระบบเป็น {username}',

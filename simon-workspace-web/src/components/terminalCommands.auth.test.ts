@@ -4,6 +4,7 @@ import {
   evaluateTerminalCommand,
   parseTerminalInput,
 } from './terminalCommands'
+import { messages } from '../i18n/messages'
 
 const context = {
   isAuthenticated: false,
@@ -13,14 +14,31 @@ const context = {
 
 describe('terminal auth commands', () => {
   it('parses quoted command arguments', () => {
-    expect(parseTerminalInput('login "chen ximeng" "secret pass"')).toEqual({
-      command: 'login',
-      args: ['chen ximeng', 'secret pass'],
+    expect(parseTerminalInput('open "blog admin"')).toEqual({
+      command: 'open',
+      args: ['blog admin'],
     })
   })
 
-  it('detects parameterized login and logout commands', () => {
-    expect(evaluateTerminalCommand('login simon secret', context).status).toBe('login')
+  it.each(['login', 'login simon', 'login simon secret'])(
+    'navigates %s to the login page without returning credentials',
+    (input) => {
+      const result = evaluateTerminalCommand(input, context)
+
+      expect(result).toMatchObject({ status: 'run', command: 'login', to: '/login' })
+      expect(result).not.toHaveProperty('args')
+      expect(JSON.stringify(result)).not.toContain('simon')
+      expect(JSON.stringify(result)).not.toContain('secret')
+    },
+  )
+
+  it('keeps session help credential-free while retaining account commands', () => {
+    const result = evaluateTerminalCommand('help session', context)
+
+    expect(result.message.split('\n')).toEqual(['login', 'logout', 'whoami'])
+  })
+
+  it('detects logout commands', () => {
     expect(evaluateTerminalCommand('logout', context).status).toBe('logout')
   })
 
@@ -33,5 +51,12 @@ describe('terminal auth commands', () => {
 
     expect(result.status).toBe('info')
     expect(result.message).toContain('simon')
+  })
+
+  it('does not ship obsolete terminal credential-login messages', () => {
+    for (const message of Object.values(messages)) {
+      expect(message.terminal).not.toHaveProperty('loginUsage')
+      expect(message.terminal).not.toHaveProperty('loginSuccess')
+    }
   })
 })

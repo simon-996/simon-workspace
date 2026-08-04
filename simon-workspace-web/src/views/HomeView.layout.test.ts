@@ -1,7 +1,35 @@
-import { describe, expect, it } from 'vitest'
+// @vitest-environment jsdom
+
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
+import { ref } from 'vue'
+import { createI18n } from 'vue-i18n'
+import { createMemoryHistory, createRouter } from 'vue-router'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import zhCNSource from '../i18n/locales/zh-CN.ts?raw'
+import { messages } from '../i18n/messages'
+import HomeView from './HomeView.vue'
 import homeSource from './HomeView.vue?raw'
+
+vi.mock('../composables/usePublicSiteConfig', () => ({
+  usePublicSiteConfig: () => ({
+    site: ref({
+      ownerName: 'Simon',
+      heroSubtitle: 'Build useful tools',
+      profileBio: '',
+      contactEmail: 'simon@example.com',
+      techStack: [],
+    }),
+    failed: ref(false),
+    loadSite: vi.fn().mockResolvedValue(undefined),
+  }),
+}))
+
+enableAutoUnmount(afterEach)
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('HomeView profile layout', () => {
   it('does not render the old Chinese intro kicker copy', () => {
@@ -52,7 +80,38 @@ describe('HomeView profile layout', () => {
     expect(homeSource).toContain('.home-page.details-active .terminal-stage')
   })
 
-  it('passes initial focus intent into the terminal panel', () => {
-    expect(homeSource).toContain('<TerminalPanel v-if="site" auto-focus />')
+  it('does not pass initial focus intent into the terminal panel', async () => {
+    const requestAnimationFrame = vi
+      .spyOn(window, 'requestAnimationFrame')
+      .mockImplementation((callback) => {
+        callback(0)
+        return 1
+      })
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/', component: { template: '<div />' } },
+        { path: '/login', component: { template: '<div />' } },
+      ],
+    })
+    const i18n = createI18n({
+      legacy: false,
+      locale: 'en',
+      messages,
+    })
+    const wrapper = mount(HomeView, {
+      attachTo: document.body,
+      global: {
+        plugins: [createPinia(), i18n, router],
+        stubs: { AppHeader: true },
+      },
+    })
+    await flushPromises()
+
+    const input = wrapper.get<HTMLInputElement>('.terminal input')
+    expect(document.activeElement).not.toBe(input.element)
+    expect(homeSource).toContain('<TerminalPanel v-if="site" />')
+    expect(homeSource).not.toContain('auto-focus')
+    expect(requestAnimationFrame).not.toHaveBeenCalled()
   })
 })

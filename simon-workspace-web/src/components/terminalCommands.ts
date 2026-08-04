@@ -4,7 +4,6 @@ export type TerminalCommandStatus =
   | 'unknown'
   | 'login-required'
   | 'forbidden'
-  | 'login'
   | 'logout'
   | 'info'
   | 'invalid'
@@ -41,7 +40,6 @@ export interface TerminalCommandResult {
   message: string
   to?: string
   permission?: string
-  args?: string[]
   themeMode?: TerminalThemeMode
   language?: TerminalLanguage
 }
@@ -77,7 +75,6 @@ const fallbackMessages: Record<string, string> = {
   'terminal.forbidden': 'permission denied: {permission}',
   'terminal.opening': 'opening {to}',
   'terminal.openUsage': 'usage: open <target>',
-  'terminal.loginUsage': 'usage: login <username> <password>',
   'terminal.logoutReady': 'signing out',
   'terminal.whoami': 'signed in as {username}',
   'terminal.whoamiGuest': 'guest',
@@ -168,22 +165,6 @@ export function evaluateTerminalCommand(
       status: 'unknown',
       command: commandName || input,
       message: t('terminal.unknown', { command: commandName || input }),
-    }
-  }
-
-  if (command.command === 'login') {
-    if (parsed.args.length < 2) {
-      return {
-        status: 'invalid',
-        command: trimmedInput || command.command,
-        message: t('terminal.loginUsage'),
-      }
-    }
-    return {
-      status: 'login',
-      command: `login ${parsed.args[0]} ******`,
-      args: parsed.args,
-      message: t('terminal.commands.login'),
     }
   }
 
@@ -352,7 +333,7 @@ function buildHelpMessage(topic: string | undefined, t: TerminalTranslate) {
 
   if (normalizedTopic === 'session') {
     return [
-      'login <username> <password>',
+      'login',
       'logout',
       'whoami',
     ].join('\n')

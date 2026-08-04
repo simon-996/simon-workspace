@@ -249,8 +249,6 @@ export default {
     forbidden: 'permission denied: {permission}',
     opening: 'opening {to}',
     openUsage: 'usage: open <target>',
-    loginUsage: 'usage: login <username> <password>',
-    loginSuccess: 'signed in as {username}',
     logoutReady: 'signing out',
     logoutSuccess: 'signed out',
     whoami: 'signed in as {username}',

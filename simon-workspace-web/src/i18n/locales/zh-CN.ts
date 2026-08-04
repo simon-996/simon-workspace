@@ -249,8 +249,6 @@ export default {
     forbidden: '权限不足：{permission}',
     opening: '正在打开 {to}',
     openUsage: '用法：open <目标>',
-    loginUsage: '用法：login <用户名> <密码>',
-    loginSuccess: '已登录：{username}',
     logoutReady: '正在退出',
     logoutSuccess: '已退出登录',
     whoami: '当前账号：{username}',

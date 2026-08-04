@@ -157,7 +157,7 @@ function updateViewport() {
         </section>
 
         <div class="terminal-stage">
-          <TerminalPanel v-if="site" auto-focus />
+          <TerminalPanel v-if="site" />
           <div v-else class="terminal-skeleton" aria-hidden="true">
             <div class="terminal-skeleton-header">
               <span class="skeleton-line terminal-title"></span>
