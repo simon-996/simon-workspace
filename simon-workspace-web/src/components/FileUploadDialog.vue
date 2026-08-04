@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { NButton, NModal, NProgress, NRadio, NRadioGroup } from 'naive-ui'
 
 import { uploadFileResource, type FileResource } from '../api/workspace'
+import { formatBinaryFileSize } from '../utils/fileFormatters'
 import { useFileUploadDialog } from './useFileUploadDialog'
 
 const props = defineProps<{
@@ -15,8 +16,10 @@ const emit = defineEmits<{
   'uploaded': [resource: FileResource]
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+const visible = ref(props.show)
 const fileInput = ref<HTMLInputElement | null>(null)
+const uploadErrorId = 'file-upload-error'
 const {
   selectedFile,
   visibility,
@@ -39,22 +42,8 @@ const modalStyle: CSSProperties = {
 
 const selectedFileSummary = computed(() => {
   if (!selectedFile.value) return ''
-  return `${selectedFile.value.name} · ${formatFileSize(selectedFile.value.size)}`
+  return `${selectedFile.value.name} · ${formatBinaryFileSize(selectedFile.value.size, locale.value)}`
 })
-
-function formatFileSize(size: number) {
-  const units = ['B', 'KiB', 'MiB', 'GiB'] as const
-  let value = Math.max(0, size)
-  let unitIndex = 0
-
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024
-    unitIndex += 1
-  }
-
-  const precision = unitIndex === 0 || value >= 10 ? 0 : 1
-  return `${value.toFixed(precision)} ${units[unitIndex]}`
-}
 
 function onFileChange(event: Event) {
   if (uploading.value) return
@@ -67,15 +56,27 @@ function resetDialog() {
   if (fileInput.value) fileInput.value.value = ''
 }
 
-function closeDialog() {
+function finishClose(emitUpdate = true) {
   if (uploading.value) return
-  emit('update:show', false)
+
+  visible.value = false
   resetDialog()
+  if (emitUpdate) emit('update:show', false)
 }
 
 function handleShowUpdate(show: boolean) {
-  if (show) return
-  closeDialog()
+  if (show) {
+    visible.value = true
+    return
+  }
+
+  if (uploading.value) {
+    visible.value = true
+    emit('update:show', true)
+    return
+  }
+
+  finishClose()
 }
 
 async function submitUpload() {
@@ -83,28 +84,40 @@ async function submitUpload() {
   if (!resource) return
 
   emit('uploaded', resource)
-  emit('update:show', false)
-  resetDialog()
+  finishClose()
 }
 
 watch(
   () => props.show,
   (show) => {
-    if (!show && !uploading.value) resetDialog()
+    if (show) {
+      visible.value = true
+      return
+    }
+
+    if (uploading.value) {
+      visible.value = true
+      emit('update:show', true)
+      return
+    }
+
+    if (visible.value) finishClose(false)
   },
 )
 </script>
 
 <template>
   <n-modal
-    :show="show"
+    :show="visible"
     class="file-upload-modal"
     preset="card"
     :title="t('workspace.files.upload.title')"
+    :aria-label="t('workspace.files.upload.title')"
     :style="modalStyle"
     :mask-closable="!uploading"
     :close-on-esc="!uploading"
     :closable="!uploading"
+    :close-focusable="!uploading"
     @update:show="handleShowUpdate"
   >
     <form class="upload-form" :aria-busy="uploading" @submit.prevent="submitUpload">
@@ -117,6 +130,8 @@ watch(
             type="file"
             :disabled="uploading"
             aria-labelledby="upload-file-label"
+            :aria-invalid="Boolean(uploadError)"
+            :aria-describedby="uploadError ? uploadErrorId : undefined"
             @change="onFileChange"
           >
           <span class="file-picker-action">{{ t('workspace.files.upload.chooseFile') }}</span>
@@ -147,10 +162,10 @@ watch(
         <n-progress type="line" :percentage="uploadProgress" :height="8" :show-indicator="false" />
       </div>
 
-      <p v-if="uploadError" class="upload-error" role="alert">{{ uploadError }}</p>
+      <p v-if="uploadError" :id="uploadErrorId" class="upload-error" role="alert">{{ uploadError }}</p>
 
       <div class="upload-actions">
-        <n-button attr-type="button" :disabled="uploading" @click="closeDialog">
+        <n-button attr-type="button" :disabled="uploading" @click="finishClose()">
           {{ t('common.actions.cancel') }}
         </n-button>
         <n-button
@@ -211,7 +226,7 @@ watch(
 
 .file-picker-action {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 44px;
   align-items: center;
   padding: 0 14px;
   border: 1px solid var(--sw-border);
@@ -299,6 +314,16 @@ watch(
 @media (max-width: 390px) {
   .upload-actions :deep(.n-button) {
     flex: 1 1 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-picker-action {
+    transition: none;
+  }
+
+  .file-picker:not(.disabled):active .file-picker-action {
+    transform: none;
   }
 }
 </style>

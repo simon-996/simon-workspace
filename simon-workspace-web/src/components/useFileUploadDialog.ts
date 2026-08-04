@@ -17,6 +17,7 @@ export function useFileUploadDialog({ upload, fileRequired, failed }: FileUpload
 
   function setSelectedFile(file: File | null) {
     selectedFile.value = file
+    uploadProgress.value = 0
     uploadError.value = ''
   }
 
@@ -37,7 +38,7 @@ export function useFileUploadDialog({ upload, fileRequired, failed }: FileUpload
         uploadProgress.value = progress
       })
     } catch (error) {
-      uploadError.value = error instanceof Error ? error.message : failed()
+      uploadError.value = error instanceof Error && error.message.trim() ? error.message : failed()
       return null
     } finally {
       uploading.value = false
@@ -45,9 +46,10 @@ export function useFileUploadDialog({ upload, fileRequired, failed }: FileUpload
   }
 
   function reset() {
+    if (uploading.value) return
+
     selectedFile.value = null
     visibility.value = 'PRIVATE'
-    uploading.value = false
     uploadProgress.value = 0
     uploadError.value = ''
   }

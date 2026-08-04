@@ -65,7 +65,7 @@ describe('workspace uploads', () => {
     )
   })
 
-  it.each([0, undefined])('does not report progress without a positive total (%s)', async (total) => {
+  it.each([-4, 0, undefined])('does not report progress without a positive total (%s)', async (total) => {
     vi.mocked(http.post).mockImplementation(async (_url, _data, config) => {
       config?.onUploadProgress?.({ loaded: 3, total, bytes: 3, lengthComputable: false })
       return {
@@ -101,5 +101,48 @@ describe('workspace uploads', () => {
     await uploadFileResource(new File(['notes'], 'notes.pdf'), 'PUBLIC', onProgress)
 
     expect(onProgress).toHaveBeenCalledWith(100)
+  })
+
+  it('clamps negative file resource upload progress to 0', async () => {
+    vi.mocked(http.post).mockImplementation(async (_url, _data, config) => {
+      config?.onUploadProgress?.({ loaded: -1, total: 4, bytes: 0, lengthComputable: true })
+      return {
+        data: {
+          code: 0,
+          data: {
+            originalFilename: 'notes.pdf',
+          },
+        },
+      }
+    })
+
+    const onProgress = vi.fn()
+    await uploadFileResource(new File(['notes'], 'notes.pdf'), 'PUBLIC', onProgress)
+
+    expect(onProgress).toHaveBeenCalledWith(0)
+  })
+
+  it.each([
+    { loaded: Number.NaN, total: 4 },
+    { loaded: Number.POSITIVE_INFINITY, total: 4 },
+    { loaded: 3, total: Number.NaN },
+    { loaded: 3, total: Number.POSITIVE_INFINITY },
+  ])('ignores non-finite file resource progress values ($loaded / $total)', async ({ loaded, total }) => {
+    vi.mocked(http.post).mockImplementation(async (_url, _data, config) => {
+      config?.onUploadProgress?.({ loaded, total, bytes: 0, lengthComputable: false })
+      return {
+        data: {
+          code: 0,
+          data: {
+            originalFilename: 'notes.pdf',
+          },
+        },
+      }
+    })
+
+    const onProgress = vi.fn()
+    await uploadFileResource(new File(['notes'], 'notes.pdf'), 'PRIVATE', onProgress)
+
+    expect(onProgress).not.toHaveBeenCalled()
   })
 })

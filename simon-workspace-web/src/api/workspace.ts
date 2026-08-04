@@ -552,8 +552,9 @@ export async function uploadFileResource(
       visibility,
     },
     onUploadProgress: (event) => {
-      if (!event.total) return
-      onProgress?.(Math.min(100, Math.round((event.loaded / event.total) * 100)))
+      if (!Number.isFinite(event.loaded) || !Number.isFinite(event.total) || !event.total || event.total <= 0) return
+      const progress = Math.round((event.loaded / event.total) * 100)
+      onProgress?.(Math.min(100, Math.max(0, progress)))
     },
   })
   return unwrapApiResponse(response.data)

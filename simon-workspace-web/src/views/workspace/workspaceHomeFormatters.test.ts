@@ -21,6 +21,7 @@ describe('workspace home formatters', () => {
     expect(formatWorkspaceFileSize(1024, 'en-US')).toBe('1 KiB')
     expect(formatWorkspaceFileSize(1024 ** 2, 'en-US')).toBe('1 MiB')
     expect(formatWorkspaceFileSize(1024 ** 3, 'en-US')).toBe('1 GiB')
+    expect(formatWorkspaceFileSize(1536, 'de-DE')).toBe('1,5 KiB')
   })
 
   it('renders missing or invalid dates safely', () => {

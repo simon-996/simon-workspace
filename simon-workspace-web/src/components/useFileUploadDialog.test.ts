@@ -108,6 +108,30 @@ describe('useFileUploadDialog', () => {
     expect(state.uploading.value).toBe(false)
   })
 
+  it('clears stale failure progress when selecting a new file', async () => {
+    let onProgress: ((progress: number) => void) | undefined
+    const state = useFileUploadDialog({
+      upload: vi.fn((_file, _visibility, progress) => {
+        onProgress = progress
+        return Promise.reject(new Error('Storage unavailable'))
+      }),
+      fileRequired: () => 'Choose a file',
+      failed: () => 'Upload failed',
+    })
+    state.setSelectedFile(new File(['old'], 'old.pdf'))
+
+    const firstAttempt = state.submit()
+    onProgress?.(37)
+    await firstAttempt
+
+    const replacement = new File(['new'], 'new.pdf')
+    state.setSelectedFile(replacement)
+
+    expect(state.selectedFile.value).toBe(replacement)
+    expect(state.uploadProgress.value).toBe(0)
+    expect(state.uploadError.value).toBe('')
+  })
+
   it('uses the translated fallback for non-Error failures', async () => {
     const state = useFileUploadDialog({
       upload: vi.fn().mockRejectedValue('offline'),
@@ -120,6 +144,21 @@ describe('useFileUploadDialog', () => {
     expect(state.uploadError.value).toBe('Localized failure')
     expect(state.uploading.value).toBe(false)
   })
+
+  it.each([new Error(''), new Error('   ')])(
+    'uses the translated fallback for Error failures without a useful message',
+    async (error) => {
+      const state = useFileUploadDialog({
+        upload: vi.fn().mockRejectedValue(error),
+        fileRequired: () => 'Choose a file',
+        failed: () => 'Localized failure',
+      })
+      state.setSelectedFile(new File(['lesson'], 'lesson-plan.pdf'))
+
+      await expect(state.submit()).resolves.toBeNull()
+      expect(state.uploadError.value).toBe('Localized failure')
+    },
+  )
 
   it('resets every field to its initial state', () => {
     const state = useFileUploadDialog({
@@ -157,5 +196,37 @@ describe('useFileUploadDialog', () => {
 
     request.resolve(createResource())
     await firstAttempt
+  })
+
+  it('ignores reset while uploading and permits reset only after the request settles', async () => {
+    const request = deferred<FileResource>()
+    const upload = vi.fn((_file, _visibility, onProgress) => {
+      onProgress?.(37)
+      return request.promise
+    })
+    const state = useFileUploadDialog({
+      upload,
+      fileRequired: () => 'Choose a file',
+      failed: () => 'Upload failed',
+    })
+    const file = new File(['lesson'], 'lesson-plan.pdf')
+    state.setSelectedFile(file)
+
+    const pending = state.submit()
+    state.reset()
+
+    expect(state.selectedFile.value).toBe(file)
+    expect(state.uploadProgress.value).toBe(37)
+    expect(state.uploading.value).toBe(true)
+    await expect(state.submit()).resolves.toBeNull()
+    expect(upload).toHaveBeenCalledTimes(1)
+
+    request.resolve(createResource())
+    await pending
+    state.reset()
+
+    expect(state.selectedFile.value).toBeNull()
+    expect(state.uploadProgress.value).toBe(0)
+    expect(state.uploading.value).toBe(false)
   })
 })

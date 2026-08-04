@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createI18n } from 'vue-i18n'
 
 import { messages } from './messages'
 
@@ -87,5 +88,20 @@ describe('workspace navigation messages', () => {
         expect((value as string).trim(), `${locale}:${key}`).not.toBe('')
       }
     }
+  })
+
+  it('interpolates the uploaded filename through vue-i18n', () => {
+    const i18n = createI18n({
+      legacy: false,
+      locale: 'en',
+      messages,
+    })
+
+    const translated = i18n.global.t('workspace.files.upload.succeeded', {
+      filename: 'lesson-plan.pdf',
+    })
+
+    expect(translated).toContain('lesson-plan.pdf')
+    expect(translated).not.toContain('{filename}')
   })
 })
