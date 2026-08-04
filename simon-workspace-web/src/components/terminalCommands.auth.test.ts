@@ -21,6 +21,24 @@ describe('terminal auth commands', () => {
   })
 
   it.each(['login', 'login simon', 'login simon secret'])(
+    'discards every argument from %s at the parser boundary',
+    (input) => {
+      const parsed = parseTerminalInput(input)
+
+      expect(parsed).toEqual({ command: 'login', args: [] })
+      expect(JSON.stringify(parsed)).not.toContain('simon')
+      expect(JSON.stringify(parsed)).not.toContain('secret')
+    },
+  )
+
+  it('preserves arguments for commands other than login', () => {
+    expect(parseTerminalInput('open "blog admin" draft')).toEqual({
+      command: 'open',
+      args: ['blog admin', 'draft'],
+    })
+  })
+
+  it.each(['login', 'login simon', 'login simon secret'])(
     'navigates %s to the login page without returning credentials',
     (input) => {
       const result = evaluateTerminalCommand(input, context)

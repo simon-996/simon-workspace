@@ -93,6 +93,34 @@ describe('TerminalPanel focus behavior', () => {
     },
   )
 
+  it('clears rejected login input without retaining credentials in state or output', async () => {
+    routerMocks.push.mockRejectedValueOnce(new Error('route unavailable'))
+    const { login, wrapper } = mountTerminalPanel()
+    const input = wrapper.get<HTMLInputElement>('input')
+
+    await input.setValue('login simon secret')
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+
+    const terminalState = wrapper.vm as unknown as Record<string, unknown>
+    const retainedCommandState = JSON.stringify(
+      ['lines', 'history', 'output', 'result', 'prompt'].map((key) => terminalState[key] ?? null),
+    )
+    const visibleCommandState = [
+      input.element.value,
+      wrapper.get('.terminal-output').text(),
+    ].join('\n')
+
+    expect(login).not.toHaveBeenCalled()
+    expect(routerMocks.push).toHaveBeenCalledOnce()
+    expect(input.element.value).toBe('')
+    expect(wrapper.get('.terminal-output').text()).toContain('Something went wrong. Please try again.')
+    expect(retainedCommandState).not.toContain('simon')
+    expect(retainedCommandState).not.toContain('secret')
+    expect(visibleCommandState).not.toContain('simon')
+    expect(visibleCommandState).not.toContain('secret')
+  })
+
   it('contains no credential-login side effect', () => {
     expect(source).not.toContain('auth.login')
   })

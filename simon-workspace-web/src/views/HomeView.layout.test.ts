@@ -81,12 +81,7 @@ describe('HomeView profile layout', () => {
   })
 
   it('does not pass initial focus intent into the terminal panel', async () => {
-    const requestAnimationFrame = vi
-      .spyOn(window, 'requestAnimationFrame')
-      .mockImplementation((callback) => {
-        callback(0)
-        return 1
-      })
+    const focus = vi.spyOn(HTMLInputElement.prototype, 'focus')
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -110,8 +105,8 @@ describe('HomeView profile layout', () => {
 
     const input = wrapper.get<HTMLInputElement>('.terminal input')
     expect(document.activeElement).not.toBe(input.element)
+    expect(focus).not.toHaveBeenCalled()
     expect(homeSource).toContain('<TerminalPanel v-if="site" />')
     expect(homeSource).not.toContain('auto-focus')
-    expect(requestAnimationFrame).not.toHaveBeenCalled()
   })
 })

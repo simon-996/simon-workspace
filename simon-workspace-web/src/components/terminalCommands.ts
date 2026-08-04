@@ -197,10 +197,11 @@ export function parseTerminalInput(input: string) {
     }
     return part
   })
+  const normalizedCommand = command.toLowerCase()
 
   return {
-    command: command.toLowerCase(),
-    args,
+    command: normalizedCommand,
+    args: normalizedCommand === 'login' ? [] : args,
   }
 }
 
