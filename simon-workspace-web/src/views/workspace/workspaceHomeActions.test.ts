@@ -55,4 +55,22 @@ describe('buildWorkspaceHomeActions', () => {
       expectedActions,
     )
   })
+
+  it('isolates action objects across builder calls', () => {
+    const permissions = allow('course:manage', 'file:manage', 'blog:post:create')
+    const first = buildWorkspaceHomeActions(permissions)
+    const second = buildWorkspaceHomeActions(permissions)
+    const mutableFirstAction = first[0] as { to: string }
+    const originalRoute = mutableFirstAction.to
+
+    try {
+      mutableFirstAction.to = '/mutated'
+
+      expect(second[0]?.to).toBe('/workspace/courses')
+      expect(buildWorkspaceHomeActions(permissions)[0]?.to).toBe('/workspace/courses')
+      expect(first[0]).not.toBe(second[0])
+    } finally {
+      mutableFirstAction.to = originalRoute
+    }
+  })
 })

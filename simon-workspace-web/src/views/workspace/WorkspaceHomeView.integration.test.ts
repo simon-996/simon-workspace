@@ -101,6 +101,9 @@ describe('WorkspaceHomeView', () => {
     expect(source).toContain('@media (max-width: 860px)')
     expect(source).toContain('repeat(auto-fit, minmax(min(100%, 250px), 1fr))')
     expect(source).toContain('@media (prefers-reduced-motion: reduce)')
+    const reducedMotionStyles = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reducedMotionStyles).toContain(':deep(.n-skeleton)')
+    expect(reducedMotionStyles).toContain('animation: none')
     const actionHelpStyles = source.match(/\.action-card small \{[\s\S]*?\}/)?.[0] ?? ''
     expect(actionHelpStyles).not.toContain('white-space: nowrap')
     expect(actionHelpStyles).not.toContain('text-overflow: ellipsis')

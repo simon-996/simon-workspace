@@ -40,5 +40,7 @@ const workspaceHomeActionDefinitions = [
 export function buildWorkspaceHomeActions(
   hasPermission: (permission: string) => boolean,
 ): readonly WorkspaceHomeAction[] {
-  return workspaceHomeActionDefinitions.filter((action) => hasPermission(action.permission))
+  return workspaceHomeActionDefinitions
+    .filter((action) => hasPermission(action.permission))
+    .map((action) => ({ ...action }))
 }

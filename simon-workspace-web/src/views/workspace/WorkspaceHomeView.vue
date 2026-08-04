@@ -427,6 +427,11 @@ function formatDate(value?: string | null) {
     transition: none;
   }
 
+  :deep(.n-skeleton) {
+    animation: none !important;
+    transition: none !important;
+  }
+
   .action-card:hover,
   .action-card:active {
     transform: none;
