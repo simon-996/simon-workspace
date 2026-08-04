@@ -36,7 +36,7 @@ watch(() => route.query.action, () => {
   if (shouldOpenFileUpload(route.query)) {
     uploadOpen.value = true
     void router
-      .replace({ query: consumeFileUploadAction(route.query) })
+      .replace({ hash: route.hash, query: consumeFileUploadAction(route.query) })
       .catch(() => undefined)
   }
 }, { immediate: true })

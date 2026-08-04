@@ -18,6 +18,7 @@ import source from './FileCenterView.vue?raw'
 const routerMocks = vi.hoisted(() => ({
   route: {
     query: {} as LocationQuery,
+    hash: '',
   },
   replace: vi.fn(),
 }))
@@ -162,6 +163,7 @@ function mountFileCenter(): VueWrapper {
 describe('FileCenterView upload entry', () => {
   beforeEach(() => {
     routerMocks.route.query = {}
+    routerMocks.route.hash = ''
     routerMocks.replace.mockReset()
     routerMocks.replace.mockResolvedValue(undefined)
     messageMocks.success.mockReset()
@@ -176,6 +178,7 @@ describe('FileCenterView upload entry', () => {
       keyword: 'lesson',
       tag: ['pdf', 'public'],
     }
+    routerMocks.route.hash = '#files'
     const wrapper = mountFileCenter()
     await flushPromises()
 
@@ -183,6 +186,7 @@ describe('FileCenterView upload entry', () => {
     expect(wrapper.find('[data-testid="upload-modal"]').exists()).toBe(true)
     expect(routerMocks.replace).toHaveBeenCalledOnce()
     expect(routerMocks.replace).toHaveBeenCalledWith({
+      hash: '#files',
       query: {
         keyword: 'lesson',
         tag: ['pdf', 'public'],
@@ -210,7 +214,10 @@ describe('FileCenterView upload entry', () => {
 
     expect(wrapper.getComponent(TestableFileUploadDialog).props('show')).toBe(true)
     expect(routerMocks.replace).toHaveBeenCalledOnce()
-    expect(routerMocks.replace).toHaveBeenCalledWith({ query: { keyword: 'lesson' } })
+    expect(routerMocks.replace).toHaveBeenCalledWith({
+      hash: '',
+      query: { keyword: 'lesson' },
+    })
   })
 
   it('keeps upload usable when consuming the route action fails', async () => {
