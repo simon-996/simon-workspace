@@ -700,6 +700,18 @@ export default {
         public: 'Public',
         private: 'Private',
       },
+      upload: {
+        title: 'Upload material',
+        fileLabel: 'File',
+        chooseFile: 'Choose file',
+        selectedFile: 'Selected file',
+        visibility: 'Visibility',
+        progress: 'Upload progress',
+        uploading: 'Uploading…',
+        fileRequired: 'Choose a file to upload',
+        failed: 'Upload failed',
+        succeeded: 'Uploaded {filename}',
+      },
       messages: {
         loadFailed: 'Failed to load files',
         downloadFailed: 'Failed to download file',

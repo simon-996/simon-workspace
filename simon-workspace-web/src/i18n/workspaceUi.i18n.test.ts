@@ -29,6 +29,19 @@ const workspaceHomePaths = [
   ['workspace', 'home', 'recent', 'loadFailed'],
 ] as const
 
+const workspaceFileUploadPaths = [
+  ['workspace', 'files', 'upload', 'title'],
+  ['workspace', 'files', 'upload', 'fileLabel'],
+  ['workspace', 'files', 'upload', 'chooseFile'],
+  ['workspace', 'files', 'upload', 'selectedFile'],
+  ['workspace', 'files', 'upload', 'visibility'],
+  ['workspace', 'files', 'upload', 'progress'],
+  ['workspace', 'files', 'upload', 'uploading'],
+  ['workspace', 'files', 'upload', 'fileRequired'],
+  ['workspace', 'files', 'upload', 'failed'],
+  ['workspace', 'files', 'upload', 'succeeded'],
+] as const
+
 function getMessageValue(message: unknown, path: ReadonlyArray<string>): unknown {
   return path.reduce<unknown>((current, key) => {
     if (typeof current !== 'object' || current === null || !(key in current)) {
@@ -55,6 +68,18 @@ describe('workspace navigation messages', () => {
   it('provides every workspace home label in each locale', () => {
     for (const [locale, message] of Object.entries(messages)) {
       for (const path of workspaceHomePaths) {
+        const value = getMessageValue(message, path)
+        const key = path.join('.')
+
+        expect(value, `${locale}:${key}`).toEqual(expect.any(String))
+        expect((value as string).trim(), `${locale}:${key}`).not.toBe('')
+      }
+    }
+  })
+
+  it('provides every file upload dialog label in each locale', () => {
+    for (const [locale, message] of Object.entries(messages)) {
+      for (const path of workspaceFileUploadPaths) {
         const value = getMessageValue(message, path)
         const key = path.join('.')
 

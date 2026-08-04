@@ -704,6 +704,18 @@ export default {
         public: 'สาธารณะ',
         private: 'ส่วนตัว',
       },
+      upload: {
+        title: 'อัปโหลดสื่อ',
+        fileLabel: 'ไฟล์',
+        chooseFile: 'เลือกไฟล์',
+        selectedFile: 'ไฟล์ที่เลือก',
+        visibility: 'การมองเห็น',
+        progress: 'ความคืบหน้าการอัปโหลด',
+        uploading: 'กำลังอัปโหลด…',
+        fileRequired: 'โปรดเลือกไฟล์ที่จะอัปโหลด',
+        failed: 'อัปโหลดไม่สำเร็จ',
+        succeeded: 'อัปโหลด {filename} แล้ว',
+      },
       messages: {
         loadFailed: 'โหลดรายการไฟล์ไม่สำเร็จ',
         downloadFailed: 'ดาวน์โหลดไฟล์ไม่สำเร็จ',

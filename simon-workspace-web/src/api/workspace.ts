@@ -539,13 +539,21 @@ export async function fetchFileDetail(id: string) {
   return unwrapApiResponse(response.data)
 }
 
-export async function uploadFileResource(file: File, visibility = 'PRIVATE') {
+export async function uploadFileResource(
+  file: File,
+  visibility: 'PRIVATE' | 'PUBLIC' = 'PRIVATE',
+  onProgress?: (progress: number) => void,
+) {
   const formData = new FormData()
   formData.append('file', file)
   const response = await http.post<ApiResponse<FileResource>>('/files', formData, {
     params: {
       sourceType: 'UPLOAD',
       visibility,
+    },
+    onUploadProgress: (event) => {
+      if (!event.total) return
+      onProgress?.(Math.min(100, Math.round((event.loaded / event.total) * 100)))
     },
   })
   return unwrapApiResponse(response.data)

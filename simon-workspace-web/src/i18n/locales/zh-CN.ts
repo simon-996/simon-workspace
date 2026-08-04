@@ -704,6 +704,18 @@ export default {
         public: '公开',
         private: '私有',
       },
+      upload: {
+        title: '上传资料',
+        fileLabel: '文件',
+        chooseFile: '选择文件',
+        selectedFile: '已选文件',
+        visibility: '可见范围',
+        progress: '上传进度',
+        uploading: '正在上传…',
+        fileRequired: '请选择要上传的文件',
+        failed: '上传失败',
+        succeeded: '已上传 {filename}',
+      },
       messages: {
         loadFailed: '文件列表加载失败',
         downloadFailed: '文件下载失败',
