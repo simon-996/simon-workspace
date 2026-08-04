@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import workspaceApiSource from '../../api/workspace.ts?raw'
+import { buildWorkspaceNavigation } from '../../navigation/workspaceNavigation'
 import routeSource from '../../router/index.ts?raw'
-import workspaceSource from '../WorkspaceView.vue?raw'
 import homeSource from './WorkspaceHomeView.vue?raw'
 import postsSource from './BlogPostManagementView.vue?raw'
 
@@ -17,10 +17,16 @@ describe('BlogPostManagementView', () => {
   })
 
   it('is available from workspace routes and navigation with post permission', () => {
+    const navigation = buildWorkspaceNavigation((permission) => permission === 'blog:post:create')
+
     expect(routeSource).toContain("path: 'posts'")
     expect(routeSource).toContain("permission: 'blog:post:create'")
-    expect(workspaceSource).toContain('/workspace/posts')
-    expect(homeSource).toContain('/workspace/posts')
+    expect(navigation.mobileItems.map((item) => ({ key: item.key, to: item.to }))).toContainEqual({
+      key: 'blogPosts',
+      to: '/workspace/posts',
+    })
+    expect(homeSource).toContain('buildWorkspaceHomeActions')
+    expect(homeSource).not.toContain('/workspace/posts')
   })
 
   it('supports status filtering and draft editing from the workspace', () => {

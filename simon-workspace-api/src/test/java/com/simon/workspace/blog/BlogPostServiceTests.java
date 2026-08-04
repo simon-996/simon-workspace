@@ -53,8 +53,8 @@ class BlogPostServiceTests {
                 "PUBLISHED"
         ));
 
-        verify(jdbcTemplate).update(contains("INSERT INTO blog_tag"), eq("Vue"), eq("vue"));
-        verify(jdbcTemplate).update(contains("INSERT INTO blog_tag"), eq("Java"), eq("java"));
+        verify(jdbcTemplate).update(contains("ON DUPLICATE KEY UPDATE deleted = 0"), eq("Vue"), eq("vue"));
+        verify(jdbcTemplate).update(contains("ON DUPLICATE KEY UPDATE deleted = 0"), eq("Java"), eq("java"));
         verify(fileReferenceService).syncReferences("BLOG_POST", "42", "CONTENT_IMAGE", List.of(12L, 99L));
     }
 

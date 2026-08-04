@@ -19,9 +19,20 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
+
+    private static final Set<String> PUBLIC_BLOG_READ_PATHS = Set.of(
+            "/api/blog/categories",
+            "/api/blog/tags",
+            "/api/blog/posts"
+    );
+    private static final Pattern PUBLIC_BLOG_POST_PATH = Pattern.compile(
+            "/api/blog/posts/\\d+(?:/comments)?"
+    );
 
     private final AuthAccountService authAccountService;
     private final ObjectMapper objectMapper;
@@ -36,7 +47,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (HttpMethod.OPTIONS.matches(request.getMethod()) || isPublicPath(request.getRequestURI())) {
+        if (HttpMethod.OPTIONS.matches(request.getMethod()) || isPublicRequest(request)) {
             return true;
         }
 
@@ -67,6 +78,15 @@ public class AuthInterceptor implements HandlerInterceptor {
                 || path.startsWith("/api/files/public/")
                 || path.startsWith("/api/public/")
                 || path.startsWith("/actuator/");
+    }
+
+    private boolean isPublicRequest(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        if (isPublicPath(path)) {
+            return true;
+        }
+        return HttpMethod.GET.matches(request.getMethod())
+                && (PUBLIC_BLOG_READ_PATHS.contains(path) || PUBLIC_BLOG_POST_PATH.matcher(path).matches());
     }
 
     private void checkRequiredPermissions(Object handler) {

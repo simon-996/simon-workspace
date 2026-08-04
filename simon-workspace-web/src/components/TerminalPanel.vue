@@ -14,13 +14,6 @@ import {
   type TerminalCommandResult,
 } from './terminalCommands'
 
-interface TerminalPanelProps {
-  autoFocus?: boolean
-}
-
-const props = withDefaults(defineProps<TerminalPanelProps>(), {
-  autoFocus: false,
-})
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
@@ -53,21 +46,12 @@ watch(initialLine, (value, oldValue) => {
 
 onMounted(() => {
   void auth.restore()
-  if (props.autoFocus) {
-    window.requestAnimationFrame(focusInput)
-  }
 })
 
 async function execute(command = prompt.value) {
   const result = evaluateTerminalCommand(command, commandContext.value, t)
 
   try {
-    if (result.status === 'login') {
-      await auth.login(result.args?.[0] || '', result.args?.[1] || '')
-      writeResult({ ...result, message: t('terminal.loginSuccess', { username: auth.user?.username || result.args?.[0] || '' }) })
-      return
-    }
-
     if (result.status === 'logout') {
       await auth.logout()
       writeResult({ ...result, message: t('terminal.logoutSuccess') })

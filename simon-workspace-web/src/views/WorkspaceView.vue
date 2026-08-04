@@ -1,49 +1,37 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { NIcon } from 'naive-ui'
-import {
-  Book,
-  Calendar,
-  CircleCheck,
-  Cloud,
-  FileText,
-  Files,
-  History,
-  Notebook,
-  Settings,
-  Template,
-  Users,
-} from '@vicons/tabler'
+import { NDrawer, NDrawerContent, NIcon } from 'naive-ui'
+import { Menu2 } from '@vicons/tabler'
 
 import AppHeader from '../components/AppHeader.vue'
+import { buildWorkspaceNavigation, isWorkspaceNavigationActive } from '../navigation/workspaceNavigation'
 import { useAuthStore } from '../stores/auth'
 
 const { t } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
 
-const navItems = [
-  { to: '/workspace', labelKey: 'workspace.nav.overview', icon: CircleCheck, permission: 'workspace:view' },
-  { to: '/workspace/courses', labelKey: 'workspace.nav.courses', icon: Book, permission: 'course:manage' },
-  { to: '/workspace/classes', labelKey: 'workspace.nav.classes', icon: FileText, permission: 'class:manage' },
-  { to: '/workspace/semesters', labelKey: 'workspace.nav.semesters', icon: Calendar, permission: 'semester:manage' },
-  { to: '/workspace/templates', labelKey: 'workspace.nav.templates', icon: Template, permission: 'template:manage' },
-  { to: '/workspace/files', labelKey: 'workspace.nav.files', icon: Files, permission: 'file:manage' },
-  { to: '/workspace/storage', labelKey: 'workspace.nav.storage', icon: Cloud, permission: 'file:manage' },
-  { to: '/workspace/history', labelKey: 'workspace.nav.history', icon: History, permission: 'generation:history' },
-  { to: '/workspace/posts', labelKey: 'workspace.nav.blogPosts', icon: Notebook, permission: 'blog:post:create' },
-  { to: '/workspace/blog', labelKey: 'workspace.nav.blog', icon: Notebook, permission: 'blog:category:manage' },
-  { to: '/workspace/security', labelKey: 'workspace.nav.security', icon: Users, permission: 'user:manage' },
-  { to: '/workspace/site', labelKey: 'workspace.nav.site', icon: Settings, permission: 'site:config' },
-]
-
-const visibleNavItems = computed(() => navItems.filter((item) => auth.hasPermission(item.permission)))
+const moreOpen = ref(false)
+const navigation = computed(() => buildWorkspaceNavigation((permission) => auth.hasPermission(permission)))
 const pageTitle = computed(() => {
   const titleKey = typeof route.meta.titleKey === 'string' ? route.meta.titleKey : 'workspace.title'
   return t(titleKey)
 })
+
+const isActive = (to: string) => isWorkspaceNavigationActive(route.path, to)
+
+const moreIsActive = computed(() =>
+  navigation.value.moreGroups.some((group) => group.items.some((item) => isActive(item.to))),
+)
+
+watch(
+  () => route.fullPath,
+  () => {
+    moreOpen.value = false
+  },
+)
 </script>
 
 <template>
@@ -52,11 +40,21 @@ const pageTitle = computed(() => {
 
     <section class="workspace-body">
       <aside class="workspace-sider" :aria-label="t('workspace.aria')">
-        <nav class="side-nav">
-          <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to" class="nav-link">
-            <n-icon :component="item.icon" />
-            <span>{{ t(item.labelKey) }}</span>
-          </RouterLink>
+        <nav class="side-nav" :aria-label="t('workspace.aria')">
+          <section v-for="group in navigation.groups" :key="group.key" class="nav-group">
+            <h2 class="nav-group-label">{{ t(group.labelKey) }}</h2>
+            <RouterLink
+              v-for="item in group.items"
+              :key="item.key"
+              :to="item.to"
+              class="nav-link"
+              :class="{ 'nav-link-active': isActive(item.to) }"
+              :aria-current="isActive(item.to) ? 'page' : undefined"
+            >
+              <n-icon :component="item.icon" />
+              <span>{{ t(item.labelKey) }}</span>
+            </RouterLink>
+          </section>
         </nav>
       </aside>
 
@@ -72,11 +70,62 @@ const pageTitle = computed(() => {
     </section>
 
     <nav class="mobile-tabs" :aria-label="t('workspace.mobileAria')">
-      <RouterLink v-for="item in visibleNavItems" :key="item.to" :to="item.to">
+      <RouterLink
+        v-for="item in navigation.mobileItems"
+        :key="item.key"
+        :to="item.to"
+        class="mobile-tab"
+        :class="{ 'mobile-tab-active': isActive(item.to) }"
+        :aria-current="isActive(item.to) ? 'page' : undefined"
+      >
         <n-icon :component="item.icon" />
         <span>{{ t(item.labelKey) }}</span>
       </RouterLink>
+
+      <button
+        v-if="navigation.moreGroups.length > 0"
+        type="button"
+        class="mobile-tab"
+        :class="{ 'mobile-tab-active': moreIsActive }"
+        :aria-expanded="moreOpen"
+        aria-haspopup="dialog"
+        aria-controls="workspace-more-navigation"
+        @click="moreOpen = true"
+      >
+        <n-icon :component="Menu2" />
+        <span>{{ t('workspace.nav.more') }}</span>
+      </button>
     </nav>
+
+    <n-drawer
+      id="workspace-more-navigation"
+      v-model:show="moreOpen"
+      placement="bottom"
+      height="min(72dvh, 560px)"
+      class="workspace-more-drawer"
+      :aria-label="t('workspace.nav.more')"
+    >
+      <n-drawer-content :title="t('workspace.nav.more')" closable>
+        <div class="more-groups">
+          <section v-for="group in navigation.moreGroups" :key="group.key" class="more-group">
+            <h2 class="more-group-label">{{ t(group.labelKey) }}</h2>
+            <nav class="more-links" :aria-label="t(group.labelKey)">
+              <RouterLink
+                v-for="item in group.items"
+                :key="item.key"
+                :to="item.to"
+                class="more-link"
+                :class="{ 'more-link-active': isActive(item.to) }"
+                :aria-current="isActive(item.to) ? 'page' : undefined"
+              >
+                <n-icon :component="item.icon" />
+                <span>{{ t(item.labelKey) }}</span>
+              </RouterLink>
+            </nav>
+          </section>
+        </div>
+      </n-drawer-content>
+    </n-drawer>
   </main>
 </template>
 
@@ -108,8 +157,28 @@ const pageTitle = computed(() => {
 .side-nav {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 14px;
   padding: 18px 10px;
+}
+
+.nav-group {
+  display: grid;
+  gap: 3px;
+}
+
+.nav-group-label,
+.more-group-label {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.nav-group-label {
+  padding: 0 12px 5px;
 }
 
 .nav-link {
@@ -133,7 +202,7 @@ const pageTitle = computed(() => {
   font-size: 20px;
 }
 
-.nav-link.router-link-exact-active,
+.nav-link-active,
 .nav-link:hover {
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
@@ -175,9 +244,60 @@ h1 {
   display: none;
 }
 
+.more-groups {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 16px;
+}
+
+.more-group {
+  display: grid;
+  gap: 8px;
+}
+
+.more-group-label {
+  padding: 0 2px;
+}
+
+.more-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.more-link {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid var(--sw-border);
+  border-radius: 8px;
+  background: var(--sw-panel-bg);
+  padding: 0 12px;
+  color: var(--sw-muted);
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.more-link .n-icon {
+  font-size: 20px;
+}
+
+.more-link:hover,
+.more-link-active {
+  border-color: var(--sw-accent);
+  background: var(--sw-accent-soft);
+  color: var(--sw-accent);
+}
+
 @media (max-width: 860px) {
   .workspace-shell {
-    padding-bottom: 70px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 
   .workspace-body {
@@ -213,29 +333,44 @@ h1 {
     z-index: 20;
     display: flex;
     min-height: 64px;
+    padding-bottom: env(safe-area-inset-bottom);
     border-top: 1px solid var(--sw-border);
     background: var(--sw-panel-bg-strong);
     backdrop-filter: blur(16px);
-    overflow-x: auto;
   }
 
-  .mobile-tabs a {
+  .mobile-tab {
     display: grid;
-    flex: 0 0 58px;
+    flex: 1 1 0;
     place-items: center;
     align-content: center;
     gap: 3px;
     min-width: 0;
+    min-height: 64px;
+    border: 0;
+    background: transparent;
+    padding: 6px 3px;
     color: var(--sw-muted);
+    cursor: pointer;
+    font-family: inherit;
     font-size: 11px;
     font-weight: 700;
+    line-height: 1.15;
   }
 
-  .mobile-tabs .n-icon {
+  .mobile-tab .n-icon {
     font-size: 20px;
   }
 
-  .mobile-tabs a.router-link-exact-active {
+  .mobile-tab span {
+    max-width: 100%;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-tab-active {
     color: var(--sw-accent);
   }
 }

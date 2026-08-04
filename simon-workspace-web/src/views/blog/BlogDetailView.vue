@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
-import { useMessage, NButton, NIcon, NInput, NSpin } from 'naive-ui'
-import { ArrowLeft, Edit, Eye, MessageCircle, Send } from '@vicons/tabler'
+import { useMessage, NButton, NDrawer, NDrawerContent, NIcon, NInput, NSpin } from 'naive-ui'
+import { ArrowLeft, Edit, Eye, ListDetails, MessageCircle, Send } from '@vicons/tabler'
 
 import AppHeader from '../../components/AppHeader.vue'
 import {
@@ -31,9 +31,10 @@ const articleBodyRef = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const submitting = ref(false)
 const activeHeadingId = ref('')
-const copiedCodeId = ref('')
+const mobileTocOpen = ref(false)
 let headingObserver: IntersectionObserver | null = null
 let headingSyncFrame = 0
+let headingScrollFrame = 0
 let markdownEnhanceFrame = 0
 
 interface ArticleHeading {
@@ -48,17 +49,22 @@ const canEditPost = computed(() => Boolean(
   && post.value.authorUserId === auth.user.id
   && auth.hasPermission('blog:post:update'),
 ))
-const tocItems = computed(() => extractArticleHeadings(post.value?.contentMd || ''))
+const tocItems = ref<ArticleHeading[]>([])
 
 onMounted(() => {
+  window.addEventListener('scroll', handleWindowScroll, { passive: true })
   void auth.restore()
   void load()
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleWindowScroll)
   headingObserver?.disconnect()
   if (headingSyncFrame) {
     window.cancelAnimationFrame(headingSyncFrame)
+  }
+  if (headingScrollFrame) {
+    window.cancelAnimationFrame(headingScrollFrame)
   }
   if (markdownEnhanceFrame) {
     window.cancelAnimationFrame(markdownEnhanceFrame)
@@ -112,42 +118,6 @@ function openEditor() {
   void router.push(`/blog/${post.value.id}/edit`)
 }
 
-function extractArticleHeadings(markdown: string): ArticleHeading[] {
-  const headings: ArticleHeading[] = []
-  const usedIds = new Map<string, number>()
-  let inCodeFence = false
-
-  for (const line of markdown.split(/\r?\n/)) {
-    const trimmed = line.trim()
-    if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
-      inCodeFence = !inCodeFence
-      continue
-    }
-    if (inCodeFence) continue
-
-    const match = /^(#{1,4})\s+(.+?)\s*#*$/.exec(trimmed)
-    if (!match) continue
-
-    const text = cleanHeadingText(match[2])
-    if (!text) continue
-    headings.push({
-      id: createHeadingId(text, headings.length, usedIds),
-      level: match[1].length,
-      text,
-    })
-  }
-
-  return headings
-}
-
-function cleanHeadingText(value: string) {
-  return value
-    .replace(/\[([^\]]+)]\([^)]+\)/g, '$1')
-    .replace(/<[^>]+>/g, '')
-    .replace(/[`*_~]/g, '')
-    .trim()
-}
-
 function createHeadingId(text: string, index: number, usedIds: Map<string, number>) {
   const base = text
     .toLowerCase()
@@ -168,13 +138,14 @@ function scheduleHeadingSync() {
 
 function setupHeadingObserver() {
   headingObserver?.disconnect()
-  syncRenderedHeadingIds()
-  const headingElements = renderedHeadingElements()
+  const headingElements = syncRenderedHeadings()
   if (!headingElements.length) {
     activeHeadingId.value = ''
     return
   }
-  activeHeadingId.value = activeHeadingId.value || headingElements[0].id
+  if (!headingElements.some((heading) => heading.id === activeHeadingId.value)) {
+    activeHeadingId.value = headingElements[0].id
+  }
 
   if (!('IntersectionObserver' in window)) return
   headingObserver = new IntersectionObserver((entries) => {
@@ -193,14 +164,30 @@ function setupHeadingObserver() {
   headingElements.forEach((element) => headingObserver?.observe(element))
 }
 
-function syncRenderedHeadingIds() {
-  const headingElements = renderedHeadingElements()
-  tocItems.value.forEach((item, index) => {
-    const element = headingElements[index]
-    if (element) {
-      element.id = item.id
-    }
-  })
+function syncRenderedHeadings() {
+  const usedIds = new Map<string, number>()
+  const nextItems: ArticleHeading[] = []
+  const headingElements: HTMLElement[] = []
+
+  for (const heading of renderedHeadingElements()) {
+    const text = heading.textContent?.trim() || ''
+    if (!text) continue
+    const level = Number.parseInt(heading.tagName.slice(1), 10)
+    const id = createHeadingId(text, nextItems.length, usedIds)
+    heading.id = id
+    headingElements.push(heading)
+    nextItems.push({ id, level, text })
+  }
+
+  const changed = nextItems.length !== tocItems.value.length
+    || nextItems.some((item, index) => {
+      const current = tocItems.value[index]
+      return !current || current.id !== item.id || current.level !== item.level || current.text !== item.text
+    })
+  if (changed) {
+    tocItems.value = nextItems
+  }
+  return headingElements
 }
 
 function renderedHeadingElements() {
@@ -211,9 +198,22 @@ function renderedHeadingElements() {
 
 function scrollToHeading(id: string) {
   activeHeadingId.value = id
+  mobileTocOpen.value = false
   document.getElementById(id)?.scrollIntoView({
     behavior: 'smooth',
     block: 'start',
+  })
+}
+
+function handleWindowScroll() {
+  if (headingScrollFrame) return
+  headingScrollFrame = window.requestAnimationFrame(() => {
+    const distanceToBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY
+    const finalHeading = tocItems.value.at(-1)
+    if (distanceToBottom <= 2 && finalHeading) {
+      activeHeadingId.value = finalHeading.id
+    }
+    headingScrollFrame = 0
   })
 }
 
@@ -247,66 +247,6 @@ function enhanceRenderedMarkdown() {
       anchor.rel = 'noopener noreferrer'
     }
   })
-
-  preview.querySelectorAll<HTMLPreElement>('pre').forEach((pre, index) => {
-    if (pre.querySelector(':scope > .article-code-toolbar')) return
-    const code = pre.querySelector<HTMLElement>('code')
-    const language = codeLanguage(code)
-    const codeId = `code-${index}`
-    const toolbar = document.createElement('div')
-    toolbar.className = 'article-code-toolbar'
-    toolbar.innerHTML = `
-      <span>${escapeHtml(language)}</span>
-      <button type="button" class="article-code-copy" data-code-id="${codeId}">
-        ${escapeHtml(t('blog.detail.copyCode'))}
-      </button>
-    `
-    pre.dataset.codeId = codeId
-    pre.prepend(toolbar)
-  })
-}
-
-function codeLanguage(code?: HTMLElement | null) {
-  const raw = code?.getAttribute('language')
-    || Array.from(code?.classList || [])
-      .find((className) => className.startsWith('language-'))
-      ?.replace('language-', '')
-    || 'text'
-  return raw.trim() || 'text'
-}
-
-async function handleArticleBodyClick(event: MouseEvent) {
-  const target = event.target
-  if (!(target instanceof HTMLElement)) return
-  const button = target.closest<HTMLButtonElement>('.article-code-copy')
-  if (!button) return
-
-  const codeId = button.dataset.codeId || ''
-  const code = button.closest('pre')?.querySelector('code')?.textContent || ''
-  if (!code.trim()) return
-
-  try {
-    await navigator.clipboard.writeText(code)
-    copiedCodeId.value = codeId
-    button.textContent = t('blog.detail.copiedCode')
-    window.setTimeout(() => {
-      if (copiedCodeId.value === codeId) {
-        copiedCodeId.value = ''
-        button.textContent = t('blog.detail.copyCode')
-      }
-    }, 1400)
-  } catch (error) {
-    message.error(error instanceof Error ? error.message : t('blog.messages.copyFailed'))
-  }
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
 }
 </script>
 
@@ -349,7 +289,7 @@ function escapeHtml(value: string) {
 
         <div class="article-layout">
           <div class="article-main">
-            <section ref="articleBodyRef" class="article-body" @click="handleArticleBodyClick">
+            <section ref="articleBodyRef" class="article-body">
               <MdPreview
                 :model-value="post.contentMd"
                 :theme="theme.isDark ? 'dark' : 'light'"
@@ -397,7 +337,7 @@ function escapeHtml(value: string) {
             </section>
           </div>
 
-          <aside v-if="tocItems.length" class="article-toc" :aria-label="t('blog.detail.toc')">
+          <aside v-if="tocItems.length" class="article-toc article-toc--desktop" :aria-label="t('blog.detail.toc')">
             <strong>{{ t('blog.detail.toc') }}</strong>
             <nav>
               <button
@@ -412,7 +352,42 @@ function escapeHtml(value: string) {
               </button>
             </nav>
           </aside>
-            </div>
+        </div>
+
+        <n-button
+          v-if="tocItems.length"
+          circle
+          type="primary"
+          class="mobile-toc-trigger"
+          :title="t('blog.detail.toc')"
+          :aria-label="t('blog.detail.toc')"
+          @click="mobileTocOpen = true"
+        >
+          <template #icon>
+            <n-icon :component="ListDetails" />
+          </template>
+        </n-button>
+
+        <n-drawer
+          v-model:show="mobileTocOpen"
+          placement="right"
+          width="min(86vw, 360px)"
+        >
+          <n-drawer-content :title="t('blog.detail.toc')" closable>
+            <nav class="mobile-toc-nav">
+              <button
+                v-for="item in tocItems"
+                :key="item.id"
+                type="button"
+                :class="{ active: activeHeadingId === item.id }"
+                :style="{ '--toc-depth': item.level - 1 }"
+                @click="scrollToHeading(item.id)"
+              >
+                {{ item.text }}
+              </button>
+            </nav>
+          </n-drawer-content>
+        </n-drawer>
       </article>
     </n-spin>
   </main>
@@ -465,13 +440,14 @@ function escapeHtml(value: string) {
 }
 
 .post-detail h1 {
-  max-width: 14ch;
+  max-width: 100%;
   margin: 14px 0 12px;
   color: var(--sw-text);
   font-size: clamp(32px, 6vw, 58px);
   font-weight: 800;
   letter-spacing: 0;
   line-height: 1.02;
+  overflow-wrap: anywhere;
 }
 
 .article-header p,
@@ -528,22 +504,38 @@ function escapeHtml(value: string) {
 }
 
 .article-body {
+  min-width: 0;
   overflow: hidden;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
   background: var(--sw-panel-bg-strong);
   box-shadow: var(--sw-shadow-soft);
   padding: 16px;
+  box-sizing: border-box;
+}
+
+.article-body :deep(.md-editor),
+.article-body :deep(.md-editor-content),
+.article-body :deep(.md-editor-preview-wrapper) {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .article-body :deep(.md-editor-preview) {
+  width: 100%;
   max-width: 76ch;
-  margin: 0 auto;
+  min-width: 0;
+  margin: 0;
   color: var(--sw-text);
   padding: 44px 48px;
+  box-sizing: border-box;
   font-family:
     Outfit, Geist, Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", "Microsoft YaHei", sans-serif;
+  overflow-wrap: anywhere;
+  text-align: left;
+  word-break: normal;
 }
 
 .article-body :deep(.md-editor-preview h1),
@@ -577,6 +569,7 @@ function escapeHtml(value: string) {
 
 .article-body :deep(.md-editor-preview table) {
   display: block;
+  width: 100%;
   max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--sw-border);
@@ -597,56 +590,7 @@ function escapeHtml(value: string) {
   overflow: auto;
   border: 1px solid var(--sw-border);
   border-radius: 8px;
-  background: var(--sw-code-bg, #101820);
-  padding-top: 42px;
-}
-
-.article-body :deep(.article-code-toolbar) {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 34px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: color-mix(in srgb, #101820 88%, transparent);
-  margin: -42px 0 10px;
-  padding: 0 10px;
-}
-
-.article-body :deep(.article-code-toolbar span) {
-  color: rgba(238, 246, 250, 0.72);
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.article-body :deep(.article-code-copy) {
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(238, 246, 250, 0.9);
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 8px;
-  transition:
-    background-color var(--sw-motion-standard),
-    border-color var(--sw-motion-standard),
-    transform var(--sw-motion-standard);
-}
-
-.article-body :deep(.article-code-copy:hover) {
-  border-color: rgba(255, 255, 255, 0.32);
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.article-body :deep(.article-code-copy:active) {
-  transform: translate3d(0, 1px, 0);
+  background: transparent;
 }
 
 .article-toc {
@@ -670,12 +614,14 @@ function escapeHtml(value: string) {
   font-weight: 800;
 }
 
-.article-toc nav {
+.article-toc nav,
+.mobile-toc-nav {
   display: grid;
   gap: 4px;
 }
 
-.article-toc button {
+.article-toc button,
+.mobile-toc-nav button {
   display: block;
   width: 100%;
   border: 0;
@@ -697,14 +643,34 @@ function escapeHtml(value: string) {
 }
 
 .article-toc button:hover,
-.article-toc button.active {
+.article-toc button.active,
+.mobile-toc-nav button:hover,
+.mobile-toc-nav button.active {
   border-color: var(--sw-accent);
   background: var(--sw-accent-soft);
   color: var(--sw-accent);
 }
 
-.article-toc button:active {
+.article-toc button:active,
+.mobile-toc-nav button:active {
   transform: translate3d(1px, 1px, 0);
+}
+
+.mobile-toc-trigger {
+  --n-border-radius: 50% !important;
+  position: fixed;
+  right: 16px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 30;
+  display: none;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--sw-text) 18%, transparent);
+}
+
+.mobile-toc-trigger .n-icon {
+  font-size: 20px;
 }
 
 .comments {
@@ -815,10 +781,12 @@ function escapeHtml(value: string) {
     grid-template-columns: 1fr;
   }
 
-  .article-toc {
-    position: static;
-    max-height: none;
-    order: -1;
+  .article-toc--desktop {
+    display: none;
+  }
+
+  .mobile-toc-trigger {
+    display: inline-flex;
   }
 }
 
@@ -827,12 +795,13 @@ function escapeHtml(value: string) {
     width: min(100% - 24px, 1180px);
   }
 
-  .post-detail h1 {
-    max-width: none;
+  .article-body {
+    padding: 0;
   }
 
   .article-body :deep(.md-editor-preview) {
-    padding: 30px 22px;
+    max-width: 100%;
+    padding: 24px 18px;
   }
 }
 </style>

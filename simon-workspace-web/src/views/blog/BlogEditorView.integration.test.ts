@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import editorSource from './BlogEditorView.vue?raw'
+import rawEditorSource from './BlogEditorView.vue?raw'
+
+const editorSource = rawEditorSource.replace(/\r\n/g, '\n')
 
 describe('BlogEditorView', () => {
   it('uses md-editor-v3 and uploads blog editor images as public blog assets', () => {
@@ -44,13 +46,19 @@ describe('BlogEditorView', () => {
     expect(editorSource).toContain(':status="categorySelectStatus"')
   })
 
-  it('searches reusable tags from the database and normalizes duplicate selections', () => {
+  it('searches reusable tags and lets authors create normalized tags inline', () => {
     expect(editorSource).toContain('fetchBlogTags')
     expect(editorSource).toContain('remoteTags')
     expect(editorSource).toContain('tagOptions')
-    expect(editorSource).toContain('searchTags')
-    expect(editorSource).toContain(':remote="true"')
-    expect(editorSource).toContain('@search="searchTags"')
+    expect(editorSource).not.toContain(':remote="true"')
+    expect(editorSource).toContain(':on-create="createTagOption"')
+    expect(editorSource).toContain(':max-tag-count="\'responsive\'"')
+    expect(editorSource).toContain('@search="queueTagSearch"')
+    expect(editorSource).toContain(':value="tags"')
+    expect(editorSource).toContain('@update:value="updateTags"')
+    expect(editorSource).toContain("t('blog.messages.tagLimit')")
+    expect(editorSource).toContain('tagSearchTimer')
+    expect(editorSource).toContain('tagSearchSequence')
     expect(editorSource).toContain('normalizeSelectedTags(tags.value)')
   })
 

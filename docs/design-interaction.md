@@ -1,6 +1,6 @@
 # Simon Workspace Interaction Guidelines
 
-Last updated: 2026-07-09
+Last updated: 2026-08-04
 
 ## Purpose
 
@@ -29,7 +29,7 @@ The public site should feel simple, personal, technical, and slightly futuristic
 
 ## Navigation
 
-### Desktop
+### Public Desktop Navigation
 
 - [ ] Use a shared top header across public pages.
 - [ ] Keep these primary entries: Home, Blog, Courses, Login/Workspace, Language, Theme.
@@ -37,10 +37,10 @@ The public site should feel simple, personal, technical, and slightly futuristic
 - [ ] Disable or visually de-emphasize clicking the current active navigation item.
 - [ ] Keep the workspace entry in the main navigation, not inside the avatar menu.
 
-### Mobile
+### Public Mobile Navigation
 
-- [ ] Use a top collapsed menu.
-- [ ] Do not use a bottom tab bar.
+- [ ] Use the shared top collapsed menu.
+- [ ] Do not add a public-site bottom tab bar.
 - [ ] Keep the menu compact and easy to close.
 - [ ] Avoid layout shifts when opening or closing the menu.
 - [ ] Keep language and theme controls accessible.
@@ -68,7 +68,7 @@ The public site should feel simple, personal, technical, and slightly futuristic
 The terminal is a signature feature, not a decoration.
 
 - [ ] Keep the terminal focusable and keyboard-friendly.
-- [ ] Auto-focus the terminal when entering the homepage when appropriate.
+- [ ] Do not force focus on page load; allow pointer interaction to focus the input.
 - [ ] Support practical commands such as `help`, `login`, `logout`, `blog`, `courses`, and `whoami`.
 - [ ] Support parameterized commands where useful.
 - [ ] Show clear command feedback.
@@ -161,6 +161,19 @@ The workspace is a management system, not a marketing dashboard.
 - [ ] Avoid decorative animations inside workspace.
 - [ ] Prioritize stable layout and fast scanning.
 - [ ] Keep responsive mobile layouts usable, even if desktop is the primary workspace target.
+
+### Workspace Desktop Navigation
+
+- [ ] Group permitted routes under Teaching, Content, Records, and System.
+- [ ] Hide a group when none of its routes are permitted.
+- [ ] Keep the current route visibly active.
+
+### Workspace Mobile Navigation
+
+- [ ] Use a fixed, non-scrolling bottom bar for Overview, Courses, Files, Articles, and More when permitted.
+- [ ] Put all remaining permitted workspace routes in the grouped More bottom drawer.
+- [ ] Keep page content clear of the fixed bar.
+- [ ] Verify the navigation and drawer at a 390 px viewport.
 
 ### Workspace Editing Flows
 
